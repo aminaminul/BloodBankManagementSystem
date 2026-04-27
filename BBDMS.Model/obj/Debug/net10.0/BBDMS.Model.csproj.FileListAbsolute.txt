@@ -1,0 +1,12 @@
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\bin\Debug\net10.0\BBDMS.Model.deps.json
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\bin\Debug\net10.0\BBDMS.Model.dll
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\bin\Debug\net10.0\BBDMS.Model.pdb
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\obj\Debug\net10.0\BBDMS.Model.GeneratedMSBuildEditorConfig.editorconfig
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\obj\Debug\net10.0\BBDMS.Model.AssemblyInfoInputs.cache
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\obj\Debug\net10.0\BBDMS.Model.AssemblyInfo.cs
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\obj\Debug\net10.0\BBDMS.Model.csproj.CoreCompileInputs.cache
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\obj\Debug\net10.0\BBDMS.Model.sourcelink.json
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\obj\Debug\net10.0\BBDMS.Model.dll
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\obj\Debug\net10.0\refint\BBDMS.Model.dll
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\obj\Debug\net10.0\BBDMS.Model.pdb
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Model\obj\Debug\net10.0\ref\BBDMS.Model.dll

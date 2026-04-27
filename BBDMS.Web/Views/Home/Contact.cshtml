@@ -1,0 +1,74 @@
+@model BBDMS.Model.Models.Entities.ContactInfo
+@{
+    ViewData["Title"] = "Contact Us";
+}
+
+<div class="inner-banner-w3ls">
+    <div class="container">
+    </div>
+</div>
+<div class="breadcrumb-agile">
+    <div aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index">Home</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Contact Us</li>
+        </ol>
+    </div>
+</div>
+
+<div class="contact-w3l py-5">
+    <div class="container py-xl-5 py-lg-3">
+        <div class="w3ls-titles text-center mb-5">
+            <h3 class="title">Contact Us</h3>
+            <span>
+                <i class="fas fa-user-md"></i>
+            </span>
+            <p class="mt-2">Feel free to contact us with any questions or comments.</p>
+        </div>
+
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-success">@TempData["Message"]</div>
+        }
+
+        <div class="row contact-grids">
+            <div class="col-lg-7 contact-left">
+                <form asp-action="Contact" method="post">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" class="form-control" name="Name" required placeholder="Full Name">
+                    </div>
+                    <div class="form-group">
+                        <label>Mobile Number</label>
+                        <input type="text" class="form-control" name="ContactNumber" required placeholder="Mobile Number">
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" class="form-control" name="EmailId" required placeholder="Email Address">
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea class="form-control" name="Message" required placeholder="Your Message"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary submit">Submit</button>
+                </form>
+            </div>
+            <div class="col-lg-5 contact-right mt-lg-0 mt-5">
+                <div class="address-grid">
+                    <h4 class="font-weight-bold mb-3">Address</h4>
+                    <p>@Model?.Address</p>
+                </div>
+                <div class="address-grid my-4">
+                    <h4 class="font-weight-bold mb-3">Phone</h4>
+                    <p>+@Model?.ContactNo</p>
+                </div>
+                <div class="address-grid">
+                    <h4 class="font-weight-bold mb-3">Email</h4>
+                    <p><a href="mailto:@Model?.EmailId">@Model?.EmailId</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

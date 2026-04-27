@@ -1,0 +1,16 @@
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\obj\Debug\net10.0\BBDMS.Repository.csproj.AssemblyReference.cache
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\obj\Debug\net10.0\BBDMS.Repository.GeneratedMSBuildEditorConfig.editorconfig
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\obj\Debug\net10.0\BBDMS.Repository.AssemblyInfoInputs.cache
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\obj\Debug\net10.0\BBDMS.Repository.AssemblyInfo.cs
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\obj\Debug\net10.0\BBDMS.Repository.csproj.CoreCompileInputs.cache
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\obj\Debug\net10.0\BBDMS.Repository.sourcelink.json
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\bin\Debug\net10.0\BBDMS.Repository.deps.json
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\bin\Debug\net10.0\BBDMS.Repository.dll
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\bin\Debug\net10.0\BBDMS.Repository.pdb
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\bin\Debug\net10.0\BBDMS.Model.dll
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\bin\Debug\net10.0\BBDMS.Model.pdb
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\obj\Debug\net10.0\BBDMS.Re.EC859930.Up2Date
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\obj\Debug\net10.0\BBDMS.Repository.dll
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\obj\Debug\net10.0\refint\BBDMS.Repository.dll
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\obj\Debug\net10.0\BBDMS.Repository.pdb
+E:\Importent\Projects\BloodBankManagementSystem\BBDMS.Repository\obj\Debug\net10.0\ref\BBDMS.Repository.dll

@@ -1,0 +1,64 @@
+@model IEnumerable<BBDMS.Model.Models.Entities.BloodRequest>
+@{
+    ViewData["Title"] = "Requests Received";
+}
+
+<div class="inner-banner-w3ls">
+    <div class="container"></div>
+</div>
+<div class="breadcrumb-agile">
+    <div aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index">Home</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Requests Received</li>
+        </ol>
+    </div>
+</div>
+
+<div class="agileits-contact py-5">
+    <div class="py-xl-5 py-lg-3">
+        <div class="w3ls-titles text-center mb-5">
+            <h3 class="title">Blood Requests Received</h3>
+            <span><i class="fas fa-user-md"></i></span>
+        </div>
+
+        <div class="container">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Requester Name</th>
+                        <th>Mobile Number</th>
+                        <th>Email</th>
+                        <th>Blood Required For</th>
+                        <th>Message</th>
+                        <th>Apply Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var request in Model)
+                        {
+                            <tr>
+                                <td>@request.Name</td>
+                                <td>@request.ContactNumber</td>
+                                <td>@request.EmailId</td>
+                                <td>@request.BloodRequireFor</td>
+                                <td>@request.Message</td>
+                                <td>@request.ApplyDate?.ToString("yyyy-MM-dd")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center">No blood requests received yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

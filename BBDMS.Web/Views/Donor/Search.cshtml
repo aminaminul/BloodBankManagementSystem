@@ -1,0 +1,105 @@
+@model IEnumerable<BBDMS.Model.Models.Entities.BloodDonor>
+@{
+    ViewData["Title"] = "Search Blood Donor";
+    var bloodGroups = ViewBag.BloodGroups as IEnumerable<BBDMS.Model.Models.Entities.BloodGroup>;
+}
+
+<div class="inner-banner-w3ls">
+    <div class="container">
+    </div>
+</div>
+<div class="breadcrumb-agile">
+    <div aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index">Home</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Search Blood Donor</li>
+        </ol>
+    </div>
+</div>
+
+<div class="agileits-contact py-5">
+    <div class="py-xl-5 py-lg-3">
+        <form asp-action="Search" method="get" style="padding-left: 30px;">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div class="font-italic">Blood Group<span style="color:red">*</span> </div>
+                    <div>
+                        <select name="bloodGroup" class="form-control" required>
+                            <option value="">Select Blood Group</option>
+                            @if (bloodGroups != null)
+                            {
+                                foreach (var bg in bloodGroups)
+                                {
+                                    <option value="@bg.GroupName">@bg.GroupName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-lg-4 mb-4">
+                    <div class="font-italic">Location </div>
+                    <div><textarea class="form-control" name="location"></textarea></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <div><input type="submit" class="btn btn-primary" value="Submit" style="cursor:pointer"></div>
+                </div>
+            </div>
+        </form>
+
+        @if (Model != null)
+        {
+            <div class="agileits-contact py-5">
+                <div class="py-xl-5 py-lg-3">
+                    <div class="w3ls-titles text-center mb-5">
+                        <h3 class="title">Search Blood Donor</h3>
+                        <span>
+                            <i class="fas fa-user-md"></i>
+                        </span>
+                    </div>
+                    <div class="d-flex">
+                        <div class="row package-grids mt-5" style="padding-left: 50px;">
+                            @if (Model.Any())
+                            {
+                                foreach (var donor in Model)
+                                {
+                                    <div class="col-md-6 pricing mb-5">
+                                        <div class="price-top">
+                                            <img src="~/images/blood-donor.jpg" alt="Blood Donor" style="border:1px #000 solid" class="img-fluid" />
+                                            <h3>@donor.FullName</h3>
+                                        </div>
+                                        <div class="price-bottom p-4">
+                                            <table class="table table-bordered">
+                                                <tbody>
+                                                    <tr><th>Gender</th><td>@donor.Gender</td></tr>
+                                                    <tr><td>Blood Group</td><td>@donor.BloodGroup</td></tr>
+                                                    <tr><td>Mobile No.</td><td>@donor.MobileNumber</td></tr>
+                                                    <tr><td>Email ID</td><td>@donor.EmailId</td></tr>
+                                                    <tr><td>Age</td><td>@donor.Age</td></tr>
+                                                    <tr><td>Address</td><td>@donor.Address</td></tr>
+                                                    <tr><td>Message</td><td>@donor.Message</td></tr>
+                                                </tbody>
+                                            </table>
+                                            <a class="btn btn-primary" style="color:#fff" asp-action="Contact" asp-route-id="@donor.Id">Request</a>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="col-12 text-center">
+                                    <h4>No Record Found</h4>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

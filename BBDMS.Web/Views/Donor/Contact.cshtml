@@ -1,0 +1,74 @@
+@model BBDMS.Model.Models.Entities.BloodRequest
+@{
+    ViewData["Title"] = "Contact For Blood";
+}
+
+<div class="inner-banner-w3ls">
+    <div class="container"></div>
+</div>
+<div class="breadcrumb-agile">
+    <div aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a asp-controller="Home" asp-action="Index">Home</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">Blood Needed Person</li>
+        </ol>
+    </div>
+</div>
+
+<div class="agileits-contact py-5">
+    <div class="py-xl-5 py-lg-3">
+        <div class="w3ls-titles text-center mb-5">
+            <h3 class="title">Contact For Blood</h3>
+            <span>
+                <i class="fas fa-user-md"></i>
+            </span>
+        </div>
+        <div class="d-flex">
+            <div class="col-lg-5 w3_agileits-contact-left"></div>
+            <div class="col-lg-7 contact-right-w3l">
+                <h5 class="title-w3 text-center mb-5">Fill following form for blood</h5>
+                <form asp-action="Contact" method="post">
+                    <input type="hidden" name="BloodDonorID" value="@ViewBag.DonorId" />
+                    <div class="d-flex space-d-flex">
+                        <div class="form-group grid-inputs">
+                            <label class="col-form-label">Your Name</label>
+                            <input type="text" class="form-control" asp-for="Name" required placeholder="Please enter your name.">
+                        </div>
+                        <div class="form-group grid-inputs">
+                            <label class="col-form-label">Phone Number</label>
+                            <input type="tel" class="form-control" asp-for="ContactNumber" required placeholder="Please enter your phone number.">
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex space-d-flex">
+                        <div class="form-group grid-inputs">
+                            <label class="col-form-label">Email Address</label>
+                            <input type="email" class="form-control" asp-for="EmailId" required placeholder="Please enter your email address.">
+                        </div>
+                        <div class="form-group grid-inputs">
+                            <label class="col-form-label">Blood Require For</label>
+                            <select class="form-control" asp-for="BloodRequireFor" required>
+                                <option value="">Blood Require For</option>
+                                <option value="Father">Father</option>
+                                <option value="Mother">Mother</option>
+                                <option value="Brother">Brother</option>
+                                <option value="Sister">Sister</option>
+                                <option value="Others">Others</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-form-label">Message</label>
+                        <textarea rows="10" cols="100" class="form-control" asp-for="Message" placeholder="Please enter your message" maxlength="999" style="resize:none" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Send Message" class="btn btn-primary">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
