@@ -1,20 +1,26 @@
-@model IEnumerable<BBDMS.Model.Models.Entities.BloodRequest>
+@model BBDMS.Model.Models.ViewModels.PagedResult<BBDMS.Model.Models.Entities.BloodRequest>
 @{
     ViewData["Title"] = "Manage Emergency Blood Requests";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["PageIndex"] = Model.PageIndex;
+    ViewData["TotalPages"] = Model.TotalPages;
+    ViewData["ActionName"] = "BloodRequests";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h3 class="font-weight-bold text-dark mb-0">Emergency Blood Requests</h3>
-        <p class="text-muted mb-0">Monitor, verify, and update patient blood requests across hospitals</p>
+        <p class="text-muted mb-0">Monitor, verify, and update patient blood requests across hospitals (@Model.TotalItems total)</p>
+    </div>
+    <div>
+        <input type="text" id="requestsTableSearch" class="form-control" placeholder="Search requests..." style="width: 250px;" />
     </div>
 </div>
 
 <div class="card content-card shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover mb-0" id="requestsTable">
                 <thead class="thead-light">
                     <tr>
                         <th>Patient / Requester</th>
@@ -28,9 +34,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model != null && Model.Any())
+                    @if (Model.Items != null && Model.Items.Any())
                     {
-                        foreach (var item in Model)
+                        foreach (var item in Model.Items)
                         {
                             <tr>
                                 <td>
@@ -73,15 +79,24 @@
                                 </td>
                                 <td class="text-right">
                                     <div class="btn-group btn-group-sm">
-                                        <a asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Approved" class="btn btn-outline-primary" title="Approve Request">
-                                            <i class="fas fa-check"></i>
-                                        </a>
-                                        <a asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Fulfilled" class="btn btn-outline-success" title="Mark as Fulfilled">
-                                            <i class="fas fa-hand-holding-heart"></i>
-                                        </a>
-                                        <a asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Cancelled" class="btn btn-outline-secondary" title="Cancel Request">
-                                            <i class="fas fa-times"></i>
-                                        </a>
+                                        <form asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Approved" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-primary" title="Approve Request">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Fulfilled" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-success" title="Mark as Fulfilled">
+                                                <i class="fas fa-hand-holding-heart"></i>
+                                            </button>
+                                        </form>
+                                        <form asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Cancelled" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-outline-secondary" title="Cancel Request">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
@@ -98,3 +113,18 @@
         </div>
     </div>
 </div>
+
+<partial name="_Pagination" view-data="ViewData" />
+
+@section Scripts {
+    <script>
+        document.getElementById('requestsTableSearch')?.addEventListener('keyup', function() {
+            var filter = this.value.toLowerCase();
+            var rows = document.querySelectorAll('#requestsTable tbody tr');
+            rows.forEach(function(row) {
+                var text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+    </script>
+}

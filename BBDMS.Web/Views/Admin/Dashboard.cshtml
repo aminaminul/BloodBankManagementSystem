@@ -1,3 +1,4 @@
+@model BBDMS.Model.Models.ViewModels.AdminDashboardViewModel
 @{
     ViewData["Title"] = "Emergency System - Admin Dashboard";
     Layout = null;
@@ -81,7 +82,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="text-uppercase text-white-50 mb-1">Total Donors</h6>
-                                        <h2 class="font-weight-bold mb-0">@ViewBag.TotalDonors</h2>
+                                        <h2 class="font-weight-bold mb-0">@Model.TotalDonors</h2>
                                     </div>
                                     <i class="fas fa-user-friends fa-2x text-white-50"></i>
                                 </div>
@@ -98,7 +99,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="text-uppercase text-white-50 mb-1">Blood Requests</h6>
-                                        <h2 class="font-weight-bold mb-0">@ViewBag.TotalRequests</h2>
+                                        <h2 class="font-weight-bold mb-0">@Model.TotalRequests</h2>
                                     </div>
                                     <i class="fas fa-tint fa-2x text-white-50"></i>
                                 </div>
@@ -115,12 +116,12 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="text-uppercase text-white-50 mb-1">Registered Hospitals</h6>
-                                        <h2 class="font-weight-bold mb-0">@ViewBag.TotalHospitals</h2>
+                                        <h2 class="font-weight-bold mb-0">@Model.TotalHospitals</h2>
                                     </div>
                                     <i class="fas fa-hospital fa-2x text-white-50"></i>
                                 </div>
                                 <hr class="border-light my-2" />
-                                <a asp-action="Hospitals" class="text-white small font-weight-bold">Available ICU: @ViewBag.TotalIcuBeds beds &rarr;</a>
+                                <a asp-action="Hospitals" class="text-white small font-weight-bold">Available ICU: @Model.TotalAvailableIcuBeds beds &rarr;</a>
                             </div>
                         </div>
                     </div>
@@ -132,7 +133,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="text-uppercase text-white-50 mb-1 text-dark">Ambulance Fleets</h6>
-                                        <h2 class="font-weight-bold mb-0 text-dark">@ViewBag.TotalAmbulances</h2>
+                                        <h2 class="font-weight-bold mb-0 text-dark">@Model.TotalAmbulances</h2>
                                     </div>
                                     <i class="fas fa-ambulance fa-2x text-white-50"></i>
                                 </div>
@@ -151,7 +152,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="text-uppercase text-white-50 mb-1">Oxygen Suppliers</h6>
-                                        <h2 class="font-weight-bold mb-0">@ViewBag.TotalOxygenSuppliers</h2>
+                                        <h2 class="font-weight-bold mb-0">@Model.TotalOxygenSuppliers</h2>
                                     </div>
                                     <i class="fas fa-lungs fa-2x text-white-50"></i>
                                 </div>
@@ -167,7 +168,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h6 class="text-uppercase text-white-50 mb-1">Blood Banks</h6>
-                                        <h2 class="font-weight-bold mb-0">@ViewBag.TotalBloodBanks</h2>
+                                        <h2 class="font-weight-bold mb-0">@Model.TotalBloodBanks</h2>
                                     </div>
                                     <i class="fas fa-landmark fa-2x text-white-50"></i>
                                 </div>

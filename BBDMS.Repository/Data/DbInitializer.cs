@@ -18,9 +18,19 @@ namespace BBDMS.Repository.Data
                     UserName = "admin",
                     MobileNumber = 1234567890,
                     Email = "admin@emergencyhelp.com",
-                    Password = "admin",
+                    Password = BCrypt.Net.BCrypt.HashPassword("admin", 11),
                     AdminRegdate = DateTime.Now
                 });
+            }
+            else
+            {
+                // Auto-upgrade existing admin password if in plain text
+                var admin = context.Admins.FirstOrDefault();
+                if (admin != null && !string.IsNullOrEmpty(admin.Password) && !admin.Password.StartsWith("$2"))
+                {
+                    admin.Password = BCrypt.Net.BCrypt.HashPassword(admin.Password, 11);
+                    context.Admins.Update(admin);
+                }
             }
 
             // Seed Blood Groups if not exists
@@ -279,7 +289,7 @@ namespace BBDMS.Repository.Data
                         PostingDate = DateTime.Now,
                         Status = 1,
                         IsAvailable = true,
-                        Password = "donor"
+                        Password = BCrypt.Net.BCrypt.HashPassword("donor", 11)
                     },
                     new BloodDonor
                     {
@@ -294,7 +304,7 @@ namespace BBDMS.Repository.Data
                         PostingDate = DateTime.Now,
                         Status = 1,
                         IsAvailable = true,
-                        Password = "donor"
+                        Password = BCrypt.Net.BCrypt.HashPassword("donor", 11)
                     },
                     new BloodDonor
                     {
@@ -309,7 +319,7 @@ namespace BBDMS.Repository.Data
                         PostingDate = DateTime.Now,
                         Status = 1,
                         IsAvailable = true,
-                        Password = "donor"
+                        Password = BCrypt.Net.BCrypt.HashPassword("donor", 11)
                     },
                     new BloodDonor
                     {
@@ -324,9 +334,22 @@ namespace BBDMS.Repository.Data
                         PostingDate = DateTime.Now,
                         Status = 1,
                         IsAvailable = true,
-                        Password = "donor"
+                        Password = BCrypt.Net.BCrypt.HashPassword("donor", 11)
                     }
                 );
+            }
+            else
+            {
+                // Auto-upgrade existing plain-text donor passwords
+                var donors = context.BloodDonors.ToList();
+                foreach (var d in donors)
+                {
+                    if (!string.IsNullOrEmpty(d.Password) && !d.Password.StartsWith("$2"))
+                    {
+                        d.Password = BCrypt.Net.BCrypt.HashPassword(d.Password, 11);
+                        context.BloodDonors.Update(d);
+                    }
+                }
             }
 
             // Seed Sample Emergency Requests if none exist

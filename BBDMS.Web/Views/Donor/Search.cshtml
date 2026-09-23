@@ -82,6 +82,19 @@
                                                     <tr><td>Email ID</td><td>@donor.EmailId</td></tr>
                                                     <tr><td>Age</td><td>@donor.Age</td></tr>
                                                     <tr><td>Address</td><td>@donor.Address</td></tr>
+                                                    <tr>
+                                                        <td>Eligibility</td>
+                                                        <td>
+                                                            @if (donor.IsEligibleToDonate)
+                                                            {
+                                                                <span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i>Eligible</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge badge-warning text-dark px-2 py-1"><i class="fas fa-clock mr-1"></i>Eligible in @donor.DaysUntilEligible day(s)</span>
+                                                            }
+                                                        </td>
+                                                    </tr>
                                                     <tr><td>Message</td><td>@donor.Message</td></tr>
                                                 </tbody>
                                             </table>

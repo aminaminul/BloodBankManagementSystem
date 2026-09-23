@@ -2,10 +2,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using BBDMS.Model.Models.Entities;
+using BBDMS.Model.Models.ViewModels;
 using BBDMS.Service.Interfaces;
+using BBDMS.Web.Filters;
 
 namespace BBDMS.Web.Controllers
 {
+    [AdminAuthorize]
     public class AdminController : Controller
     {
         private readonly IAdminService _adminService;
@@ -62,17 +65,18 @@ namespace BBDMS.Web.Controllers
 
         public async Task<IActionResult> Dashboard()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
+            var viewModel = new AdminDashboardViewModel
+            {
+                TotalDonors = await _adminService.GetTotalDonorsCountAsync(),
+                TotalRequests = await _adminService.GetTotalRequestsCountAsync(),
+                TotalHospitals = await _adminService.GetTotalHospitalsCountAsync(),
+                TotalAvailableIcuBeds = await _adminService.GetTotalAvailableIcuBedsAsync(),
+                TotalAmbulances = await _adminService.GetTotalAmbulancesCountAsync(),
+                TotalOxygenSuppliers = await _adminService.GetTotalOxygenSuppliersCountAsync(),
+                TotalBloodBanks = await _adminService.GetTotalBloodBanksCountAsync()
+            };
 
-            ViewBag.TotalDonors = await _adminService.GetTotalDonorsCountAsync();
-            ViewBag.TotalRequests = await _adminService.GetTotalRequestsCountAsync();
-            ViewBag.TotalHospitals = await _adminService.GetTotalHospitalsCountAsync();
-            ViewBag.TotalIcuBeds = await _adminService.GetTotalAvailableIcuBedsAsync();
-            ViewBag.TotalAmbulances = await _adminService.GetTotalAmbulancesCountAsync();
-            ViewBag.TotalOxygenSuppliers = await _adminService.GetTotalOxygenSuppliersCountAsync();
-            ViewBag.TotalBloodBanks = await _adminService.GetTotalBloodBanksCountAsync();
-
-            return View();
+            return View(viewModel);
         }
 
         public IActionResult Logout()
@@ -82,32 +86,34 @@ namespace BBDMS.Web.Controllers
         }
 
         #region Donor Management
-        public async Task<IActionResult> DonorList()
+        public async Task<IActionResult> DonorList(int page = 1, int pageSize = 10)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
-            var donors = await _donorService.GetAllDonorsAsync();
-            return View(donors);
+            var pagedDonors = await _donorService.GetPagedDonorsAsync(page, pageSize);
+            return View(pagedDonors);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleDonorAvailability(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             await _donorService.ToggleAvailabilityAsync(id);
             TempData["Success"] = "Donor availability status updated.";
             return RedirectToAction(nameof(DonorList));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleDonorStatus(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             await _donorService.ToggleStatusAsync(id);
             TempData["Success"] = "Donor active/inactive status updated.";
             return RedirectToAction(nameof(DonorList));
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteDonor(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             await _donorService.DeleteDonorAsync(id);
             TempData["Success"] = "Donor deleted successfully.";
             return RedirectToAction(nameof(DonorList));
@@ -117,14 +123,12 @@ namespace BBDMS.Web.Controllers
         #region Hospital & ICU Management
         public async Task<IActionResult> Hospitals()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var hospitals = await _hospitalService.GetAllHospitalsAsync();
             return View(hospitals);
         }
 
         public IActionResult HospitalCreate()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             return View(new Hospital());
         }
 
@@ -132,7 +136,6 @@ namespace BBDMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> HospitalCreate(Hospital hospital)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             if (ModelState.IsValid)
             {
                 await _hospitalService.AddHospitalAsync(hospital);
@@ -144,7 +147,6 @@ namespace BBDMS.Web.Controllers
 
         public async Task<IActionResult> HospitalEdit(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var hospital = await _hospitalService.GetHospitalByIdAsync(id);
             if (hospital == null) return NotFound();
             return View(hospital);
@@ -154,7 +156,6 @@ namespace BBDMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> HospitalEdit(Hospital hospital)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             if (ModelState.IsValid)
             {
                 await _hospitalService.UpdateHospitalAsync(hospital);
@@ -164,9 +165,10 @@ namespace BBDMS.Web.Controllers
             return View(hospital);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> HospitalDelete(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             await _hospitalService.DeleteHospitalAsync(id);
             TempData["Success"] = "Hospital removed successfully.";
             return RedirectToAction(nameof(Hospitals));
@@ -176,14 +178,12 @@ namespace BBDMS.Web.Controllers
         #region Blood Bank Management
         public async Task<IActionResult> BloodBanks()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var banks = await _bloodBankService.GetAllBloodBanksAsync();
             return View(banks);
         }
 
         public IActionResult BloodBankCreate()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             return View(new BloodBank());
         }
 
@@ -191,7 +191,6 @@ namespace BBDMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BloodBankCreate(BloodBank bank)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             if (ModelState.IsValid)
             {
                 await _bloodBankService.AddBloodBankAsync(bank);
@@ -203,7 +202,6 @@ namespace BBDMS.Web.Controllers
 
         public async Task<IActionResult> BloodBankEdit(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var bank = await _bloodBankService.GetBloodBankByIdAsync(id);
             if (bank == null) return NotFound();
             return View(bank);
@@ -213,7 +211,6 @@ namespace BBDMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> BloodBankEdit(BloodBank bank)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             if (ModelState.IsValid)
             {
                 await _bloodBankService.UpdateBloodBankAsync(bank);
@@ -223,9 +220,10 @@ namespace BBDMS.Web.Controllers
             return View(bank);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> BloodBankDelete(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             await _bloodBankService.DeleteBloodBankAsync(id);
             TempData["Success"] = "Blood Bank deleted successfully.";
             return RedirectToAction(nameof(BloodBanks));
@@ -235,14 +233,12 @@ namespace BBDMS.Web.Controllers
         #region Ambulance Management & Requests
         public async Task<IActionResult> Ambulances()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var ambulances = await _ambulanceService.GetAllAmbulancesAsync();
             return View(ambulances);
         }
 
         public IActionResult AmbulanceCreate()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             return View(new AmbulanceService());
         }
 
@@ -250,7 +246,6 @@ namespace BBDMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AmbulanceCreate(AmbulanceService ambulance)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             if (ModelState.IsValid)
             {
                 await _ambulanceService.AddAmbulanceAsync(ambulance);
@@ -262,7 +257,6 @@ namespace BBDMS.Web.Controllers
 
         public async Task<IActionResult> AmbulanceEdit(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var ambulance = await _ambulanceService.GetAmbulanceByIdAsync(id);
             if (ambulance == null) return NotFound();
             return View(ambulance);
@@ -272,7 +266,6 @@ namespace BBDMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AmbulanceEdit(AmbulanceService ambulance)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             if (ModelState.IsValid)
             {
                 await _ambulanceService.UpdateAmbulanceAsync(ambulance);
@@ -282,9 +275,10 @@ namespace BBDMS.Web.Controllers
             return View(ambulance);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AmbulanceDelete(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             await _ambulanceService.DeleteAmbulanceAsync(id);
             TempData["Success"] = "Ambulance removed.";
             return RedirectToAction(nameof(Ambulances));
@@ -292,14 +286,14 @@ namespace BBDMS.Web.Controllers
 
         public async Task<IActionResult> AmbulanceRequests()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var requests = await _ambulanceService.GetAllAmbulanceRequestsAsync();
             return View(requests);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateAmbulanceRequestStatus(int id, string status)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             await _ambulanceService.UpdateAmbulanceRequestStatusAsync(id, status);
             TempData["Success"] = $"Ambulance request status updated to {status}.";
             return RedirectToAction(nameof(AmbulanceRequests));
@@ -309,14 +303,12 @@ namespace BBDMS.Web.Controllers
         #region Oxygen Service Management
         public async Task<IActionResult> Oxygen()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var services = await _oxygenService.GetAllOxygenServicesAsync();
             return View(services);
         }
 
         public IActionResult OxygenCreate()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             return View(new OxygenService());
         }
 
@@ -324,7 +316,6 @@ namespace BBDMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> OxygenCreate(OxygenService oxygenService)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             if (ModelState.IsValid)
             {
                 await _oxygenService.AddOxygenServiceAsync(oxygenService);
@@ -336,7 +327,6 @@ namespace BBDMS.Web.Controllers
 
         public async Task<IActionResult> OxygenEdit(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var service = await _oxygenService.GetOxygenServiceByIdAsync(id);
             if (service == null) return NotFound();
             return View(service);
@@ -346,7 +336,6 @@ namespace BBDMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> OxygenEdit(OxygenService oxygenService)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             if (ModelState.IsValid)
             {
                 await _oxygenService.UpdateOxygenServiceAsync(oxygenService);
@@ -356,9 +345,10 @@ namespace BBDMS.Web.Controllers
             return View(oxygenService);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> OxygenDelete(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             await _oxygenService.DeleteOxygenServiceAsync(id);
             TempData["Success"] = "Oxygen service removed.";
             return RedirectToAction(nameof(Oxygen));
@@ -366,16 +356,16 @@ namespace BBDMS.Web.Controllers
         #endregion
 
         #region Blood Request Management
-        public async Task<IActionResult> BloodRequests()
+        public async Task<IActionResult> BloodRequests(int page = 1, int pageSize = 10)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
-            var requests = await _bloodRequestService.GetAllRequestsAsync();
-            return View(requests);
+            var pagedRequests = await _bloodRequestService.GetPagedRequestsAsync(page, pageSize);
+            return View(pagedRequests);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateRequestStatus(int id, string status)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             await _bloodRequestService.UpdateRequestStatusAsync(id, status);
             TempData["Success"] = $"Blood request status updated to {status}.";
             return RedirectToAction(nameof(BloodRequests));
@@ -385,14 +375,14 @@ namespace BBDMS.Web.Controllers
         #region User Contact Queries & Website Information Management
         public async Task<IActionResult> ContactQueries()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var queries = await _pageService.GetAllContactQueriesAsync();
             return View(queries);
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteContactQuery(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             await _pageService.DeleteContactQueryAsync(id);
             TempData["Success"] = "Contact query removed.";
             return RedirectToAction(nameof(ContactQueries));
@@ -400,7 +390,6 @@ namespace BBDMS.Web.Controllers
 
         public async Task<IActionResult> ContactInfo()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var info = await _pageService.GetContactInfoAsync();
             return View(info);
         }
@@ -409,7 +398,6 @@ namespace BBDMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ContactInfo(ContactInfo info)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             if (ModelState.IsValid)
             {
                 await _pageService.UpdateContactInfoAsync(info);
@@ -421,14 +409,12 @@ namespace BBDMS.Web.Controllers
 
         public async Task<IActionResult> Pages()
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var pages = await _pageService.GetAllPagesAsync();
             return View(pages);
         }
 
         public async Task<IActionResult> PageEdit(int id)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             var page = await _pageService.GetPageByIdAsync(id);
             if (page == null) return NotFound();
             return View(page);
@@ -438,7 +424,6 @@ namespace BBDMS.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PageEdit(PageContent pageContent)
         {
-            if (!IsAdminLoggedIn) return RedirectToAction(nameof(Index));
             if (ModelState.IsValid)
             {
                 await _pageService.UpdatePageContentAsync(pageContent);

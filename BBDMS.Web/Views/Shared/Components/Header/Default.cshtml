@@ -1,4 +1,4 @@
-@model BBDMS.Model.Models.Entities.ContactInfo
+@model BBDMS.Model.Models.ViewModels.HeaderViewModel
 
 <header>
     <div class="top-bar py-3">
@@ -12,29 +12,29 @@
                             <li><a href="#"><i class="fab fa-google-plus-g"></i></a></li>
                             <li class="ml-3"><a href="#"><i class="fab fa-pinterest-p"></i></a></li>
                         </ul>
-                        @if (Model != null)
+                        @if (Model.ContactInfo != null)
                         {
                             <div class="col-6 header-top_w3layouts pl-3 text-lg-left text-center">
                                 <p class="text-white">
-                                    <i class="fas fa-map-marker-alt mr-2"></i>@Model.Address
+                                    <i class="fas fa-map-marker-alt mr-2"></i>@Model.ContactInfo.Address
                                 </p>
                             </div>
                         }
                     </div>
                 </div>
                 <div class="col-lg-5 top-social-agile text-lg-right text-center">
-                    @if (Model != null)
+                    @if (Model.ContactInfo != null)
                     {
                         <div class="row">
                             <div class="col-lg-7 col-6 top-w3layouts">
                                 <p class="text-white">
                                     <i class="far fa-envelope-open mr-2"></i>
-                                    <a href="mailto:@Model.EmailId" class="text-white">@Model.EmailId</a>
+                                    <a href="mailto:@Model.ContactInfo.EmailId" class="text-white">@Model.ContactInfo.EmailId</a>
                                 </p>
                             </div>
                             <div class="col-lg-5 col-6 header-w3layouts pl-4 text-lg-left">
                                 <p class="text-white">
-                                    <i class="fas fa-phone mr-2"></i>+@Model.ContactNo
+                                    <i class="fas fa-phone mr-2"></i>+@Model.ContactInfo.ContactNo
                                 </p>
                             </div>
                         </div>
@@ -101,14 +101,8 @@
                         <li class="nav-item mx-lg-2">
                             <a class="nav-link" asp-controller="Home" asp-action="Contact">Contact</a>
                         </li>
-                        @using Microsoft.AspNetCore.Http
-                        @inject IHttpContextAccessor HttpContextAccessor
-                        @{
-                            var donorId = HttpContextAccessor.HttpContext?.Session?.GetInt32("bbdmsdid");
-                            var adminId = HttpContextAccessor.HttpContext?.Session?.GetInt32("adminId");
-                        }
                         
-                        @if (donorId != null)
+                        @if (Model.IsDonorLoggedIn)
                         {
                             <li class="nav-item dropdown mx-lg-2">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -125,7 +119,7 @@
                                 </div>
                             </li>
                         }
-                        else if (adminId != null)
+                        else if (Model.IsAdminLoggedIn)
                         {
                             <li class="nav-item mx-lg-2">
                                 <a class="nav-link text-warning font-weight-bold" asp-controller="Admin" asp-action="Dashboard">Admin Panel</a>
@@ -142,7 +136,7 @@
                         <a asp-controller="Emergency" asp-action="CreateBloodRequest" class="btn btn-danger btn-sm font-weight-bold mr-2 text-white px-3 shadow-sm">
                             <i class="fas fa-tint mr-1"></i>Need Blood
                         </a>
-                        @if (donorId == null && adminId == null)
+                        @if (!Model.IsDonorLoggedIn && !Model.IsAdminLoggedIn)
                         {
                             <a asp-controller="Account" asp-action="Login" class="btn btn-outline-danger btn-sm font-weight-bold px-3">
                                 <i class="fas fa-sign-in-alt mr-1"></i>Login

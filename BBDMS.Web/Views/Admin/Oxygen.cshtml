@@ -9,15 +9,18 @@
         <h3 class="font-weight-bold text-dark mb-0">Emergency Medical Oxygen Services</h3>
         <p class="text-muted mb-0">Manage oxygen gas providers, cylinders, concentrators, and home delivery support</p>
     </div>
-    <a asp-action="OxygenCreate" class="btn btn-info font-weight-bold text-white">
-        <i class="fas fa-plus mr-1"></i>Add Oxygen Supplier
-    </a>
+    <div class="d-flex align-items-center">
+        <input type="text" id="oxygenTableSearch" class="form-control mr-3" placeholder="Search suppliers..." style="width: 250px;" />
+        <a asp-action="OxygenCreate" class="btn btn-info font-weight-bold text-white text-nowrap">
+            <i class="fas fa-plus mr-1"></i>Add Oxygen Supplier
+        </a>
+    </div>
 </div>
 
 <div class="card content-card shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover mb-0">
+            <table class="table table-hover mb-0" id="oxygenTable">
                 <thead class="thead-light">
                     <tr>
                         <th>Provider Name</th>
@@ -70,9 +73,12 @@
                                     <a asp-action="OxygenEdit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary mr-1">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a asp-action="OxygenDelete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to remove this oxygen service?');">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
+                                    <form asp-action="OxygenDelete" asp-route-id="@item.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to remove this oxygen service?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                         }
@@ -88,3 +94,16 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.getElementById('oxygenTableSearch')?.addEventListener('keyup', function() {
+            var filter = this.value.toLowerCase();
+            var rows = document.querySelectorAll('#oxygenTable tbody tr');
+            rows.forEach(function(row) {
+                var text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+    </script>
+}

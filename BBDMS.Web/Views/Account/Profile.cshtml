@@ -72,8 +72,23 @@
                     <input type="text" class="form-control" name="Address" value="@Model?.Address" required>
                 </div>
                 <div class="form-group">
+                    <label>Last Blood Donation Date</label>
+                    <input type="date" class="form-control" name="LastDonatedDate" value="@(Model?.LastDonatedDate?.ToString("yyyy-MM-dd"))" />
+                    <small class="form-text text-muted">A minimum of 90 days is required between donations for medical safety.</small>
+                </div>
+
+                @if (Model != null)
+                {
+                    <div class="alert @(Model.IsEligibleToDonate ? "alert-success" : "alert-warning") py-2 mb-3">
+                        <i class="fas @(Model.IsEligibleToDonate ? "fa-check-circle" : "fa-clock") mr-1"></i>
+                        <strong>Eligibility Status:</strong>
+                        @(Model.IsEligibleToDonate ? "You are medically eligible to donate blood." : $"You can donate again in {Model.DaysUntilEligible} day(s).")
+                    </div>
+                }
+
+                <div class="form-group">
                     <label>Message / Donation Note</label>
-                    <textarea class="form-control" name="Message" required>@Model?.Message</textarea>
+                    <textarea class="form-control" name="Message">@Model?.Message</textarea>
                 </div>
                 <div class="form-group">
                     <div class="custom-control custom-checkbox">

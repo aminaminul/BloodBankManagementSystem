@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using BBDMS.Model.Models.Entities;
 using BBDMS.Repository.Interfaces;
 using BBDMS.Service.Interfaces;
+using BBDMS.Service.Common;
 using System.Linq;
 
 namespace BBDMS.Service.Services
@@ -38,49 +39,56 @@ namespace BBDMS.Service.Services
         public async Task<Admin> LoginAsync(string username, string password)
         {
             var admins = await _adminRepository.GetAllAsync();
-            return admins.FirstOrDefault(a => a.UserName == username && a.Password == password)!;
+            var admin = admins.FirstOrDefault(a => a.UserName == username);
+            if (admin == null) return null!;
+
+            if (PasswordHasher.VerifyPassword(password, admin.Password, out bool needsRehash))
+            {
+                if (needsRehash)
+                {
+                    admin.Password = PasswordHasher.HashPassword(password);
+                    _adminRepository.Update(admin);
+                    await _adminRepository.SaveChangesAsync();
+                }
+                return admin;
+            }
+
+            return null!;
         }
 
         public async Task<int> GetTotalDonorsCountAsync()
         {
-            var donors = await _donorRepository.GetAllAsync();
-            return donors.Count();
+            return await _donorRepository.CountAsync();
         }
 
         public async Task<int> GetTotalRequestsCountAsync()
         {
-            var requests = await _requestRepository.GetAllAsync();
-            return requests.Count();
+            return await _requestRepository.CountAsync();
         }
 
         public async Task<int> GetTotalHospitalsCountAsync()
         {
-            var hospitals = await _hospitalRepository.GetAllAsync();
-            return hospitals.Count();
+            return await _hospitalRepository.CountAsync();
         }
 
         public async Task<int> GetTotalAvailableIcuBedsAsync()
         {
-            var hospitals = await _hospitalRepository.GetAllAsync();
-            return hospitals.Sum(h => h.AvailableIcuBeds);
+            return await _hospitalRepository.SumAsync(h => h.AvailableIcuBeds);
         }
 
         public async Task<int> GetTotalAmbulancesCountAsync()
         {
-            var ambulances = await _ambulanceRepository.GetAllAsync();
-            return ambulances.Count();
+            return await _ambulanceRepository.CountAsync();
         }
 
         public async Task<int> GetTotalOxygenSuppliersCountAsync()
         {
-            var oxygen = await _oxygenRepository.GetAllAsync();
-            return oxygen.Count();
+            return await _oxygenRepository.CountAsync();
         }
 
         public async Task<int> GetTotalBloodBanksCountAsync()
         {
-            var banks = await _bloodBankRepository.GetAllAsync();
-            return banks.Count();
+            return await _bloodBankRepository.CountAsync();
         }
     }
 }

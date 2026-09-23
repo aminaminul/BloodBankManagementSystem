@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -14,5 +15,16 @@ namespace BBDMS.Repository.Interfaces
         void Update(T entity);
         void Remove(T entity);
         Task SaveChangesAsync();
+
+        // Optimized SQL query methods
+        Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
+        Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
+        Task<int> SumAsync(Expression<Func<T, int>> selector, Expression<Func<T, bool>>? predicate = null);
+        Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
+            int page,
+            int pageSize,
+            Expression<Func<T, bool>>? predicate = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null);
+        IQueryable<T> Query();
     }
 }

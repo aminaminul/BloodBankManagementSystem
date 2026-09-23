@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BBDMS.Model.Models.Entities;
+using BBDMS.Model.Models.ViewModels;
 using BBDMS.Repository.Interfaces;
 using BBDMS.Service.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BBDMS.Service.Services
 {
@@ -18,6 +21,26 @@ namespace BBDMS.Service.Services
         public async Task<IEnumerable<BloodDonor>> GetAllDonorsAsync()
         {
             return await _donorRepository.GetAllAsync();
+        }
+
+        public async Task<PagedResult<BloodDonor>> GetPagedDonorsAsync(int page, int pageSize)
+        {
+            if (page < 1) page = 1;
+            if (pageSize < 1) pageSize = 10;
+
+            var (items, totalCount) = await _donorRepository.GetPagedAsync(
+                page,
+                pageSize,
+                predicate: null,
+                orderBy: q => q.OrderByDescending(d => d.PostingDate));
+
+            return new PagedResult<BloodDonor>
+            {
+                Items = items,
+                PageIndex = page,
+                PageSize = pageSize,
+                TotalItems = totalCount
+            };
         }
 
         public async Task<BloodDonor> GetDonorByIdAsync(int id)
@@ -39,8 +62,7 @@ namespace BBDMS.Service.Services
 
         public async Task<IEnumerable<BloodDonor>> SearchDonorsAsync(string? bloodGroup, string? location)
         {
-            var donors = await _donorRepository.GetAllAsync();
-            var query = donors.Where(d => d.Status == 1);
+            var query = _donorRepository.Query().Where(d => d.Status == 1);
 
             if (!string.IsNullOrEmpty(bloodGroup) && bloodGroup != "All")
             {
@@ -49,11 +71,11 @@ namespace BBDMS.Service.Services
 
             if (!string.IsNullOrEmpty(location))
             {
-                var loc = location.Trim().ToLower();
-                query = query.Where(d => d.Address != null && d.Address.ToLower().Contains(loc));
+                var loc = location.Trim();
+                query = query.Where(d => d.Address != null && d.Address.Contains(loc));
             }
 
-            return query.ToList();
+            return await query.ToListAsync();
         }
 
         public async Task ToggleAvailabilityAsync(int id)

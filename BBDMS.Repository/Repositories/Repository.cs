@@ -22,17 +22,17 @@ namespace BBDMS.Repository.Repositories
 
         public async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _dbSet.ToListAsync();
+            return await _dbSet.AsNoTracking().ToListAsync();
         }
 
         public async Task<T> GetByIdAsync(int id)
         {
-            return await _dbSet.FindAsync(id);
+            return (await _dbSet.FindAsync(id))!;
         }
 
         public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
         {
-            return await _dbSet.Where(predicate).ToListAsync();
+            return await _dbSet.Where(predicate).AsNoTracking().ToListAsync();
         }
 
         public async Task AddAsync(T entity)
@@ -53,6 +53,56 @@ namespace BBDMS.Repository.Repositories
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null)
+        {
+            return predicate == null
+                ? await _dbSet.CountAsync()
+                : await _dbSet.CountAsync(predicate);
+        }
+
+        public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.AnyAsync(predicate);
+        }
+
+        public async Task<int> SumAsync(Expression<Func<T, int>> selector, Expression<Func<T, bool>>? predicate = null)
+        {
+            return predicate == null
+                ? await _dbSet.SumAsync(selector)
+                : await _dbSet.Where(predicate).SumAsync(selector);
+        }
+
+        public async Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
+            int page,
+            int pageSize,
+            Expression<Func<T, bool>>? predicate = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null)
+        {
+            var query = _dbSet.AsNoTracking().AsQueryable();
+
+            if (predicate != null)
+            {
+                query = query.Where(predicate);
+            }
+
+            int totalCount = await query.CountAsync();
+
+            if (orderBy != null)
+            {
+                query = orderBy(query);
+            }
+
+            int skip = Math.Max(0, (page - 1) * pageSize);
+            var items = await query.Skip(skip).Take(pageSize).ToListAsync();
+
+            return (items, totalCount);
+        }
+
+        public IQueryable<T> Query()
+        {
+            return _dbSet.AsNoTracking().AsQueryable();
         }
     }
 }
