@@ -16,6 +16,11 @@ namespace BBDMS.Repository.Data
         public DbSet<ContactInfo> ContactInfos { get; set; }
         public DbSet<ContactQuery> ContactQueries { get; set; }
         public DbSet<PageContent> PageContents { get; set; }
+        public DbSet<Hospital> Hospitals { get; set; }
+        public DbSet<BloodBank> BloodBanks { get; set; }
+        public DbSet<AmbulanceService> AmbulanceServices { get; set; }
+        public DbSet<AmbulanceRequest> AmbulanceRequests { get; set; }
+        public DbSet<OxygenService> OxygenServices { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -29,6 +34,11 @@ namespace BBDMS.Repository.Data
             modelBuilder.Entity<ContactInfo>().ToTable("tblcontactusinfo");
             modelBuilder.Entity<ContactQuery>().ToTable("tblcontactusquery");
             modelBuilder.Entity<PageContent>().ToTable("tblpages");
+            modelBuilder.Entity<Hospital>().ToTable("tblhospitals");
+            modelBuilder.Entity<BloodBank>().ToTable("tblbloodbanks");
+            modelBuilder.Entity<AmbulanceService>().ToTable("tblambulances");
+            modelBuilder.Entity<AmbulanceRequest>().ToTable("tblambulancerequests");
+            modelBuilder.Entity<OxygenService>().ToTable("tbloxygenservices");
         }
     }
 }

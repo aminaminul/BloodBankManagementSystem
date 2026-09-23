@@ -25,11 +25,43 @@
                 <i class="fas fa-user-md"></i>
             </span>
         </div>
-        <div class="d-flex">
-            <div class="col-lg-5 w3_agileits-contact-left"></div>
+        <div class="row">
+            <div class="col-lg-5 mb-4">
+                @{ var donor = ViewBag.Donor as BBDMS.Model.Models.Entities.BloodDonor; }
+                @if (donor != null)
+                {
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-danger text-white py-3">
+                            <h5 class="mb-0 font-weight-bold"><i class="fas fa-user-circle mr-2"></i>Donor Information</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <span class="badge badge-danger px-3 py-2 font-weight-bold" style="font-size: 1.2rem;">
+                                    Blood Group: @donor.BloodGroup
+                                </span>
+                            </div>
+                            <h4 class="font-weight-bold text-center text-dark mb-1">@donor.FullName</h4>
+                            <p class="text-center text-muted small mb-3"><i class="fas fa-map-marker-alt mr-1 text-danger"></i>@donor.Address</p>
+                            <ul class="list-group list-group-flush small">
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span>Gender / Age:</span>
+                                    <strong>@donor.Gender / @donor.Age yrs</strong>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between px-0">
+                                    <span>Donation Availability:</span>
+                                    <strong class="@(donor.IsAvailable ? "text-success" : "text-warning")">
+                                        @(donor.IsAvailable ? "Available" : "Unavailable")
+                                    </strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                }
+            </div>
             <div class="col-lg-7 contact-right-w3l">
-                <h5 class="title-w3 text-center mb-5">Fill following form for blood</h5>
+                <h5 class="title-w3 text-center mb-4">Send Blood Request To This Donor</h5>
                 <form asp-action="Contact" method="post">
+                    @Html.AntiForgeryToken()
                     <input type="hidden" name="BloodDonorID" value="@ViewBag.DonorId" />
                     <div class="d-flex space-d-flex">
                         <div class="form-group grid-inputs">

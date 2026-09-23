@@ -1,0 +1,129 @@
+@model IEnumerable<BBDMS.Model.Models.Entities.AmbulanceService>
+@{
+    ViewData["Title"] = "Emergency Ambulance Services";
+}
+
+<div class="inner-banner py-5" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/banner1.jpg') no-repeat center; background-size: cover;">
+    <div class="container py-lg-4 text-center">
+        <h2 class="text-white font-weight-bold">Emergency Ambulance Fleets</h2>
+        <p class="text-light mt-2">Find 24/7 ICU & Life Support Ambulances or Dispatch an Ambulance Instantly</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <!-- Call-to-action banner for ambulance request -->
+    <div class="card bg-danger text-white shadow-sm mb-4 border-0">
+        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <div>
+                <h4 class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-2"></i>Need An Ambulance Dispatched Immediately?</h4>
+                <p class="mb-0">Submit an urgent dispatch request and our dispatch team will contact you and assign the nearest available vehicle.</p>
+            </div>
+            <a asp-action="RequestAmbulance" class="btn btn-warning btn-lg font-weight-bold text-dark mt-3 mt-md-0 px-4">
+                <i class="fas fa-paper-plane mr-2"></i>Book Ambulance Now
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    }
+
+    <!-- Filter Card -->
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body p-4">
+            <form method="get" asp-action="Ambulances">
+                <div class="row align-items-end">
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <label class="font-weight-bold"><i class="fas fa-map-marker-alt text-warning mr-2"></i>Filter by Location / City</label>
+                        <input type="text" name="location" value="@ViewBag.Location" class="form-control" placeholder="Search city (e.g. Dhaka, Chittagong, Sylhet)..." />
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <label class="font-weight-bold"><i class="fas fa-ambulance text-primary mr-2"></i>Ambulance Type</label>
+                        <select name="ambulanceType" class="form-control">
+                            <option value="All">All Types</option>
+                            <option value="ICU" selected="@(ViewBag.AmbulanceType == "ICU")">Advanced Life Support (ALS) / ICU</option>
+                            <option value="Basic" selected="@(ViewBag.AmbulanceType == "Basic")">Basic Life Support (BLS)</option>
+                            <option value="AC" selected="@(ViewBag.AmbulanceType == "AC")">AC Ambulance</option>
+                            <option value="Non-AC" selected="@(ViewBag.AmbulanceType == "Non-AC")">Non-AC Ambulance</option>
+                            <option value="Neonatal" selected="@(ViewBag.AmbulanceType == "Neonatal")">Neonatal Support</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-warning btn-block font-weight-bold py-2 text-dark">
+                            <i class="fas fa-search mr-2"></i>Search Ambulances
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ambulance Listing -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var amb in Model)
+            {
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="font-weight-bold text-dark mb-1">@amb.ProviderName</h5>
+                                    <span class="badge badge-primary mr-1">@amb.AmbulanceType</span>
+                                    <span class="badge badge-light border"><i class="fas fa-map-marker-alt mr-1"></i>@amb.Location</span>
+                                </div>
+                                @if (amb.IsAvailable)
+                                {
+                                    <span class="badge badge-success px-3 py-2 font-weight-bold">
+                                        <i class="fas fa-check-circle mr-1"></i>Available 24/7
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-secondary px-3 py-2 font-weight-bold">
+                                        <i class="fas fa-times-circle mr-1"></i>On Duty
+                                    </span>
+                                }
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(amb.VehicleNumber))
+                            {
+                                <p class="small text-muted mt-2 mb-1">Vehicle Reg: <strong>@amb.VehicleNumber</strong></p>
+                            }
+                            <p class="small text-muted mb-3"><i class="fas fa-clock mr-1 text-info"></i>Service Coverage: @amb.ServiceHours</p>
+
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                <div>
+                                    <small class="text-muted d-block">Hotline:</small>
+                                    <span class="font-weight-bold text-success"><i class="fas fa-phone mr-1"></i>@amb.ContactNumber</span>
+                                </div>
+                                <div>
+                                    <a href="tel:@amb.ContactNumber" class="btn btn-outline-success font-weight-bold btn-sm mr-2">
+                                        <i class="fas fa-phone-alt mr-1"></i>Call
+                                    </a>
+                                    <a asp-action="RequestAmbulance" asp-route-serviceId="@amb.Id" class="btn btn-danger font-weight-bold btn-sm">
+                                        <i class="fas fa-paper-plane mr-1"></i>Book
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center p-5">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <h4>No ambulances found for your search criteria</h4>
+            <p>Try searching for a different area or removing specific vehicle filters.</p>
+            <a asp-action="Ambulances" class="btn btn-outline-warning mt-2 text-dark font-weight-bold">Clear Filters</a>
+        </div>
+    }
+</div>

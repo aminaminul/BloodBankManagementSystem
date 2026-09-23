@@ -1,0 +1,61 @@
+@model IEnumerable<BBDMS.Model.Models.Entities.ContactQuery>
+@{
+    ViewData["Title"] = "User Contact Messages";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="font-weight-bold text-dark mb-0">User Inquiries & Messages</h3>
+        <p class="text-muted mb-0">Messages submitted through the public Contact Us form</p>
+    </div>
+</div>
+
+<div class="card content-card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Sender Name</th>
+                        <th>Contact Number</th>
+                        <th>Email</th>
+                        <th>Message</th>
+                        <th>Date Received</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var query in Model)
+                        {
+                            <tr>
+                                <td><strong>@query.Name</strong></td>
+                                <td>
+                                    <a href="tel:@query.ContactNumber" class="text-success font-weight-bold">
+                                        <i class="fas fa-phone mr-1"></i>@query.ContactNumber
+                                    </a>
+                                </td>
+                                <td><a href="mailto:@query.EmailId">@query.EmailId</a></td>
+                                <td style="max-width: 350px;">@query.Message</td>
+                                <td class="small text-muted">@query.PostingDate.ToString("MMM dd, yyyy - hh:mm tt")</td>
+                                <td class="text-right">
+                                    <a asp-action="DeleteContactQuery" asp-route-id="@query.Id" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this query?');">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No contact messages received yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

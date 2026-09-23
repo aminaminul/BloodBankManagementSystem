@@ -37,12 +37,55 @@ namespace BBDMS.Service.Services
             await _donorRepository.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<BloodDonor>> SearchDonorsAsync(string bloodGroup, string location)
+        public async Task<IEnumerable<BloodDonor>> SearchDonorsAsync(string? bloodGroup, string? location)
         {
-            return await _donorRepository.FindAsync(d => 
-                (string.IsNullOrEmpty(bloodGroup) || d.BloodGroup == bloodGroup) &&
-                (string.IsNullOrEmpty(location) || d.Address.Contains(location)) &&
-                d.Status == 1);
+            var donors = await _donorRepository.GetAllAsync();
+            var query = donors.Where(d => d.Status == 1);
+
+            if (!string.IsNullOrEmpty(bloodGroup) && bloodGroup != "All")
+            {
+                query = query.Where(d => d.BloodGroup == bloodGroup);
+            }
+
+            if (!string.IsNullOrEmpty(location))
+            {
+                var loc = location.Trim().ToLower();
+                query = query.Where(d => d.Address != null && d.Address.ToLower().Contains(loc));
+            }
+
+            return query.ToList();
+        }
+
+        public async Task ToggleAvailabilityAsync(int id)
+        {
+            var donor = await _donorRepository.GetByIdAsync(id);
+            if (donor != null)
+            {
+                donor.IsAvailable = !donor.IsAvailable;
+                _donorRepository.Update(donor);
+                await _donorRepository.SaveChangesAsync();
+            }
+        }
+
+        public async Task ToggleStatusAsync(int id)
+        {
+            var donor = await _donorRepository.GetByIdAsync(id);
+            if (donor != null)
+            {
+                donor.Status = donor.Status == 1 ? 0 : 1;
+                _donorRepository.Update(donor);
+                await _donorRepository.SaveChangesAsync();
+            }
+        }
+
+        public async Task DeleteDonorAsync(int id)
+        {
+            var donor = await _donorRepository.GetByIdAsync(id);
+            if (donor != null)
+            {
+                _donorRepository.Remove(donor);
+                await _donorRepository.SaveChangesAsync();
+            }
         }
     }
 }

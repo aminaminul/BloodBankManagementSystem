@@ -1,6 +1,8 @@
 @model IEnumerable<BBDMS.Model.Models.Entities.BloodRequest>
 @{
     ViewData["Title"] = "Requests Received";
+    var communityRequests = ViewBag.CommunityRequests as IEnumerable<BBDMS.Model.Models.Entities.BloodRequest>;
+    var donorBloodGroup = ViewBag.DonorBloodGroup as string;
 }
 
 <div class="inner-banner-w3ls">
@@ -25,8 +27,13 @@
         </div>
 
         <div class="container">
-            <table class="table table-bordered table-striped">
-                <thead>
+
+            <!-- Direct Requests (addressed to this donor) -->
+            <h5 class="font-weight-bold text-danger mb-3">
+                <i class="fas fa-envelope mr-1"></i> Requests Addressed Directly to You
+            </h5>
+            <table class="table table-bordered table-striped mb-5">
+                <thead class="thead-dark">
                     <tr>
                         <th>Requester Name</th>
                         <th>Mobile Number</th>
@@ -34,6 +41,7 @@
                         <th>Blood Required For</th>
                         <th>Message</th>
                         <th>Apply Date</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -48,17 +56,80 @@
                                 <td>@request.BloodRequireFor</td>
                                 <td>@request.Message</td>
                                 <td>@request.ApplyDate?.ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(request.Status))
+                                    {
+                                        <span class="badge @(request.Status == "Pending" ? "badge-warning" : request.Status == "Fulfilled" ? "badge-success" : "badge-secondary")">
+                                            @request.Status
+                                        </span>
+                                    }
+                                </td>
                             </tr>
                         }
                     }
                     else
                     {
                         <tr>
-                            <td colspan="6" class="text-center">No blood requests received yet.</td>
+                            <td colspan="7" class="text-center text-muted">No direct blood requests received yet.</td>
                         </tr>
                     }
                 </tbody>
             </table>
+
+            <!-- Community Requests matching donor's blood group -->
+            @if (!string.IsNullOrEmpty(donorBloodGroup))
+            {
+                <h5 class="font-weight-bold text-primary mb-3">
+                    <i class="fas fa-users mr-1"></i> Community Requests for Blood Group: <span class="badge badge-danger">@donorBloodGroup</span>
+                </h5>
+                <p class="text-muted small mb-3">These are open requests from patients who need your blood group. You can reach out to them directly.</p>
+                <table class="table table-bordered table-hover mb-5">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Patient Name</th>
+                            <th>Blood Group</th>
+                            <th>Hospital</th>
+                            <th>Location</th>
+                            <th>Contact</th>
+                            <th>Urgency</th>
+                            <th>Units Needed</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (communityRequests != null && communityRequests.Any())
+                        {
+                            foreach (var req in communityRequests)
+                            {
+                                <tr>
+                                    <td>@req.Name</td>
+                                    <td><span class="badge badge-danger">@(req.BloodGroup ?? req.BloodRequireFor)</span></td>
+                                    <td>@(req.HospitalName ?? "—")</td>
+                                    <td>@(req.Location ?? "—")</td>
+                                    <td>@req.ContactNumber</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(req.Urgency))
+                                        {
+                                            <span class="badge @(req.Urgency == "Critical" ? "badge-danger" : req.Urgency == "Urgent" ? "badge-warning" : "badge-info")">
+                                                @req.Urgency
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>@(req.UnitsRequired > 0 ? req.UnitsRequired.ToString() : "—")</td>
+                                    <td>@req.ApplyDate?.ToString("yyyy-MM-dd")</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">No community requests found for your blood group right now.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
         </div>
     </div>
 </div>

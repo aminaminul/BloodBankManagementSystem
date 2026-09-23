@@ -1,0 +1,76 @@
+@model IEnumerable<BBDMS.Model.Models.Entities.Hospital>
+@{
+    ViewData["Title"] = "Manage Hospitals & ICU Facilities";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="font-weight-bold text-dark mb-0">Hospitals & Emergency Facilities</h3>
+        <p class="text-muted mb-0">Manage hospital details, emergency beds, and ICU capacity</p>
+    </div>
+    <a asp-action="HospitalCreate" class="btn btn-primary font-weight-bold">
+        <i class="fas fa-plus mr-1"></i>Add New Hospital
+    </a>
+</div>
+
+<div class="card content-card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Hospital Name</th>
+                        <th>City / Location</th>
+                        <th>Emergency Beds (Avail/Total)</th>
+                        <th>ICU Beds (Avail/Total)</th>
+                        <th>Helpline</th>
+                        <th>Last Updated</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@item.Name</strong>
+                                    <div class="small text-muted">@item.Address</div>
+                                </td>
+                                <td><span class="badge badge-info">@item.City</span></td>
+                                <td>
+                                    <span class="font-weight-bold @(item.AvailableEmergencyBeds > 0 ? "text-success" : "text-danger")">
+                                        @item.AvailableEmergencyBeds
+                                    </span> / @item.TotalEmergencyBeds
+                                </td>
+                                <td>
+                                    <span class="font-weight-bold @(item.AvailableIcuBeds > 0 ? "text-success" : "text-danger")">
+                                        @item.AvailableIcuBeds
+                                    </span> / @item.TotalIcuBeds
+                                </td>
+                                <td><i class="fas fa-phone mr-1 text-muted"></i>@item.EmergencyHelpline</td>
+                                <td class="small text-muted">@item.LastUpdated.ToString("MMM dd, yyyy")</td>
+                                <td class="text-right">
+                                    <a asp-action="HospitalEdit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary mr-1">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <a asp-action="HospitalDelete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this hospital?');">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No hospitals registered yet.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

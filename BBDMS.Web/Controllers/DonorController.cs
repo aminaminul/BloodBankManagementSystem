@@ -39,17 +39,35 @@ namespace BBDMS.Web.Controllers
                 return NotFound();
             }
             ViewBag.DonorId = id;
-            return View();
+            ViewBag.Donor = donor;
+            return View(new BloodRequest { BloodDonorID = id, BloodGroup = donor.BloodGroup, Location = donor.Address });
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Contact(BloodRequest request)
         {
             if (ModelState.IsValid)
             {
+                if (request.BloodDonorID.HasValue && string.IsNullOrEmpty(request.BloodGroup))
+                {
+                    var donor = await _donorService.GetDonorByIdAsync(request.BloodDonorID.Value);
+                    if (donor != null)
+                    {
+                        request.BloodGroup = donor.BloodGroup;
+                        request.Location = donor.Address;
+                    }
+                }
+                request.Status = "Pending";
+                if (string.IsNullOrEmpty(request.Urgency)) request.Urgency = "Urgent";
+                request.ApplyDate = System.DateTime.Now;
                 await _bloodRequestService.SaveRequestAsync(request);
-                TempData["Success"] = "Request has been sent. We will contact you shortly.";
+                TempData["Success"] = "Blood request sent to the donor. They will receive it in their portal.";
                 return RedirectToAction("Index");
+            }
+            if (request.BloodDonorID.HasValue)
+            {
+                ViewBag.Donor = await _donorService.GetDonorByIdAsync(request.BloodDonorID.Value);
             }
             ViewBag.DonorId = request.BloodDonorID;
             return View(request);

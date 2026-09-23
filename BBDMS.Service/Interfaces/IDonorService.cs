@@ -10,6 +10,9 @@ namespace BBDMS.Service.Interfaces
         Task<BloodDonor> GetDonorByIdAsync(int id);
         Task RegisterDonorAsync(BloodDonor donor);
         Task UpdateDonorAsync(BloodDonor donor);
-        Task<IEnumerable<BloodDonor>> SearchDonorsAsync(string bloodGroup, string location);
+        Task<IEnumerable<BloodDonor>> SearchDonorsAsync(string? bloodGroup, string? location);
+        Task ToggleAvailabilityAsync(int id);
+        Task ToggleStatusAsync(int id);
+        Task DeleteDonorAsync(int id);
     }
 }

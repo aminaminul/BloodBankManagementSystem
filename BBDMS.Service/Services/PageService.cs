@@ -22,18 +22,75 @@ namespace BBDMS.Service.Services
 
         public async Task<PageContent> GetPageByTypeAsync(string type)
         {
-            return (await _pageRepository.FindAsync(p => p.Type == type)).FirstOrDefault();
+            return (await _pageRepository.FindAsync(p => p.Type == type)).FirstOrDefault()!;
+        }
+
+        public async Task<PageContent> GetPageByIdAsync(int id)
+        {
+            return await _pageRepository.GetByIdAsync(id);
+        }
+
+        public async Task<IEnumerable<PageContent>> GetAllPagesAsync()
+        {
+            return await _pageRepository.GetAllAsync();
+        }
+
+        public async Task UpdatePageContentAsync(PageContent pageContent)
+        {
+            _pageRepository.Update(pageContent);
+            await _pageRepository.SaveChangesAsync();
         }
 
         public async Task<ContactInfo> GetContactInfoAsync()
         {
-            return (await _contactRepository.GetAllAsync()).FirstOrDefault();
+            var info = (await _contactRepository.GetAllAsync()).FirstOrDefault();
+            return info ?? new ContactInfo
+            {
+                Address = "Central Emergency Support Tower, Medical District",
+                EmailId = "emergency@bbdms-support.org",
+                ContactNo = "01700000000"
+            };
+        }
+
+        public async Task UpdateContactInfoAsync(ContactInfo contactInfo)
+        {
+            var existing = (await _contactRepository.GetAllAsync()).FirstOrDefault();
+            if (existing != null)
+            {
+                existing.Address = contactInfo.Address;
+                existing.EmailId = contactInfo.EmailId;
+                existing.ContactNo = contactInfo.ContactNo;
+                _contactRepository.Update(existing);
+            }
+            else
+            {
+                await _contactRepository.AddAsync(contactInfo);
+            }
+            await _contactRepository.SaveChangesAsync();
         }
 
         public async Task SaveContactQueryAsync(ContactQuery query)
         {
+            query.PostingDate = System.DateTime.Now;
+            query.Status = 1;
             await _queryRepository.AddAsync(query);
             await _queryRepository.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<ContactQuery>> GetAllContactQueriesAsync()
+        {
+            var queries = await _queryRepository.GetAllAsync();
+            return queries.OrderByDescending(q => q.PostingDate).ToList();
+        }
+
+        public async Task DeleteContactQueryAsync(int id)
+        {
+            var query = await _queryRepository.GetByIdAsync(id);
+            if (query != null)
+            {
+                _queryRepository.Remove(query);
+                await _queryRepository.SaveChangesAsync();
+            }
         }
     }
 }

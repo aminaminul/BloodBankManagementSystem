@@ -91,6 +91,7 @@ namespace BBDMS.Web.Controllers
                 existingDonor.BloodGroup = donor.BloodGroup;
                 existingDonor.Address = donor.Address;
                 existingDonor.Message = donor.Message;
+                existingDonor.IsAvailable = donor.IsAvailable;
                 await _donorService.UpdateDonorAsync(existingDonor);
                 TempData["Success"] = "Profile has been updated.";
             }
@@ -131,8 +132,19 @@ namespace BBDMS.Web.Controllers
             var donorId = HttpContext.Session.GetInt32("bbdmsdid");
             if (donorId == null) return RedirectToAction("Login");
 
-            var requests = await _bloodRequestService.GetRequestsByDonorIdAsync(donorId.Value);
-            return View(requests);
+            var donor = await _donorService.GetDonorByIdAsync(donorId.Value);
+            var directRequests = await _bloodRequestService.GetRequestsByDonorIdAsync(donorId.Value);
+
+            if (donor != null)
+            {
+                var communityRequests = (await _bloodRequestService.GetAllRequestsAsync())
+                    .Where(r => r.BloodDonorID == null && (r.BloodGroup == donor.BloodGroup || r.BloodRequireFor == donor.BloodGroup))
+                    .ToList();
+                ViewBag.CommunityRequests = communityRequests;
+                ViewBag.DonorBloodGroup = donor.BloodGroup;
+            }
+
+            return View(directRequests);
         }
     }
 }

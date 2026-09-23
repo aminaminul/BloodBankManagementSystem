@@ -21,10 +21,21 @@ builder.Services.AddScoped<IPageService, PageService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IBloodRequestService, BloodRequestService>();
 builder.Services.AddScoped<IBloodGroupService, BloodGroupService>();
+builder.Services.AddScoped<IHospitalService, HospitalService>();
+builder.Services.AddScoped<IBloodBankService, BloodBankService>();
+builder.Services.AddScoped<IAmbulanceService, AmbulanceHelpService>();
+builder.Services.AddScoped<IOxygenService, OxygenServiceImplementation>();
 builder.Services.AddSession();
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
+
+// Seed initial database data
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await DbInitializer.SeedAsync(context);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

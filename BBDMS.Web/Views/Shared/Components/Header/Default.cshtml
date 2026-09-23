@@ -58,58 +58,97 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse text-center" id="navbarSupportedContent">
-                    <ul class="navbar-nav ml-lg-auto">
-                        <li class="nav-item active mt-lg-0 mt-3">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home <span class="sr-only">(current)</span></a>
+                    <ul class="navbar-nav ml-lg-auto align-items-center">
+                        <li class="nav-item">
+                            <a class="nav-link font-weight-bold" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item mx-lg-4 my-lg-0 my-3">
-                            <a class="nav-link" asp-controller="Home" asp-action="About">About Us</a>
+                        <li class="nav-item dropdown mx-lg-2">
+                            <a class="nav-link dropdown-toggle font-weight-bold text-danger" href="#" id="emergencyDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-ambulance mr-1"></i>Emergency Services
+                            </a>
+                            <div class="dropdown-menu shadow" aria-labelledby="emergencyDropdown">
+                                <a class="dropdown-item font-weight-bold text-danger" asp-controller="Emergency" asp-action="Index">
+                                    <i class="fas fa-search-location mr-2"></i>Nearby Emergency Hub
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" asp-controller="Emergency" asp-action="Hospitals">
+                                    <i class="fas fa-hospital mr-2 text-primary"></i>Hospitals & ICU Beds
+                                </a>
+                                <a class="dropdown-item" asp-controller="Emergency" asp-action="BloodBanks">
+                                    <i class="fas fa-landmark mr-2 text-danger"></i>Blood Banks
+                                </a>
+                                <a class="dropdown-item" asp-controller="Emergency" asp-action="Ambulances">
+                                    <i class="fas fa-ambulance mr-2 text-warning"></i>Ambulance Fleets
+                                </a>
+                                <a class="dropdown-item" asp-controller="Emergency" asp-action="Oxygen">
+                                    <i class="fas fa-lungs mr-2 text-info"></i>Oxygen Supply
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" asp-controller="Emergency" asp-action="BloodRequests">
+                                    <i class="fas fa-heartbeat mr-2 text-danger"></i>Emergency Blood Requests
+                                </a>
+                            </div>
                         </li>
-                        <li class="nav-item mx-lg-4 my-lg-0 my-3">
-                            <a class="nav-link" asp-controller="Home" asp-action="Contact">Contact Us</a>
-                        </li>
-                        <li class="nav-item mx-lg-4 my-lg-0 my-3">
-                            <a class="nav-link" asp-controller="Donor" asp-action="Index">Donor List</a>
-                        </li>
-                        <li class="nav-item mx-lg-4 my-lg-0 my-3">
+                        <li class="nav-item mx-lg-2">
                             <a class="nav-link" asp-controller="Donor" asp-action="Search">Search Donor</a>
+                        </li>
+                        <li class="nav-item mx-lg-2">
+                            <a class="nav-link" asp-controller="Donor" asp-action="Index">Donor Directory</a>
+                        </li>
+                        <li class="nav-item mx-lg-2">
+                            <a class="nav-link" asp-controller="Home" asp-action="About">About</a>
+                        </li>
+                        <li class="nav-item mx-lg-2">
+                            <a class="nav-link" asp-controller="Home" asp-action="Contact">Contact</a>
                         </li>
                         @using Microsoft.AspNetCore.Http
                         @inject IHttpContextAccessor HttpContextAccessor
                         @{
-                            var donorId = HttpContextAccessor.HttpContext.Session.GetInt32("bbdmsdid");
+                            var donorId = HttpContextAccessor.HttpContext?.Session?.GetInt32("bbdmsdid");
+                            var adminId = HttpContextAccessor.HttpContext?.Session?.GetInt32("adminId");
                         }
                         
                         @if (donorId != null)
                         {
-                            <li class="nav-item dropdown">
+                            <li class="nav-item dropdown mx-lg-2">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    My Account
+                                    <i class="fas fa-user-circle mr-1"></i>My Account
                                 </a>
                                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                                     <a class="dropdown-item" asp-controller="Account" asp-action="Profile">Profile</a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">Change Password</a>
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" asp-controller="Account" asp-action="RequestReceived">Request Received</a>
+                                    <a class="dropdown-item" asp-controller="Account" asp-action="RequestReceived">Requests Received</a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" asp-controller="Account" asp-action="Logout">Logout</a>
                                 </div>
                             </li>
                         }
+                        else if (adminId != null)
+                        {
+                            <li class="nav-item mx-lg-2">
+                                <a class="nav-link text-warning font-weight-bold" asp-controller="Admin" asp-action="Dashboard">Admin Panel</a>
+                            </li>
+                        }
                         else
                         {
-                            <li class="nav-item mx-lg-4 my-lg-0 my-3">
+                            <li class="nav-item mx-lg-2">
                                 <a class="nav-link" asp-controller="Admin" asp-action="Index">Admin</a>
                             </li>
                         }
                     </ul>
-                    @if (donorId == null)
-                    {
-                        <a asp-controller="Account" asp-action="Login" class="login-button ml-lg-5 mt-lg-0 mt-4 mb-lg-0 mb-3">
-                            <i class="fas fa-sign-in-alt mr-2"></i>Login
+                    <div class="d-flex align-items-center ml-lg-3 mt-3 mt-lg-0">
+                        <a asp-controller="Emergency" asp-action="CreateBloodRequest" class="btn btn-danger btn-sm font-weight-bold mr-2 text-white px-3 shadow-sm">
+                            <i class="fas fa-tint mr-1"></i>Need Blood
                         </a>
-                    }
+                        @if (donorId == null && adminId == null)
+                        {
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-danger btn-sm font-weight-bold px-3">
+                                <i class="fas fa-sign-in-alt mr-1"></i>Login
+                            </a>
+                        }
+                    </div>
                 </div>
             </div>
         </nav>

@@ -1,0 +1,107 @@
+@model IEnumerable<BBDMS.Model.Models.Entities.BloodBank>
+@{
+    ViewData["Title"] = "Blood Banks Directory";
+    var bloodGroups = ViewBag.BloodGroups as IEnumerable<BBDMS.Model.Models.Entities.BloodGroup>;
+}
+
+<div class="inner-banner py-5" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/banner1.jpg') no-repeat center; background-size: cover;">
+    <div class="container py-lg-4 text-center">
+        <h2 class="text-white font-weight-bold">Registered Blood Banks Directory</h2>
+        <p class="text-light mt-2">Find licensed blood banks, inventory availability, and emergency contact numbers</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <!-- Filter Card -->
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body p-4">
+            <form method="get" asp-action="BloodBanks">
+                <div class="row align-items-end">
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <label class="font-weight-bold"><i class="fas fa-map-marker-alt text-danger mr-2"></i>Filter by City / Location</label>
+                        <input type="text" name="location" value="@ViewBag.Location" class="form-control" placeholder="Search city or blood bank name..." />
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <label class="font-weight-bold"><i class="fas fa-tint text-danger mr-2"></i>Blood Group Needed</label>
+                        <select name="bloodGroup" class="form-control">
+                            <option value="">All Blood Groups</option>
+                            @if (bloodGroups != null)
+                            {
+                                foreach (var bg in bloodGroups)
+                                {
+                                    <option value="@bg.GroupName" selected="@(ViewBag.BloodGroup == bg.GroupName)">@bg.GroupName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-danger btn-block font-weight-bold py-2">
+                            <i class="fas fa-search mr-2"></i>Search Blood Banks
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Blood Banks Listing -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var bank in Model)
+            {
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="font-weight-bold text-dark mb-1">@bank.Name</h5>
+                                    @if (!string.IsNullOrEmpty(bank.HospitalAffiliation))
+                                    {
+                                        <span class="badge badge-info mb-2">Affiliation: @bank.HospitalAffiliation</span>
+                                    }
+                                </div>
+                                <span class="badge badge-danger px-3 py-1">@bank.City</span>
+                            </div>
+                            <p class="text-muted small mb-2"><i class="fas fa-map-marker-alt text-danger mr-1"></i>@bank.Address, @bank.City</p>
+                            <p class="small text-muted mb-2"><i class="fas fa-clock mr-1 text-primary"></i>Operating Hours: <strong>@bank.OperatingHours</strong></p>
+
+                            <div class="p-3 bg-light rounded my-3">
+                                <strong class="small text-muted d-block mb-1">Stocked Blood Groups:</strong>
+                                @if (!string.IsNullOrEmpty(bank.AvailableBloodGroups))
+                                {
+                                    var groups = bank.AvailableBloodGroups.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
+                                    <div>
+                                        @foreach (var g in groups)
+                                        {
+                                            <span class="badge badge-danger mr-1 mb-1">@g.Trim()</span>
+                                        }
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                <div>
+                                    <small class="text-muted d-block">Helpline:</small>
+                                    <span class="font-weight-bold text-dark"><i class="fas fa-phone mr-1 text-success"></i>@bank.ContactNumber</span>
+                                </div>
+                                <a href="tel:@bank.ContactNumber" class="btn btn-outline-danger font-weight-bold btn-sm">
+                                    <i class="fas fa-phone-alt mr-1"></i>Contact Bank
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center p-5">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <h4>No blood banks found matching your search</h4>
+            <p>Try searching for a different location or clearing the filters.</p>
+            <a asp-action="BloodBanks" class="btn btn-outline-danger mt-2">Clear Filters</a>
+        </div>
+    }
+</div>

@@ -1,0 +1,123 @@
+@model BBDMS.Model.Models.Entities.BloodRequest
+@{
+    ViewData["Title"] = "Post Emergency Blood Request";
+    var bloodGroups = ViewBag.BloodGroups as IEnumerable<BBDMS.Model.Models.Entities.BloodGroup>;
+    var donor = ViewBag.Donor as BBDMS.Model.Models.Entities.BloodDonor;
+}
+
+<div class="inner-banner py-5" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/banner1.jpg') no-repeat center; background-size: cover;">
+    <div class="container py-lg-4 text-center">
+        <h2 class="text-white font-weight-bold">Post Emergency Blood Request</h2>
+        <p class="text-light mt-2">Submit urgent blood requirements to reach voluntary donors and blood banks immediately</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow border-0">
+                <div class="card-header bg-danger text-white py-3">
+                    <h5 class="mb-0 font-weight-bold"><i class="fas fa-tint mr-2"></i>Emergency Blood Requirement Details</h5>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    @if (donor != null)
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-user mr-1"></i>You are requesting blood directly from donor <strong>@donor.FullName</strong> (Blood Group: <span class="badge badge-danger">@donor.BloodGroup</span>).
+                        </div>
+                    }
+
+                    <form method="post" asp-action="CreateBloodRequest">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="BloodDonorID" />
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label asp-for="BloodGroup" class="font-weight-bold">Required Blood Group <span class="text-danger">*</span></label>
+                                <select asp-for="BloodGroup" class="form-control" required>
+                                    <option value="">-- Select Blood Group --</option>
+                                    @if (bloodGroups != null)
+                                    {
+                                        foreach (var bg in bloodGroups)
+                                        {
+                                            <option value="@bg.GroupName" selected="@(donor != null && donor.BloodGroup == bg.GroupName)">@bg.GroupName</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="BloodGroup" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label asp-for="UnitsRequired" class="font-weight-bold">Units Needed (Bags) <span class="text-danger">*</span></label>
+                                <input asp-for="UnitsRequired" type="number" min="1" max="20" class="form-control" required />
+                                <span asp-validation-for="UnitsRequired" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label asp-for="HospitalName" class="font-weight-bold">Hospital Name & Ward <span class="text-danger">*</span></label>
+                                <input asp-for="HospitalName" class="form-control" placeholder="e.g. City General Hospital, ICU Bed 3" required />
+                                <span asp-validation-for="HospitalName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 form-group">
+                                <label asp-for="Location" class="font-weight-bold">City / Location <span class="text-danger">*</span></label>
+                                <input asp-for="Location" class="form-control" placeholder="e.g. Dhaka, Dhanmondi" required />
+                                <span asp-validation-for="Location" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label asp-for="BloodRequireFor" class="font-weight-bold">Reason for Blood Requirement <span class="text-danger">*</span></label>
+                                <input asp-for="BloodRequireFor" class="form-control" placeholder="e.g. Accident Surgery, Thalassemia, C-Section" required />
+                                <span asp-validation-for="BloodRequireFor" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label asp-for="Urgency" class="font-weight-bold">Emergency Priority Status <span class="text-danger">*</span></label>
+                                <select asp-for="Urgency" class="form-control" required>
+                                    <option value="Critical (Immediate / Within 2-4 Hours)">Critical (Immediate / Within 2-4 Hours)</option>
+                                    <option value="Urgent (Within 12-24 Hours)">Urgent (Within 12-24 Hours)</option>
+                                    <option value="Standard (Within 2-3 Days)">Standard (Within 2-3 Days)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr />
+                        <h6 class="font-weight-bold text-dark mb-3"><i class="fas fa-address-book mr-2 text-danger"></i>Contact Person Details</h6>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <label asp-for="Name" class="font-weight-bold">Contact Person Name <span class="text-danger">*</span></label>
+                                <input asp-for="Name" class="form-control" placeholder="Your name" required />
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label asp-for="ContactNumber" class="font-weight-bold">Phone Number <span class="text-danger">*</span></label>
+                                <input asp-for="ContactNumber" type="number" class="form-control" placeholder="e.g. 01712345678" required />
+                                <span asp-validation-for="ContactNumber" class="text-danger small"></span>
+                            </div>
+                            <div class="form-group col-md-4">
+                                <label asp-for="EmailId" class="font-weight-bold">Email Address</label>
+                                <input asp-for="EmailId" type="email" class="form-control" placeholder="email@example.com" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Message" class="font-weight-bold">Additional Medical Information / Instructions</label>
+                            <textarea asp-for="Message" class="form-control" rows="3" placeholder="Provide any details like cross-matching report, required time, or specific instructions for donors..."></textarea>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-danger btn-lg font-weight-bold px-5">
+                                <i class="fas fa-paper-plane mr-2"></i>Post Emergency Blood Request
+                            </button>
+                            <div class="mt-2">
+                                <a asp-action="BloodRequests" class="text-muted small">Cancel and return to requests board</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

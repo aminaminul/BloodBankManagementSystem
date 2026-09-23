@@ -1,0 +1,268 @@
+@model BBDMS.Model.Models.ViewModels.EmergencySearchViewModel
+@{
+    ViewData["Title"] = "Nearby Emergency Healthcare Services";
+}
+
+<div class="inner-banner py-5" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/banner1.jpg') no-repeat center; background-size: cover;">
+    <div class="container py-lg-4">
+        <h2 class="text-white font-weight-bold text-center">Nearby Emergency Healthcare Services</h2>
+        <p class="text-light text-center mt-2">Find Blood Donors, Hospitals, ICU Beds, Blood Banks, Ambulances & Oxygen instantly in your area</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <!-- Search Bar -->
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body p-4">
+            <form method="get" asp-action="Index">
+                <div class="row align-items-end">
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <label class="font-weight-bold"><i class="fas fa-map-marker-alt text-danger mr-2"></i>Location / City / Area</label>
+                        <input type="text" name="location" value="@Model.Location" class="form-control" placeholder="Enter city (e.g. Dhaka, Chittagong, Sylhet)" />
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0">
+                        <label class="font-weight-bold"><i class="fas fa-filter text-primary mr-2"></i>Service Category</label>
+                        <select name="serviceType" class="form-control">
+                            <option value="All" selected="@(Model.ServiceType == "All")">All Emergency Services</option>
+                            <option value="Hospitals" selected="@(Model.ServiceType == "Hospitals")">Hospitals & ICU Beds</option>
+                            <option value="BloodBanks" selected="@(Model.ServiceType == "BloodBanks")">Blood Banks</option>
+                            <option value="Ambulance" selected="@(Model.ServiceType == "Ambulance")">Ambulance Fleets</option>
+                            <option value="Oxygen" selected="@(Model.ServiceType == "Oxygen")">Oxygen Supplies</option>
+                            <option value="Donors" selected="@(Model.ServiceType == "Donors")">Blood Donors</option>
+                            <option value="BloodRequests" selected="@(Model.ServiceType == "BloodRequests")">Emergency Blood Requests</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-danger btn-block font-weight-bold py-2">
+                            <i class="fas fa-search mr-2"></i>Find Resources
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Category Shortcuts -->
+    <div class="row text-center mb-5">
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a asp-action="Hospitals" class="card h-100 border-0 shadow-sm text-decoration-none text-dark hover-card p-3">
+                <i class="fas fa-hospital-alt fa-2x text-primary mb-2"></i>
+                <h6 class="font-weight-bold mb-0">Hospitals & ICU</h6>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a asp-action="BloodBanks" class="card h-100 border-0 shadow-sm text-decoration-none text-dark hover-card p-3">
+                <i class="fas fa-landmark fa-2x text-danger mb-2"></i>
+                <h6 class="font-weight-bold mb-0">Blood Banks</h6>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a asp-action="Ambulances" class="card h-100 border-0 shadow-sm text-decoration-none text-dark hover-card p-3">
+                <i class="fas fa-ambulance fa-2x text-warning mb-2"></i>
+                <h6 class="font-weight-bold mb-0">Ambulances</h6>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a asp-action="Oxygen" class="card h-100 border-0 shadow-sm text-decoration-none text-dark hover-card p-3">
+                <i class="fas fa-lungs fa-2x text-info mb-2"></i>
+                <h6 class="font-weight-bold mb-0">Oxygen Gas</h6>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a asp-controller="Donor" asp-action="Search" class="card h-100 border-0 shadow-sm text-decoration-none text-dark hover-card p-3">
+                <i class="fas fa-user-friends fa-2x text-danger mb-2"></i>
+                <h6 class="font-weight-bold mb-0">Find Donors</h6>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2 mb-3">
+            <a asp-action="BloodRequests" class="card h-100 border-0 shadow-sm text-decoration-none text-dark hover-card p-3">
+                <i class="fas fa-heartbeat fa-2x text-danger mb-2"></i>
+                <h6 class="font-weight-bold mb-0">Blood Requests</h6>
+            </a>
+        </div>
+    </div>
+
+    <!-- Active Emergency Blood Requests Banner (if any) -->
+    @if (Model.EmergencyRequests.Any())
+    {
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="font-weight-bold text-danger mb-0"><i class="fas fa-exclamation-triangle mr-2"></i>Active Urgent Blood Needs</h4>
+                <a asp-action="BloodRequests" class="btn btn-outline-danger btn-sm">View All Requests</a>
+            </div>
+            <div class="row">
+                @foreach (var req in Model.EmergencyRequests.Take(3))
+                {
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100 border-left-danger shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge badge-danger px-3 py-2 font-weight-bold">@req.BloodGroup Blood</span>
+                                    <span class="badge badge-warning text-dark font-weight-bold">@req.Urgency</span>
+                                </div>
+                                <h5 class="card-title font-weight-bold mb-1">@req.HospitalName</h5>
+                                <p class="text-muted small mb-2"><i class="fas fa-map-marker-alt mr-1"></i>@req.Location</p>
+                                <p class="card-text small text-dark"><strong>Reason:</strong> @req.BloodRequireFor (@req.UnitsRequired Unit@(req.UnitsRequired > 1 ? "s" : ""))</p>
+                                <hr />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="small text-muted"><i class="fas fa-phone mr-1"></i>@req.ContactNumber</span>
+                                    <a asp-action="BloodRequests" class="btn btn-sm btn-danger">Details</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Hospitals Section -->
+    @if (Model.Hospitals.Any())
+    {
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="font-weight-bold text-primary mb-0"><i class="fas fa-hospital mr-2"></i>Hospitals with Emergency Beds & ICU</h4>
+                <a asp-action="Hospitals" class="btn btn-outline-primary btn-sm">View All Hospitals</a>
+            </div>
+            <div class="row">
+                @foreach (var hospital in Model.Hospitals.Take(4))
+                {
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between">
+                                    <h5 class="font-weight-bold text-dark mb-1">@hospital.Name</h5>
+                                    <span class="badge badge-primary px-2 py-1">@hospital.City</span>
+                                </div>
+                                <p class="text-muted small mb-3"><i class="fas fa-map-pin mr-1 text-danger"></i>@hospital.Address</p>
+                                <div class="row bg-light rounded p-2 mb-3 text-center mx-0">
+                                    <div class="col-6 border-right">
+                                        <div class="text-muted small">Emergency Beds</div>
+                                        <span class="font-weight-bold text-success h5">@hospital.AvailableEmergencyBeds</span>
+                                        <small class="text-muted">/@hospital.TotalEmergencyBeds</small>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="text-muted small">ICU Beds</div>
+                                        <span class="font-weight-bold text-danger h5">@hospital.AvailableIcuBeds</span>
+                                        <small class="text-muted">/@hospital.TotalIcuBeds</small>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-danger font-weight-bold small"><i class="fas fa-phone-volume mr-1"></i>Helpline: @hospital.EmergencyHelpline</span>
+                                    <a href="tel:@hospital.EmergencyHelpline" class="btn btn-sm btn-outline-danger">Call Now</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Ambulances Section -->
+    @if (Model.Ambulances.Any())
+    {
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="font-weight-bold text-warning mb-0"><i class="fas fa-ambulance mr-2"></i>Emergency Ambulance Services</h4>
+                <a asp-action="Ambulances" class="btn btn-outline-warning btn-sm">View All Ambulances</a>
+            </div>
+            <div class="row">
+                @foreach (var amb in Model.Ambulances.Take(4))
+                {
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 shadow-sm border-0">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h5 class="font-weight-bold mb-1">@amb.ProviderName</h5>
+                                        <span class="badge badge-info mr-2">@amb.AmbulanceType</span>
+                                        <span class="badge badge-light border"><i class="fas fa-map-marker-alt mr-1"></i>@amb.Location</span>
+                                    </div>
+                                    @if (amb.IsAvailable)
+                                    {
+                                        <span class="badge badge-success px-2 py-1">Available 24/7</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary px-2 py-1">On Duty</span>
+                                    }
+                                </div>
+                                <hr />
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="font-weight-bold text-dark"><i class="fas fa-phone mr-1 text-success"></i>@amb.ContactNumber</span>
+                                    <a asp-action="RequestAmbulance" asp-route-serviceId="@amb.Id" class="btn btn-sm btn-danger font-weight-bold">
+                                        <i class="fas fa-paper-plane mr-1"></i>Request Ambulance
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Blood Banks & Oxygen Grid -->
+    <div class="row">
+        <!-- Blood Banks -->
+        <div class="col-md-6 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="font-weight-bold text-danger mb-0"><i class="fas fa-landmark mr-2"></i>Blood Banks</h4>
+                <a asp-action="BloodBanks" class="btn btn-outline-danger btn-sm">More</a>
+            </div>
+            @foreach (var bank in Model.BloodBanks.Take(3))
+            {
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <h6 class="font-weight-bold text-dark mb-1">@bank.Name</h6>
+                        <p class="text-muted small mb-1"><i class="fas fa-map-marker-alt mr-1 text-danger"></i>@bank.Address, @bank.City</p>
+                        <p class="small text-dark mb-2"><strong>Available:</strong> @bank.AvailableBloodGroups</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small font-weight-bold text-muted"><i class="fas fa-clock mr-1"></i>@bank.OperatingHours</span>
+                            <a href="tel:@bank.ContactNumber" class="btn btn-sm btn-outline-success"><i class="fas fa-phone mr-1"></i>@bank.ContactNumber</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Oxygen Services -->
+        <div class="col-md-6 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="font-weight-bold text-info mb-0"><i class="fas fa-lungs mr-2"></i>Oxygen Suppliers</h4>
+                <a asp-action="Oxygen" class="btn btn-outline-info btn-sm">More</a>
+            </div>
+            @foreach (var oxy in Model.OxygenServices.Take(3))
+            {
+                <div class="card shadow-sm border-0 mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="font-weight-bold text-dark mb-1">@oxy.ProviderName</h6>
+                            <span class="badge badge-success">@oxy.OxygenAvailability</span>
+                        </div>
+                        <p class="text-muted small mb-1"><i class="fas fa-map-marker-alt mr-1 text-info"></i>@oxy.Location</p>
+                        <p class="small text-dark mb-2"><strong>Sizes:</strong> @oxy.CylinderCapacity @(oxy.HomeDeliveryAvailable ? "• Home Delivery Available" : "")</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="small text-muted">@oxy.ServiceDetails</span>
+                            <a href="tel:@oxy.ContactNumber" class="btn btn-sm btn-outline-info"><i class="fas fa-phone mr-1"></i>@oxy.ContactNumber</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hover-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    .border-left-danger {
+        border-left: 4px solid #dc3545!important;
+    }
+</style>

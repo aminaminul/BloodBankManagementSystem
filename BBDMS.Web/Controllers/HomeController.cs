@@ -14,19 +14,30 @@ namespace BBDMS.Web.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly IDonorService _donorService;
         private readonly IPageService _pageService;
+        private readonly IBloodGroupService _bloodGroupService;
+        private readonly IBloodRequestService _bloodRequestService;
 
-        public HomeController(ILogger<HomeController> logger, IDonorService donorService, IPageService pageService)
+        public HomeController(
+            ILogger<HomeController> logger,
+            IDonorService donorService,
+            IPageService pageService,
+            IBloodGroupService bloodGroupService,
+            IBloodRequestService bloodRequestService)
         {
             _logger = logger;
             _donorService = donorService;
             _pageService = pageService;
+            _bloodGroupService = bloodGroupService;
+            _bloodRequestService = bloodRequestService;
         }
 
         public async Task<IActionResult> Index()
         {
             var donors = await _donorService.GetAllDonorsAsync();
-            var randomDonors = donors.OrderBy(x => Guid.NewGuid()).Take(6).ToList();
-            return View(randomDonors);
+            var activeDonors = donors.Where(d => d.Status == 1).OrderBy(x => Guid.NewGuid()).Take(6).ToList();
+            ViewBag.BloodGroups = await _bloodGroupService.GetAllGroupsAsync();
+            ViewBag.EmergencyRequests = (await _bloodRequestService.GetAllRequestsAsync()).Where(r => r.Status != "Fulfilled" && r.Status != "Cancelled").Take(3).ToList();
+            return View(activeDonors);
         }
 
         public async Task<IActionResult> About()

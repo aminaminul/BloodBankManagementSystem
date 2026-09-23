@@ -15,6 +15,17 @@ namespace BBDMS.Model.Models.Entities
         public long? ContactNumber { get; set; }
         [StringLength(250)]
         public string BloodRequireFor { get; set; }
+        [StringLength(20)]
+        public string? BloodGroup { get; set; }
+        public int UnitsRequired { get; set; } = 1;
+        [StringLength(250)]
+        public string? HospitalName { get; set; }
+        [StringLength(250)]
+        public string? Location { get; set; }
+        [StringLength(50)]
+        public string? Urgency { get; set; } = "Urgent";
+        [StringLength(50)]
+        public string? Status { get; set; } = "Pending";
         public string Message { get; set; }
         public DateTime? ApplyDate { get; set; } = DateTime.Now;
     }

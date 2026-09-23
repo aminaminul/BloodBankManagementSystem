@@ -1,0 +1,130 @@
+@model IEnumerable<BBDMS.Model.Models.Entities.Hospital>
+@{
+    ViewData["Title"] = "Hospitals, Emergency Beds & ICU Directory";
+}
+
+<div class="inner-banner py-5" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/banner1.jpg') no-repeat center; background-size: cover;">
+    <div class="container py-lg-4 text-center">
+        <h2 class="text-white font-weight-bold">Hospitals, Emergency Beds & ICU Information</h2>
+        <p class="text-light mt-2">Find hospital locations, emergency bed capacity, and real-time ICU availability</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <!-- Filter Card -->
+    <div class="card shadow-sm border-0 mb-4 bg-light">
+        <div class="card-body p-4">
+            <form method="get" asp-action="Hospitals">
+                <div class="row align-items-end">
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <label class="font-weight-bold"><i class="fas fa-map-marker-alt text-primary mr-2"></i>Filter by City / Location</label>
+                        <input type="text" name="location" value="@ViewBag.Location" class="form-control" placeholder="Search city or hospital name..." />
+                    </div>
+                    <div class="col-md-4 mb-3 mb-md-0 d-flex align-items-center pt-md-4">
+                        <div class="custom-control custom-checkbox mr-3">
+                            <input type="checkbox" class="custom-control-input" id="icuOnly" name="icuOnly" value="true" @(ViewBag.IcuOnly == true ? "checked" : "") />
+                            <label class="custom-control-label font-weight-bold text-danger" for="icuOnly">Available ICU Beds Only</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="emergencyBedOnly" name="emergencyBedOnly" value="true" @(ViewBag.EmergencyBedOnly == true ? "checked" : "") />
+                            <label class="custom-control-label font-weight-bold text-success" for="emergencyBedOnly">Available Emergency Beds</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary btn-block font-weight-bold py-2">
+                            <i class="fas fa-search mr-2"></i>Filter Hospitals
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Hospitals Listing -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            @foreach (var hospital in Model)
+            {
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100 shadow-sm border-0">
+                        <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="font-weight-bold text-dark mb-1">@hospital.Name</h5>
+                                    <p class="text-muted small mb-0"><i class="fas fa-map-marker-alt text-danger mr-1"></i>@hospital.Address, @hospital.City</p>
+                                </div>
+                                <span class="badge badge-primary px-3 py-2">@hospital.City</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <!-- Bed & ICU Stats -->
+                            <div class="row my-3 text-center">
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded border">
+                                        <div class="text-muted small font-weight-bold text-uppercase">Emergency Beds</div>
+                                        <div class="display-4 font-weight-bold text-success">@hospital.AvailableEmergencyBeds</div>
+                                        <small class="text-muted">Total: @hospital.TotalEmergencyBeds</small>
+                                        @if (hospital.AvailableEmergencyBeds > 0)
+                                        {
+                                            <div class="badge badge-success mt-1">Beds Available</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="badge badge-danger mt-1">Full</div>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3 bg-light rounded border">
+                                        <div class="text-muted small font-weight-bold text-uppercase">ICU Facilities</div>
+                                        <div class="display-4 font-weight-bold text-danger">@hospital.AvailableIcuBeds</div>
+                                        <small class="text-muted">Total: @hospital.TotalIcuBeds</small>
+                                        @if (hospital.AvailableIcuBeds > 0)
+                                        {
+                                            <div class="badge badge-danger mt-1">ICU Available</div>
+                                        }
+                                        else
+                                        {
+                                            <div class="badge badge-secondary mt-1">ICU Full</div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(hospital.EmergencyServices))
+                            {
+                                <div class="mb-3">
+                                    <strong class="small text-muted d-block">Emergency Services:</strong>
+                                    <span class="small text-dark">@hospital.EmergencyServices</span>
+                                </div>
+                            }
+
+                            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                                <div>
+                                    <small class="text-muted d-block">Emergency Helpline:</small>
+                                    <span class="font-weight-bold text-danger"><i class="fas fa-phone mr-1"></i>@hospital.EmergencyHelpline</span>
+                                </div>
+                                <a href="tel:@hospital.EmergencyHelpline" class="btn btn-danger font-weight-bold">
+                                    <i class="fas fa-phone-volume mr-1"></i>Call Helpline
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-light small text-muted text-right">
+                            Last updated: @hospital.LastUpdated.ToString("MMM dd, yyyy - hh:mm tt")
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning text-center p-5">
+            <i class="fas fa-info-circle fa-2x mb-3"></i>
+            <h4>No hospitals found matching your criteria</h4>
+            <p>Try searching for a different city or removing the bed filter.</p>
+            <a asp-action="Hospitals" class="btn btn-outline-primary mt-2">Clear Filters</a>
+        </div>
+    }
+</div>

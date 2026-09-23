@@ -23,6 +23,7 @@ namespace BBDMS.Model.Models.Entities
         public string Message { get; set; }
         public DateTime PostingDate { get; set; } = DateTime.Now;
         public int? Status { get; set; }
+        public bool IsAvailable { get; set; } = true;
         [StringLength(250)]
         public string Password { get; set; }
     }

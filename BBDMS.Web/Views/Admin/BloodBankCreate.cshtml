@@ -1,0 +1,65 @@
+@model BBDMS.Model.Models.Entities.BloodBank
+@{
+    ViewData["Title"] = "Add Blood Bank";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card content-card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0 font-weight-bold text-dark"><i class="fas fa-landmark mr-2 text-danger"></i>Register New Blood Bank</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" asp-action="BloodBankCreate">
+                    @Html.AntiForgeryToken()
+
+                    <div class="form-row">
+                        <div class="form-group col-md-8">
+                            <label asp-for="Name" class="font-weight-bold">Blood Bank Name <span class="text-danger">*</span></label>
+                            <input asp-for="Name" class="form-control" required />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label asp-for="City" class="font-weight-bold">City <span class="text-danger">*</span></label>
+                            <input asp-for="City" class="form-control" required />
+                            <span asp-validation-for="City" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label asp-for="HospitalAffiliation" class="font-weight-bold">Hospital Affiliation / Society</label>
+                            <input asp-for="HospitalAffiliation" class="form-control" placeholder="e.g. Red Crescent Society" />
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label asp-for="ContactNumber" class="font-weight-bold">Contact Helpline <span class="text-danger">*</span></label>
+                            <input asp-for="ContactNumber" class="form-control" required />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Address" class="font-weight-bold">Address</label>
+                        <input asp-for="Address" class="form-control" />
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label asp-for="OperatingHours" class="font-weight-bold">Operating Hours</label>
+                            <input asp-for="OperatingHours" class="form-control" value="24/7" />
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label asp-for="AvailableBloodGroups" class="font-weight-bold">Available Blood Groups</label>
+                            <input asp-for="AvailableBloodGroups" class="form-control" value="A+, A-, B+, B-, O+, O-, AB+, AB-" />
+                        </div>
+                    </div>
+
+                    <div class="text-right mt-4">
+                        <a asp-action="BloodBanks" class="btn btn-secondary mr-2">Cancel</a>
+                        <button type="submit" class="btn btn-danger font-weight-bold px-4">Save Blood Bank</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

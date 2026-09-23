@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin Panel</title>
+    <link rel="stylesheet" href="~/css/bootstrap.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <style>
+        body { padding-top: 56px; background-color: #f8f9fa; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; }
+        .sidebar { min-height: calc(100vh - 56px); background-color: #212529; padding: 20px 0; }
+        .sidebar a { color: #adb5bd; padding: 12px 20px; display: block; text-decoration: none; font-size: 0.95rem; }
+        .sidebar a:hover, .sidebar a.active { color: #fff; background-color: #343a40; border-left: 4px solid #dc3545; }
+        .sidebar-heading { color: #6c757d; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; padding: 10px 20px 5px; }
+        .content-card { border-radius: 8px; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark fixed-top shadow-sm">
+        <a class="navbar-brand font-weight-bold" asp-controller="Admin" asp-action="Dashboard">
+            <i class="fas fa-heartbeat text-danger mr-2"></i>Blood & Emergency Admin
+        </a>
+        <ul class="navbar-nav ml-auto flex-row align-items-center">
+            <li class="nav-item mr-3">
+                <a class="nav-link text-light small" href="/" target="_blank"><i class="fas fa-external-link-alt mr-1"></i>View Site</a>
+            </li>
+            <li class="nav-item">
+                <a class="btn btn-outline-light btn-sm" asp-controller="Admin" asp-action="Logout"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-2 sidebar d-none d-md-block">
+                <div class="sidebar-heading">Core Systems</div>
+                <a asp-controller="Admin" asp-action="Dashboard"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</a>
+                <a asp-controller="Admin" asp-action="DonorList"><i class="fas fa-users mr-2"></i>Blood Donors</a>
+                <a asp-controller="Admin" asp-action="BloodRequests"><i class="fas fa-tint mr-2"></i>Blood Requests</a>
+
+                <div class="sidebar-heading mt-3">Emergency Resources</div>
+                <a asp-controller="Admin" asp-action="Hospitals"><i class="fas fa-hospital mr-2"></i>Hospitals & ICU</a>
+                <a asp-controller="Admin" asp-action="BloodBanks"><i class="fas fa-landmark mr-2"></i>Blood Banks</a>
+                <a asp-controller="Admin" asp-action="Ambulances"><i class="fas fa-ambulance mr-2"></i>Ambulance Fleets</a>
+                <a asp-controller="Admin" asp-action="AmbulanceRequests"><i class="fas fa-bell mr-2"></i>Ambulance Bookings</a>
+                <a asp-controller="Admin" asp-action="Oxygen"><i class="fas fa-lungs mr-2"></i>Oxygen Services</a>
+
+                <div class="sidebar-heading mt-3">Website & Inquiries</div>
+                <a asp-controller="Admin" asp-action="ContactQueries"><i class="fas fa-envelope-open-text mr-2"></i>User Messages</a>
+                <a asp-controller="Admin" asp-action="ContactInfo"><i class="fas fa-address-card mr-2"></i>Contact Details</a>
+                <a asp-controller="Admin" asp-action="Pages"><i class="fas fa-file-alt mr-2"></i>Manage Pages</a>
+            </nav>
+
+            <main role="main" class="col-md-10 ml-sm-auto px-4 py-4">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle mr-1"></i>@TempData["Success"]
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>@TempData["Error"]
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+                }
+
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+</body>
+</html>
