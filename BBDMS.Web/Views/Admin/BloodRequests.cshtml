@@ -12,8 +12,11 @@
         <h3 class="font-weight-bold text-dark mb-0">Emergency Blood Requests</h3>
         <p class="text-muted mb-0">Monitor, verify, and update patient blood requests across hospitals (@Model.TotalItems total)</p>
     </div>
-    <div>
-        <input type="text" id="requestsTableSearch" class="form-control" placeholder="Search requests..." style="width: 250px;" />
+    <div class="d-flex align-items-center">
+        <input type="text" id="requestsTableSearch" class="form-control mr-2" placeholder="Search requests..." style="width: 220px;" />
+        <a asp-action="ExportRequestsCsv" class="btn btn-outline-success font-weight-bold text-nowrap">
+            <i class="fas fa-file-csv mr-1"></i>Export CSV
+        </a>
     </div>
 </div>
 

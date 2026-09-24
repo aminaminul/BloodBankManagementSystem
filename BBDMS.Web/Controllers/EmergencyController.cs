@@ -1,8 +1,11 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.SignalR;
 using BBDMS.Model.Models.Entities;
 using BBDMS.Model.Models.ViewModels;
 using BBDMS.Service.Interfaces;
+using BBDMS.Web.Hubs;
 
 namespace BBDMS.Web.Controllers
 {
@@ -15,6 +18,7 @@ namespace BBDMS.Web.Controllers
         private readonly IDonorService _donorService;
         private readonly IBloodRequestService _bloodRequestService;
         private readonly IBloodGroupService _bloodGroupService;
+        private readonly IHubContext<EmergencyHub> _hubContext;
 
         public EmergencyController(
             IHospitalService hospitalService,
@@ -23,7 +27,8 @@ namespace BBDMS.Web.Controllers
             IOxygenService oxygenService,
             IDonorService donorService,
             IBloodRequestService bloodRequestService,
-            IBloodGroupService bloodGroupService)
+            IBloodGroupService bloodGroupService,
+            IHubContext<EmergencyHub> hubContext)
         {
             _hospitalService = hospitalService;
             _bloodBankService = bloodBankService;
@@ -32,6 +37,7 @@ namespace BBDMS.Web.Controllers
             _donorService = donorService;
             _bloodRequestService = bloodRequestService;
             _bloodGroupService = bloodGroupService;
+            _hubContext = hubContext;
         }
 
         // 7.8 Nearby Emergency Services Hub
@@ -133,11 +139,23 @@ namespace BBDMS.Web.Controllers
         // 7.6 Submit Emergency Ambulance Request (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("emergencyLimiter")]
         public async Task<IActionResult> RequestAmbulance(AmbulanceRequest request)
         {
             if (ModelState.IsValid)
             {
                 await _ambulanceService.SubmitAmbulanceRequestAsync(request);
+
+                // Broadcast live SignalR alert to dispatchers
+                await _hubContext.Clients.All.SendAsync("ReceiveAmbulanceAlert", new
+                {
+                    patientName = request.PatientName,
+                    pickupLocation = request.PickupAddress,
+                    contactNumber = request.ContactNumber,
+                    urgency = request.Urgency,
+                    timestamp = System.DateTime.Now.ToString("hh:mm tt")
+                });
+
                 TempData["Success"] = "Ambulance request submitted successfully! An emergency dispatcher will call you immediately.";
                 return RedirectToAction(nameof(Ambulances));
             }
@@ -190,6 +208,7 @@ namespace BBDMS.Web.Controllers
         // 7.2 Create Emergency Blood Request (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("emergencyLimiter")]
         public async Task<IActionResult> CreateBloodRequest(BloodRequest request)
         {
             if (ModelState.IsValid)
@@ -197,6 +216,18 @@ namespace BBDMS.Web.Controllers
                 request.Status = "Pending";
                 request.ApplyDate = System.DateTime.Now;
                 await _bloodRequestService.SaveRequestAsync(request);
+
+                // Broadcast live SignalR alert to connected users and admin dispatchers
+                await _hubContext.Clients.All.SendAsync("ReceiveBloodRequestAlert", new
+                {
+                    patientName = request.Name,
+                    bloodGroup = request.BloodGroup ?? request.BloodRequireFor,
+                    hospital = request.HospitalName ?? "Emergency Facility",
+                    urgency = request.Urgency ?? "Critical",
+                    units = request.UnitsRequired,
+                    timestamp = System.DateTime.Now.ToString("hh:mm tt")
+                });
+
                 TempData["Success"] = "Emergency Blood Request posted successfully! Registered donors and community lifesavers have been notified.";
                 return RedirectToAction(nameof(BloodRequests));
             }

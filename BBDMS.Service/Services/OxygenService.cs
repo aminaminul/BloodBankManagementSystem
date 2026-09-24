@@ -28,23 +28,23 @@ namespace BBDMS.Service.Services
 
         public async Task<IEnumerable<OxygenService>> SearchOxygenServicesAsync(string location, bool? homeDeliveryOnly)
         {
-            var services = await _oxygenRepository.GetAllAsync();
+            var query = _oxygenRepository.Query();
 
             if (!string.IsNullOrWhiteSpace(location))
             {
-                var loc = location.Trim().ToLower();
-                services = services.Where(s =>
-                    (s.Location != null && s.Location.ToLower().Contains(loc)) ||
-                    (s.Address != null && s.Address.ToLower().Contains(loc)) ||
-                    (s.ProviderName != null && s.ProviderName.ToLower().Contains(loc)));
+                var loc = location.Trim();
+                query = query.Where(s =>
+                    (s.Location != null && s.Location.Contains(loc)) ||
+                    (s.Address != null && s.Address.Contains(loc)) ||
+                    (s.ProviderName != null && s.ProviderName.Contains(loc)));
             }
 
             if (homeDeliveryOnly == true)
             {
-                services = services.Where(s => s.HomeDeliveryAvailable);
+                query = query.Where(s => s.HomeDeliveryAvailable);
             }
 
-            return services.ToList();
+            return await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(query);
         }
 
         public async Task AddOxygenServiceAsync(OxygenService oxygenService)

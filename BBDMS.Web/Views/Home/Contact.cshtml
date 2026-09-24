@@ -36,6 +36,7 @@
         <div class="row contact-grids">
             <div class="col-lg-7 contact-left">
                 <form asp-action="Contact" method="post">
+                    @Html.AntiForgeryToken()
                     <div class="form-group">
                         <label>Full Name</label>
                         <input type="text" class="form-control" name="Name" required placeholder="Full Name">

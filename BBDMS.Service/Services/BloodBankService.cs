@@ -28,24 +28,24 @@ namespace BBDMS.Service.Services
 
         public async Task<IEnumerable<BloodBank>> SearchBloodBanksAsync(string? location, string? bloodGroup)
         {
-            var banks = await _bloodBankRepository.GetAllAsync();
+            var query = _bloodBankRepository.Query();
 
             if (!string.IsNullOrWhiteSpace(location))
             {
-                var loc = location.Trim().ToLower();
-                banks = banks.Where(b =>
-                    (b.City != null && b.City.ToLower().Contains(loc)) ||
-                    (b.Address != null && b.Address.ToLower().Contains(loc)) ||
-                    (b.Name != null && b.Name.ToLower().Contains(loc)));
+                var loc = location.Trim();
+                query = query.Where(b =>
+                    (b.City != null && b.City.Contains(loc)) ||
+                    (b.Address != null && b.Address.Contains(loc)) ||
+                    (b.Name != null && b.Name.Contains(loc)));
             }
 
             if (!string.IsNullOrWhiteSpace(bloodGroup))
             {
-                var bg = bloodGroup.Trim().ToLower();
-                banks = banks.Where(b => b.AvailableBloodGroups != null && b.AvailableBloodGroups.ToLower().Contains(bg));
+                var bg = bloodGroup.Trim();
+                query = query.Where(b => b.AvailableBloodGroups != null && b.AvailableBloodGroups.Contains(bg));
             }
 
-            return banks.ToList();
+            return await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(query);
         }
 
         public async Task AddBloodBankAsync(BloodBank bloodBank)

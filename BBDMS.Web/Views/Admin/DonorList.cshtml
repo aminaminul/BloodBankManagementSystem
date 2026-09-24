@@ -12,8 +12,11 @@
         <h3 class="font-weight-bold text-dark mb-0">Registered Blood Donors</h3>
         <p class="text-muted mb-0">Manage donor accounts, active status, and blood donation availability (@Model.TotalItems total)</p>
     </div>
-    <div>
-        <input type="text" id="donorTableSearch" class="form-control" placeholder="Search donors..." style="width: 250px;" />
+    <div class="d-flex align-items-center">
+        <input type="text" id="donorTableSearch" class="form-control mr-2" placeholder="Search donors..." style="width: 220px;" />
+        <a asp-action="ExportDonorsCsv" class="btn btn-outline-success font-weight-bold text-nowrap">
+            <i class="fas fa-file-csv mr-1"></i>Export CSV
+        </a>
     </div>
 </div>
 

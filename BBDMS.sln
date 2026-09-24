@@ -1,16 +1,17 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBDMS.Web", "BBDMS.Web\BBDMS.Web.csproj", "{1C74F16F-AF46-4C8C-A905-B3E07946D8DE}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBDMS.Model", "BBDMS.Model\BBDMS.Model.csproj", "{5E15556A-8A57-4E35-BFA5-6A7CCA212DAD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBDMS.Repository", "BBDMS.Repository\BBDMS.Repository.csproj", "{96C9F20D-1E4D-417A-9A18-0CBAD7808817}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBDMS.Service", "BBDMS.Service\BBDMS.Service.csproj", "{185D1679-87EE-4B8F-B836-ED2A8335EF31}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BBDMS.Web", "BBDMS.Web\BBDMS.Web.csproj", "{1C74F16F-AF46-4C8C-A905-B3E07946D8DE}"
-EndProject
+
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

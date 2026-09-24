@@ -28,28 +28,28 @@ namespace BBDMS.Service.Services
 
         public async Task<IEnumerable<Hospital>> SearchHospitalsAsync(string location, bool? icuOnly, bool? emergencyBedOnly)
         {
-            var hospitals = await _hospitalRepository.GetAllAsync();
+            var query = _hospitalRepository.Query();
 
             if (!string.IsNullOrWhiteSpace(location))
             {
-                var loc = location.Trim().ToLower();
-                hospitals = hospitals.Where(h =>
-                    (h.City != null && h.City.ToLower().Contains(loc)) ||
-                    (h.Address != null && h.Address.ToLower().Contains(loc)) ||
-                    (h.Name != null && h.Name.ToLower().Contains(loc)));
+                var loc = location.Trim();
+                query = query.Where(h =>
+                    (h.City != null && h.City.Contains(loc)) ||
+                    (h.Address != null && h.Address.Contains(loc)) ||
+                    (h.Name != null && h.Name.Contains(loc)));
             }
 
             if (icuOnly == true)
             {
-                hospitals = hospitals.Where(h => h.AvailableIcuBeds > 0);
+                query = query.Where(h => h.AvailableIcuBeds > 0);
             }
 
             if (emergencyBedOnly == true)
             {
-                hospitals = hospitals.Where(h => h.AvailableEmergencyBeds > 0);
+                query = query.Where(h => h.AvailableEmergencyBeds > 0);
             }
 
-            return hospitals.ToList();
+            return await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(query);
         }
 
         public async Task AddHospitalAsync(Hospital hospital)

@@ -30,28 +30,28 @@ namespace BBDMS.Service.Services
 
         public async Task<IEnumerable<AmbulanceService>> SearchAmbulancesAsync(string? location, string? ambulanceType, bool? onlyAvailable)
         {
-            var ambulances = await _ambulanceRepository.GetAllAsync();
+            var query = _ambulanceRepository.Query();
 
             if (!string.IsNullOrWhiteSpace(location))
             {
-                var loc = location.Trim().ToLower();
-                ambulances = ambulances.Where(a =>
-                    (a.Location != null && a.Location.ToLower().Contains(loc)) ||
-                    (a.ProviderName != null && a.ProviderName.ToLower().Contains(loc)));
+                var loc = location.Trim();
+                query = query.Where(a =>
+                    (a.Location != null && a.Location.Contains(loc)) ||
+                    (a.ProviderName != null && a.ProviderName.Contains(loc)));
             }
 
             if (!string.IsNullOrWhiteSpace(ambulanceType) && ambulanceType != "All")
             {
-                var at = ambulanceType.Trim().ToLower();
-                ambulances = ambulances.Where(a => a.AmbulanceType != null && a.AmbulanceType.ToLower().Contains(at));
+                var at = ambulanceType.Trim();
+                query = query.Where(a => a.AmbulanceType != null && a.AmbulanceType.Contains(at));
             }
 
             if (onlyAvailable == true)
             {
-                ambulances = ambulances.Where(a => a.IsAvailable);
+                query = query.Where(a => a.IsAvailable);
             }
 
-            return ambulances.ToList();
+            return await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(query);
         }
 
         public async Task AddAmbulanceAsync(AmbulanceService ambulance)

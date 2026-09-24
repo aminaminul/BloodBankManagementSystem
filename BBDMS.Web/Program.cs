@@ -1,10 +1,14 @@
 using System;
+using System.Threading.RateLimiting;
 using BBDMS.Repository.Data;
 using BBDMS.Repository.Interfaces;
 using BBDMS.Repository.Repositories;
 using BBDMS.Service.Interfaces;
 using BBDMS.Service.Services;
+using BBDMS.Web.Hubs;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -47,6 +51,31 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
 
+// Built-in Rate Limiting (.NET 10)
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    
+    // Auth endpoints: 10 attempts per minute
+    options.AddFixedWindowLimiter("authLimiter", opt =>
+    {
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+
+    // Emergency submission endpoints: 15 per minute
+    options.AddFixedWindowLimiter("emergencyLimiter", opt =>
+    {
+        opt.PermitLimit = 15;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+});
+
+// SignalR Real-Time Alerts
+builder.Services.AddSignalR();
+
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
@@ -68,9 +97,23 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// Security Response Headers Middleware (Clickjacking, MIME-sniffing, Referrer Policy)
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("X-Frame-Options", "SAMEORIGIN");
+    context.Response.Headers.Append("X-Content-Type-Options", "nosniff");
+    context.Response.Headers.Append("Referrer-Policy", "strict-origin-when-cross-origin");
+    context.Response.Headers.Append("Permissions-Policy", "camera=(), microphone=(), geolocation=(self)");
+    await next();
+});
+
 app.UseRouting();
+app.UseRateLimiter();
 app.UseSession();
 app.UseAuthorization();
+
+// SignalR Hub Endpoint
+app.MapHub<EmergencyHub>("/emergencyHub");
 
 app.MapControllerRoute(
     name: "default",

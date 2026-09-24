@@ -10,6 +10,9 @@
     </div>
 </div>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 <div class="container my-5">
     <!-- Filter Card -->
     <div class="card shadow-sm border-0 mb-4 bg-light">
@@ -37,6 +40,17 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Interactive Leaflet Map -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-white font-weight-bold d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-map-marked-alt text-danger mr-2"></i>Interactive Hospital & Bed Availability Map</span>
+            <span class="badge badge-success px-3 py-2"><i class="fas fa-satellite-dish mr-1"></i> OpenStreetMap Live</span>
+        </div>
+        <div class="card-body p-0">
+            <div id="hospitalsMap" style="height: 380px; width: 100%; z-index: 1;"></div>
         </div>
     </div>
 
@@ -128,3 +142,97 @@
         </div>
     }
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const mapElement = document.getElementById("hospitalsMap");
+            if (!mapElement) return;
+
+            // Default center: Dhaka, Bangladesh
+            const map = L.map('hospitalsMap').setView([23.8103, 90.4125], 7);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18
+            }).addTo(map);
+
+            const cityCoords = {
+                'dhaka': [23.8103, 90.4125],
+                'chittagong': [22.3569, 91.7832],
+                'chattogram': [22.3569, 91.7832],
+                'sylhet': [24.8949, 91.8687],
+                'khulna': [22.8456, 89.5403],
+                'rajshahi': [24.3745, 88.6042],
+                'barishal': [22.7010, 90.3535],
+                'barisal': [22.7010, 90.3535],
+                'rangpur': [25.7439, 89.2752],
+                'mymensingh': [24.7471, 90.4203],
+                'comilla': [23.4607, 91.1809],
+                'cumilla': [23.4607, 91.1809],
+                'gazipur': [23.9999, 90.4203],
+                'narayanganj': [23.6238, 90.5000],
+                'bogra': [24.8481, 89.3730],
+                'bogura': [24.8481, 89.3730],
+                'jessore': [23.1664, 89.2081],
+                'jashore': [23.1664, 89.2081],
+                'cox\'s bazar': [21.4272, 92.0058]
+            };
+
+            const hospitalsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                Model?.Select(h => new {
+                    id = h.Id,
+                    name = h.Name,
+                    city = h.City,
+                    address = h.Address,
+                    emergencyBeds = h.AvailableEmergencyBeds,
+                    totalEmergencyBeds = h.TotalEmergencyBeds,
+                    icuBeds = h.AvailableIcuBeds,
+                    totalIcuBeds = h.TotalIcuBeds,
+                    helpline = h.EmergencyHelpline
+                }) ?? Enumerable.Empty<object>()
+            ));
+
+            const markers = [];
+            hospitalsData.forEach(function (hosp, index) {
+                const cityKey = (hosp.city || "").toLowerCase().trim();
+                let baseCoords = [23.8103, 90.4125];
+
+                for (const [key, coords] of Object.entries(cityCoords)) {
+                    if (cityKey.includes(key)) {
+                        baseCoords = coords;
+                        break;
+                    }
+                }
+
+                // Add slight dispersion offset for hospitals in the same city
+                const offsetLat = ((index % 5) - 2) * 0.012;
+                const offsetLng = (Math.floor(index / 5) - 2) * 0.012;
+                const lat = baseCoords[0] + offsetLat;
+                const lng = baseCoords[1] + offsetLng;
+
+                const popupHtml = `
+                    <div style="min-width: 200px;">
+                        <h6 class="font-weight-bold mb-1 text-danger">${hosp.name}</h6>
+                        <p class="small text-muted mb-2"><i class="fas fa-map-marker-alt text-danger mr-1"></i>${hosp.address}, ${hosp.city}</p>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="badge badge-success p-1">Beds: ${hosp.emergencyBeds}/${hosp.totalEmergencyBeds}</span>
+                            <span class="badge badge-danger p-1">ICU: ${hosp.icuBeds}/${hosp.totalIcuBeds}</span>
+                        </div>
+                        ${hosp.helpline ? `<a href="tel:${hosp.helpline}" class="btn btn-sm btn-danger btn-block text-white font-weight-bold"><i class="fas fa-phone mr-1"></i> ${hosp.helpline}</a>` : ''}
+                    </div>
+                `;
+
+                const marker = L.marker([lat, lng]).bindPopup(popupHtml);
+                marker.addTo(map);
+                markers.push(marker);
+            });
+
+            if (markers.length > 0) {
+                const group = new L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.2));
+            }
+        });
+    </script>
+}
+

@@ -51,11 +51,13 @@ namespace BBDMS.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("authLimiter")]
         public async Task<IActionResult> Index(string username, string password)
         {
             var admin = await _adminService.LoginAsync(username, password);
             if (admin != null)
             {
+                HttpContext.Session.Clear(); // Prevent session fixation
                 HttpContext.Session.SetInt32("adminId", admin.ID);
                 return RedirectToAction(nameof(Dashboard));
             }
@@ -81,7 +83,7 @@ namespace BBDMS.Web.Controllers
 
         public IActionResult Logout()
         {
-            HttpContext.Session.Remove("adminId");
+            HttpContext.Session.Clear();
             return RedirectToAction(nameof(Index));
         }
 
@@ -431,6 +433,53 @@ namespace BBDMS.Web.Controllers
                 return RedirectToAction(nameof(Pages));
             }
             return View(pageContent);
+        }
+        #endregion
+
+        #region Data Export Actions
+        public async Task<IActionResult> ExportDonorsCsv()
+        {
+            var donors = await _donorService.GetAllDonorsAsync();
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("ID,FullName,Email,Mobile,BloodGroup,Gender,Age,Address,IsAvailable,Status,LastDonatedDate");
+
+            foreach (var d in donors)
+            {
+                builder.AppendLine($"\"{d.Id}\",\"{d.FullName?.Replace("\"", "\"\"")}\",\"{d.EmailId}\",\"{d.MobileNumber}\",\"{d.BloodGroup}\",\"{d.Gender}\",\"{d.Age}\",\"{d.Address?.Replace("\"", "\"\"")}\",\"{d.IsAvailable}\",\"{d.Status}\",\"{d.LastDonatedDate?.ToString("yyyy-MM-dd")}\"");
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
+            return File(bytes, "text/csv", $"Donors_Export_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        }
+
+        public async Task<IActionResult> ExportHospitalsCsv()
+        {
+            var hospitals = await _hospitalService.GetAllHospitalsAsync();
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("ID,Name,City,Address,Helpline,ContactNumber,TotalEmergencyBeds,AvailableEmergencyBeds,TotalIcuBeds,AvailableIcuBeds,LastUpdated");
+
+            foreach (var h in hospitals)
+            {
+                builder.AppendLine($"\"{h.Id}\",\"{h.Name?.Replace("\"", "\"\"")}\",\"{h.City}\",\"{h.Address?.Replace("\"", "\"\"")}\",\"{h.EmergencyHelpline}\",\"{h.ContactNumber}\",\"{h.TotalEmergencyBeds}\",\"{h.AvailableEmergencyBeds}\",\"{h.TotalIcuBeds}\",\"{h.AvailableIcuBeds}\",\"{h.LastUpdated:yyyy-MM-dd}\"");
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
+            return File(bytes, "text/csv", $"Hospitals_ICU_Export_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        }
+
+        public async Task<IActionResult> ExportRequestsCsv()
+        {
+            var requests = await _bloodRequestService.GetAllRequestsAsync();
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("ID,PatientName,Email,ContactNumber,BloodGroup,UnitsRequired,HospitalName,Location,Urgency,Status,ApplyDate");
+
+            foreach (var r in requests)
+            {
+                builder.AppendLine($"\"{r.ID}\",\"{r.Name?.Replace("\"", "\"\"")}\",\"{r.EmailId}\",\"{r.ContactNumber}\",\"{r.BloodGroup ?? r.BloodRequireFor}\",\"{r.UnitsRequired}\",\"{r.HospitalName?.Replace("\"", "\"\"")}\",\"{r.Location}\",\"{r.Urgency}\",\"{r.Status}\",\"{r.ApplyDate:yyyy-MM-dd}\"");
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
+            return File(bytes, "text/csv", $"BloodRequests_Export_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
         }
         #endregion
     }

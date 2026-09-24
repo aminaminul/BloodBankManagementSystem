@@ -30,6 +30,7 @@ namespace BBDMS.Web.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("authLimiter")]
         public async Task<IActionResult> Login(string email, string password)
         {
             if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
@@ -55,6 +56,7 @@ namespace BBDMS.Web.Controllers
                     await _donorService.UpdateDonorAsync(donor);
                 }
 
+                HttpContext.Session.Clear(); // Prevent session fixation
                 HttpContext.Session.SetInt32("bbdmsdid", donor.Id);
                 return RedirectToAction("Profile");
             }

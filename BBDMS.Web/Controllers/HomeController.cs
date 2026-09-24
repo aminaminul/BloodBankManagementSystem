@@ -53,6 +53,7 @@ namespace BBDMS.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Contact(ContactQuery query)
         {
             if (ModelState.IsValid)
