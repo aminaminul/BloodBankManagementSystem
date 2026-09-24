@@ -4,52 +4,50 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
-        <h3 class="font-weight-bold text-dark mb-0">Website Page Contents</h3>
+        <h3 class="fw-bold text-dark mb-0">Website Page Contents</h3>
         <p class="text-muted mb-0">Edit public CMS page details stored in the database</p>
     </div>
 </div>
 
-<div class="card content-card shadow-sm">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Page Name</th>
-                        <th>Type Code</th>
-                        <th>Content Preview</th>
-                        <th class="text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
+<div class="card-modern p-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead style="background:#f8fafc;">
+                <tr style="font-size:.78rem; text-transform:uppercase; color:#64748b; letter-spacing:.05em;">
+                    <th class="ps-4">Page Name</th>
+                    <th>Type Code</th>
+                    <th>Content Preview</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var pageItem in Model)
                     {
-                        foreach (var pageItem in Model)
-                        {
-                            <tr>
-                                <td><strong>@pageItem.PageName</strong></td>
-                                <td><span class="badge badge-info">@pageItem.Type</span></td>
-                                <td style="max-width: 450px;">
-                                    <div class="text-truncate text-muted small">@pageItem.Detail</div>
-                                </td>
-                                <td class="text-right">
-                                    <a asp-action="PageEdit" asp-route-id="@pageItem.Id" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-edit mr-1"></i>Edit Page
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="4" class="text-center py-4 text-muted">No pages found in database.</td>
+                        <tr style="vertical-align:middle;">
+                            <td class="ps-4"><strong class="text-dark">@pageItem.PageName</strong></td>
+                            <td><span class="badge-soft-primary">@pageItem.Type</span></td>
+                            <td style="max-width: 450px;">
+                                <div class="text-truncate text-muted small">@pageItem.Detail</div>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a asp-action="PageEdit" asp-route-id="@pageItem.Id" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit me-1"></i>Edit Page
+                                </a>
+                            </td>
                         </tr>
                     }
-                </tbody>
-            </table>
-        </div>
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">No pages found in database.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>

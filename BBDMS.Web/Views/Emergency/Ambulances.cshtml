@@ -1,25 +1,18 @@
 @model IEnumerable<BBDMS.Model.Models.Entities.AmbulanceService>
 @{
-    ViewData["Title"] = "Emergency Ambulance Services";
+    ViewData["Title"] = "Need an Ambulance? - Blood Bank";
 }
 
-<div class="inner-banner py-5" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/banner1.jpg') no-repeat center; background-size: cover;">
-    <div class="container py-lg-4 text-center">
-        <h2 class="text-white font-weight-bold">Emergency Ambulance Fleets</h2>
-        <p class="text-light mt-2">Find 24/7 ICU & Life Support Ambulances or Dispatch an Ambulance Instantly</p>
-    </div>
-</div>
-
 <div class="container my-5">
-    <!-- Call-to-action banner for ambulance request -->
-    <div class="card bg-danger text-white shadow-sm mb-4 border-0">
-        <div class="card-body p-4 d-flex flex-column flex-md-row justify-content-between align-items-center">
-            <div>
-                <h4 class="font-weight-bold mb-1"><i class="fas fa-exclamation-triangle mr-2"></i>Need An Ambulance Dispatched Immediately?</h4>
-                <p class="mb-0">Submit an urgent dispatch request and our dispatch team will contact you and assign the nearest available vehicle.</p>
-            </div>
-            <a asp-action="RequestAmbulance" class="btn btn-warning btn-lg font-weight-bold text-dark mt-3 mt-md-0 px-4">
-                <i class="fas fa-paper-plane mr-2"></i>Book Ambulance Now
+    <!-- Header Title -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div>
+            <h2 class="font-weight-bold mb-1">Need an Ambulance?</h2>
+            <p class="text-muted mb-0">Find available ambulance services and 24/7 ICU transport near your location.</p>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a asp-action="RequestAmbulance" class="btn btn-brand-red font-weight-bold px-4 shadow">
+                <i class="fas fa-paper-plane mr-1"></i> Quick Dispatch Booking
             </a>
         </div>
     </div>
@@ -33,84 +26,78 @@
     }
 
     <!-- Filter Card -->
-    <div class="card shadow-sm border-0 mb-4 bg-light">
-        <div class="card-body p-4">
-            <form method="get" asp-action="Ambulances">
-                <div class="row align-items-end">
-                    <div class="col-md-5 mb-3 mb-md-0">
-                        <label class="font-weight-bold"><i class="fas fa-map-marker-alt text-warning mr-2"></i>Filter by Location / City</label>
-                        <input type="text" name="location" value="@ViewBag.Location" class="form-control" placeholder="Search city (e.g. Dhaka, Chittagong, Sylhet)..." />
-                    </div>
-                    <div class="col-md-4 mb-3 mb-md-0">
-                        <label class="font-weight-bold"><i class="fas fa-ambulance text-primary mr-2"></i>Ambulance Type</label>
-                        <select name="ambulanceType" class="form-control">
-                            <option value="All">All Types</option>
-                            <option value="ICU" selected="@(ViewBag.AmbulanceType == "ICU")">Advanced Life Support (ALS) / ICU</option>
-                            <option value="Basic" selected="@(ViewBag.AmbulanceType == "Basic")">Basic Life Support (BLS)</option>
-                            <option value="AC" selected="@(ViewBag.AmbulanceType == "AC")">AC Ambulance</option>
-                            <option value="Non-AC" selected="@(ViewBag.AmbulanceType == "Non-AC")">Non-AC Ambulance</option>
-                            <option value="Neonatal" selected="@(ViewBag.AmbulanceType == "Neonatal")">Neonatal Support</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-warning btn-block font-weight-bold py-2 text-dark">
-                            <i class="fas fa-search mr-2"></i>Search Ambulances
-                        </button>
-                    </div>
+    <div class="card card-modern border-0 mb-4 p-3 bg-white">
+        <form method="get" asp-action="Ambulances">
+            <div class="row align-items-end">
+                <div class="col-md-5 mb-3 mb-md-0">
+                    <label class="font-weight-bold small text-dark"><i class="fas fa-map-marker-alt text-danger mr-1"></i> Search by City / Location</label>
+                    <input type="text" name="location" value="@ViewBag.Location" class="form-control form-control-modern" placeholder="e.g. Dhaka, Chittagong, Sylhet..." />
                 </div>
-            </form>
-        </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <label class="font-weight-bold small text-dark"><i class="fas fa-ambulance text-danger mr-1"></i> Ambulance Type</label>
+                    <select name="ambulanceType" class="form-control form-control-modern">
+                        <option value="All">All Types</option>
+                        <option value="ICU" selected="@(ViewBag.AmbulanceType == "ICU")">Advanced Life Support (ALS) / ICU</option>
+                        <option value="Basic" selected="@(ViewBag.AmbulanceType == "Basic")">Basic Life Support (BLS)</option>
+                        <option value="AC" selected="@(ViewBag.AmbulanceType == "AC")">AC Ambulance</option>
+                        <option value="Non-AC" selected="@(ViewBag.AmbulanceType == "Non-AC")">Non-AC Ambulance</option>
+                        <option value="Neonatal" selected="@(ViewBag.AmbulanceType == "Neonatal")">Neonatal Support</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-brand-red btn-block py-2 font-weight-bold">
+                        <i class="fas fa-search mr-1"></i> Search Fleet
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
-    <!-- Ambulance Listing -->
+    <!-- Ambulance Grid -->
     @if (Model != null && Model.Any())
     {
         <div class="row">
             @foreach (var amb in Model)
             {
-                <div class="col-lg-6 mb-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h5 class="font-weight-bold text-dark mb-1">@amb.ProviderName</h5>
-                                    <span class="badge badge-primary mr-1">@amb.AmbulanceType</span>
-                                    <span class="badge badge-light border"><i class="fas fa-map-marker-alt mr-1"></i>@amb.Location</span>
-                                </div>
-                                @if (amb.IsAvailable)
-                                {
-                                    <span class="badge badge-success px-3 py-2 font-weight-bold">
-                                        <i class="fas fa-check-circle mr-1"></i>Available 24/7
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge badge-secondary px-3 py-2 font-weight-bold">
-                                        <i class="fas fa-times-circle mr-1"></i>On Duty
-                                    </span>
-                                }
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card card-modern h-100 p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="service-icon-box mr-3 mb-0" style="width: 50px; height: 50px; min-width: 50px; font-size: 1.3rem;">
+                                <i class="fas fa-ambulance"></i>
                             </div>
+                            <div class="overflow-hidden">
+                                <h6 class="font-weight-bold text-dark mb-0 text-truncate">@amb.ProviderName</h6>
+                                <small class="text-muted"><i class="fas fa-map-marker-alt text-danger mr-1"></i>@amb.Location</small>
+                            </div>
+                        </div>
 
-                            @if (!string.IsNullOrEmpty(amb.VehicleNumber))
+                        <div class="mb-3">
+                            <span class="badge badge-light border text-dark font-weight-bold px-2 py-1 mr-1" style="border-radius: 6px;">
+                                @amb.AmbulanceType
+                            </span>
+                            @if (amb.IsAvailable)
                             {
-                                <p class="small text-muted mt-2 mb-1">Vehicle Reg: <strong>@amb.VehicleNumber</strong></p>
+                                <span class="badge badge-soft-success"><i class="fas fa-check-circle mr-1"></i>Available</span>
                             }
-                            <p class="small text-muted mb-3"><i class="fas fa-clock mr-1 text-info"></i>Service Coverage: @amb.ServiceHours</p>
+                            else
+                            {
+                                <span class="badge badge-soft-danger"><i class="fas fa-times-circle mr-1"></i>On Mission</span>
+                            }
+                        </div>
 
-                            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                                <div>
-                                    <small class="text-muted d-block">Hotline:</small>
-                                    <span class="font-weight-bold text-success"><i class="fas fa-phone mr-1"></i>@amb.ContactNumber</span>
-                                </div>
-                                <div>
-                                    <a href="tel:@amb.ContactNumber" class="btn btn-outline-success font-weight-bold btn-sm mr-2">
-                                        <i class="fas fa-phone-alt mr-1"></i>Call
-                                    </a>
-                                    <a asp-action="RequestAmbulance" asp-route-serviceId="@amb.Id" class="btn btn-danger font-weight-bold btn-sm">
-                                        <i class="fas fa-paper-plane mr-1"></i>Book
-                                    </a>
-                                </div>
+                        <div class="small text-muted mb-3">
+                            <div><strong>Reg Number:</strong> @amb.VehicleNumber</div>
+                            <div><strong>Service Hours:</strong> @amb.ServiceHours</div>
+                        </div>
+
+                        <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block">Helpline:</small>
+                                <strong class="text-dark small"><i class="fas fa-phone mr-1 text-danger"></i>@amb.ContactNumber</strong>
                             </div>
+                            <a href="tel:@amb.ContactNumber" class="btn btn-sm btn-brand-red font-weight-bold">
+                                Call Ambulance
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -119,11 +106,11 @@
     }
     else
     {
-        <div class="alert alert-warning text-center p-5">
-            <i class="fas fa-info-circle fa-2x mb-3"></i>
-            <h4>No ambulances found for your search criteria</h4>
-            <p>Try searching for a different area or removing specific vehicle filters.</p>
-            <a asp-action="Ambulances" class="btn btn-outline-warning mt-2 text-dark font-weight-bold">Clear Filters</a>
+        <div class="card card-modern p-5 text-center my-4">
+            <i class="fas fa-ambulance fa-3x text-muted mb-3"></i>
+            <h5>No ambulances found matching your location</h5>
+            <p class="text-muted">Try clearing your filters or calling our central emergency helpline directly.</p>
+            <a asp-action="Ambulances" class="btn btn-outline-danger font-weight-bold mx-auto px-4">Clear Filter</a>
         </div>
     }
 </div>

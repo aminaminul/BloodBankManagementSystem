@@ -1,94 +1,99 @@
 @model IEnumerable<BBDMS.Model.Models.Entities.BloodBank>
 @{
-    ViewData["Title"] = "Blood Banks Directory";
+    ViewData["Title"] = "Blood Banks Near You - Blood Bank";
     var bloodGroups = ViewBag.BloodGroups as IEnumerable<BBDMS.Model.Models.Entities.BloodGroup>;
 }
 
-<div class="inner-banner py-5" style="background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/images/banner1.jpg') no-repeat center; background-size: cover;">
-    <div class="container py-lg-4 text-center">
-        <h2 class="text-white font-weight-bold">Registered Blood Banks Directory</h2>
-        <p class="text-light mt-2">Find licensed blood banks, inventory availability, and emergency contact numbers</p>
-    </div>
-</div>
-
 <div class="container my-5">
-    <!-- Filter Card -->
-    <div class="card shadow-sm border-0 mb-4 bg-light">
-        <div class="card-body p-4">
-            <form method="get" asp-action="BloodBanks">
-                <div class="row align-items-end">
-                    <div class="col-md-5 mb-3 mb-md-0">
-                        <label class="font-weight-bold"><i class="fas fa-map-marker-alt text-danger mr-2"></i>Filter by City / Location</label>
-                        <input type="text" name="location" value="@ViewBag.Location" class="form-control" placeholder="Search city or blood bank name..." />
-                    </div>
-                    <div class="col-md-4 mb-3 mb-md-0">
-                        <label class="font-weight-bold"><i class="fas fa-tint text-danger mr-2"></i>Blood Group Needed</label>
-                        <select name="bloodGroup" class="form-control">
-                            <option value="">All Blood Groups</option>
-                            @if (bloodGroups != null)
-                            {
-                                foreach (var bg in bloodGroups)
-                                {
-                                    <option value="@bg.GroupName" selected="@(ViewBag.BloodGroup == bg.GroupName)">@bg.GroupName</option>
-                                }
-                            }
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <button type="submit" class="btn btn-danger btn-block font-weight-bold py-2">
-                            <i class="fas fa-search mr-2"></i>Search Blood Banks
-                        </button>
-                    </div>
-                </div>
-            </form>
-        </div>
+    <div class="mb-4">
+        <h2 class="font-weight-bold mb-1">Blood Banks Near You</h2>
+        <p class="text-muted">Find licensed blood banks, check real-time available blood groups, and get direct directions.</p>
     </div>
 
-    <!-- Blood Banks Listing -->
+    <!-- Filter Card -->
+    <div class="card card-modern border-0 mb-4 p-3 bg-white">
+        <form method="get" asp-action="BloodBanks">
+            <div class="row align-items-end">
+                <div class="col-md-5 mb-3 mb-md-0">
+                    <label class="font-weight-bold small text-dark"><i class="fas fa-map-marker-alt text-danger mr-1"></i> Search by City / Location</label>
+                    <input type="text" name="location" value="@ViewBag.Location" class="form-control form-control-modern" placeholder="e.g. Dhaka, Chittagong, Sylhet..." />
+                </div>
+                <div class="col-md-4 mb-3 mb-md-0">
+                    <label class="font-weight-bold small text-dark"><i class="fas fa-tint text-danger mr-1"></i> Filter by Blood Group</label>
+                    <select name="bloodGroup" class="form-control form-control-modern">
+                        <option value="">All Blood Groups</option>
+                        @if (bloodGroups != null)
+                        {
+                            foreach (var bg in bloodGroups)
+                            {
+                                <option value="@bg.GroupName" selected="@(ViewBag.BloodGroup == bg.GroupName)">@bg.GroupName</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-brand-red btn-block py-2 font-weight-bold">
+                        <i class="fas fa-search mr-1"></i> Search Banks
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Blood Banks Listing Grid -->
     @if (Model != null && Model.Any())
     {
         <div class="row">
             @foreach (var bank in Model)
             {
-                <div class="col-lg-6 mb-4">
-                    <div class="card h-100 shadow-sm border-0">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h5 class="font-weight-bold text-dark mb-1">@bank.Name</h5>
-                                    @if (!string.IsNullOrEmpty(bank.HospitalAffiliation))
-                                    {
-                                        <span class="badge badge-info mb-2">Affiliation: @bank.HospitalAffiliation</span>
-                                    }
-                                </div>
-                                <span class="badge badge-danger px-3 py-1">@bank.City</span>
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card card-modern h-100 p-4">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="service-icon-box mr-3 mb-0" style="width: 48px; height: 48px; min-width: 48px; font-size: 1.2rem;">
+                                <i class="fas fa-landmark"></i>
                             </div>
-                            <p class="text-muted small mb-2"><i class="fas fa-map-marker-alt text-danger mr-1"></i>@bank.Address, @bank.City</p>
-                            <p class="small text-muted mb-2"><i class="fas fa-clock mr-1 text-primary"></i>Operating Hours: <strong>@bank.OperatingHours</strong></p>
+                            <div class="overflow-hidden">
+                                <h6 class="font-weight-bold text-dark mb-0 text-truncate">@bank.Name</h6>
+                                <small class="text-muted"><i class="fas fa-map-marker-alt text-danger mr-1"></i>@bank.Address, @bank.City</small>
+                            </div>
+                        </div>
 
-                            <div class="p-3 bg-light rounded my-3">
-                                <strong class="small text-muted d-block mb-1">Stocked Blood Groups:</strong>
+                        @if (!string.IsNullOrEmpty(bank.HospitalAffiliation))
+                        {
+                            <div class="mb-2">
+                                <small class="text-muted d-block">Hospital Affiliation:</small>
+                                <span class="small font-weight-bold text-dark">@bank.HospitalAffiliation</span>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">Available Blood Groups:</small>
+                            <div class="d-flex flex-wrap gap-1">
                                 @if (!string.IsNullOrEmpty(bank.AvailableBloodGroups))
                                 {
-                                    var groups = bank.AvailableBloodGroups.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries);
-                                    <div>
-                                        @foreach (var g in groups)
-                                        {
-                                            <span class="badge badge-danger mr-1 mb-1">@g.Trim()</span>
-                                        }
-                                    </div>
+                                    var groups = bank.AvailableBloodGroups.Split(new[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                                    foreach (var g in groups)
+                                    {
+                                        <span class="badge badge-light border text-danger font-weight-bold mr-1 mb-1 px-2 py-1" style="border-radius: 6px;">
+                                            @g
+                                        </span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Contact bank for current inventory</span>
                                 }
                             </div>
+                        </div>
 
-                            <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                                <div>
-                                    <small class="text-muted d-block">Helpline:</small>
-                                    <span class="font-weight-bold text-dark"><i class="fas fa-phone mr-1 text-success"></i>@bank.ContactNumber</span>
-                                </div>
-                                <a href="tel:@bank.ContactNumber" class="btn btn-outline-danger font-weight-bold btn-sm">
-                                    <i class="fas fa-phone-alt mr-1"></i>Contact Bank
-                                </a>
+                        <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block">Hours: @bank.OperatingHours</small>
+                                <strong class="text-dark small"><i class="fas fa-phone mr-1 text-danger"></i>@bank.ContactNumber</strong>
                             </div>
+                            <a href="tel:@bank.ContactNumber" class="btn btn-sm btn-brand-red font-weight-bold">
+                                Call Now
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -97,11 +102,11 @@
     }
     else
     {
-        <div class="alert alert-warning text-center p-5">
-            <i class="fas fa-info-circle fa-2x mb-3"></i>
-            <h4>No blood banks found matching your search</h4>
-            <p>Try searching for a different location or clearing the filters.</p>
-            <a asp-action="BloodBanks" class="btn btn-outline-danger mt-2">Clear Filters</a>
+        <div class="card card-modern p-5 text-center my-4">
+            <i class="fas fa-landmark fa-3x text-muted mb-3"></i>
+            <h5>No blood banks found matching your location</h5>
+            <p class="text-muted">Try clearing your search query or searching for a different city.</p>
+            <a asp-action="BloodBanks" class="btn btn-outline-danger font-weight-bold mx-auto px-4">Clear Filter</a>
         </div>
     }
 </div>

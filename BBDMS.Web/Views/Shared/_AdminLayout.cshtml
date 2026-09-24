@@ -4,29 +4,92 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Admin Panel</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/css/bootstrap.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/modern-theme.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
-        body { padding-top: 56px; background-color: #f8f9fa; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; }
-        .sidebar { min-height: calc(100vh - 56px); background-color: #212529; padding: 20px 0; }
-        .sidebar a { color: #adb5bd; padding: 12px 20px; display: block; text-decoration: none; font-size: 0.95rem; }
-        .sidebar a:hover, .sidebar a.active { color: #fff; background-color: #343a40; border-left: 4px solid #dc3545; }
-        .sidebar-heading { color: #6c757d; font-size: 0.75rem; text-transform: uppercase; font-weight: bold; padding: 10px 20px 5px; }
-        .content-card { border-radius: 8px; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .live-toast-container { position: fixed; top: 70px; right: 20px; z-index: 9999; max-width: 380px; }
+        body { 
+            padding-top: 64px; 
+            background-color: #f1f5f9; 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+            color: #1e293b;
+        }
+        .admin-navbar {
+            height: 64px;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            z-index: 1030;
+        }
+        .admin-sidebar { 
+            min-height: calc(100vh - 64px); 
+            background: #0f172a; 
+            padding: 24px 12px;
+            box-shadow: 2px 0 12px rgba(0,0,0,0.05);
+        }
+        .admin-sidebar a { 
+            color: #94a3b8; 
+            padding: 10px 14px; 
+            display: flex;
+            align-items: center;
+            text-decoration: none; 
+            font-size: 0.88rem;
+            font-weight: 500;
+            border-radius: 10px;
+            margin-bottom: 4px;
+            transition: all 0.2s ease;
+        }
+        .admin-sidebar a:hover { 
+            color: #ffffff; 
+            background: rgba(255,255,255,0.08); 
+        }
+        .admin-sidebar a.active {
+            color: #ffffff;
+            background: #e63946;
+            font-weight: 600;
+        }
+        .admin-sidebar a i {
+            width: 20px;
+            text-align: center;
+            margin-right: 10px;
+            font-size: 0.95rem;
+        }
+        .admin-sidebar-heading { 
+            color: #475569; 
+            font-size: 0.72rem; 
+            text-transform: uppercase; 
+            font-weight: 700; 
+            letter-spacing: 0.08em;
+            padding: 16px 14px 6px; 
+        }
+        .live-toast-container { 
+            position: fixed; 
+            top: 76px; 
+            right: 24px; 
+            z-index: 9999; 
+            max-width: 400px; 
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark fixed-top shadow-sm">
-        <a class="navbar-brand font-weight-bold" asp-controller="Admin" asp-action="Dashboard">
-            <i class="fas fa-heartbeat text-danger mr-2"></i>Blood & Emergency Admin
+    <nav class="navbar navbar-expand fixed-top admin-navbar px-3 px-lg-4">
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark text-decoration-none" asp-controller="Admin" asp-action="Dashboard">
+            <img src="~/images/Logo.png" alt="Logo" height="34" class="rounded" onerror="this.style.display='none'" />
+            <span style="font-size:1.05rem; letter-spacing:-0.02em;">Blood &amp; Emergency <span class="text-danger">Admin</span></span>
         </a>
-        <ul class="navbar-nav ml-auto flex-row align-items-center">
-            <li class="nav-item mr-3">
-                <a class="nav-link text-light small" href="/" target="_blank"><i class="fas fa-external-link-alt mr-1"></i>View Site</a>
+        <ul class="navbar-nav ms-auto flex-row align-items-center gap-2">
+            <li class="nav-item">
+                <a class="btn btn-sm btn-outline-secondary rounded-pill px-3" href="/" target="_blank">
+                    <i class="fas fa-external-link-alt me-1"></i>View Site
+                </a>
             </li>
             <li class="nav-item">
-                <a class="btn btn-outline-light btn-sm" asp-controller="Admin" asp-action="Logout"><i class="fas fa-sign-out-alt mr-1"></i>Logout</a>
+                <a class="btn btn-sm btn-brand-outline rounded-pill px-3" asp-controller="Admin" asp-action="Logout">
+                    <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
             </li>
         </ul>
     </nav>
@@ -36,38 +99,38 @@
 
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-2 sidebar d-none d-md-block">
-                <div class="sidebar-heading">Core Systems</div>
-                <a asp-controller="Admin" asp-action="Dashboard"><i class="fas fa-tachometer-alt mr-2"></i>Dashboard</a>
-                <a asp-controller="Admin" asp-action="DonorList"><i class="fas fa-users mr-2"></i>Blood Donors</a>
-                <a asp-controller="Admin" asp-action="BloodRequests"><i class="fas fa-tint mr-2"></i>Blood Requests</a>
+            <nav class="col-md-3 col-lg-2 admin-sidebar d-none d-md-block">
+                <div class="admin-sidebar-heading">Core Systems</div>
+                <a asp-controller="Admin" asp-action="Dashboard"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
+                <a asp-controller="Admin" asp-action="DonorList"><i class="fas fa-users"></i>Blood Donors</a>
+                <a asp-controller="Admin" asp-action="BloodRequests"><i class="fas fa-tint"></i>Blood Requests</a>
 
-                <div class="sidebar-heading mt-3">Emergency Resources</div>
-                <a asp-controller="Admin" asp-action="Hospitals"><i class="fas fa-hospital mr-2"></i>Hospitals & ICU</a>
-                <a asp-controller="Admin" asp-action="BloodBanks"><i class="fas fa-landmark mr-2"></i>Blood Banks</a>
-                <a asp-controller="Admin" asp-action="Ambulances"><i class="fas fa-ambulance mr-2"></i>Ambulance Fleets</a>
-                <a asp-controller="Admin" asp-action="AmbulanceRequests"><i class="fas fa-bell mr-2"></i>Ambulance Bookings</a>
-                <a asp-controller="Admin" asp-action="Oxygen"><i class="fas fa-lungs mr-2"></i>Oxygen Services</a>
+                <div class="admin-sidebar-heading">Emergency Resources</div>
+                <a asp-controller="Admin" asp-action="Hospitals"><i class="fas fa-hospital"></i>Hospitals &amp; ICU</a>
+                <a asp-controller="Admin" asp-action="BloodBanks"><i class="fas fa-landmark"></i>Blood Banks</a>
+                <a asp-controller="Admin" asp-action="Ambulances"><i class="fas fa-ambulance"></i>Ambulance Fleets</a>
+                <a asp-controller="Admin" asp-action="AmbulanceRequests"><i class="fas fa-bell"></i>Ambulance Bookings</a>
+                <a asp-controller="Admin" asp-action="Oxygen"><i class="fas fa-lungs"></i>Oxygen Services</a>
 
-                <div class="sidebar-heading mt-3">Website & Inquiries</div>
-                <a asp-controller="Admin" asp-action="ContactQueries"><i class="fas fa-envelope-open-text mr-2"></i>User Messages</a>
-                <a asp-controller="Admin" asp-action="ContactInfo"><i class="fas fa-address-card mr-2"></i>Contact Details</a>
-                <a asp-controller="Admin" asp-action="Pages"><i class="fas fa-file-alt mr-2"></i>Manage Pages</a>
+                <div class="admin-sidebar-heading">Website &amp; Inquiries</div>
+                <a asp-controller="Admin" asp-action="ContactQueries"><i class="fas fa-envelope-open-text"></i>User Messages</a>
+                <a asp-controller="Admin" asp-action="ContactInfo"><i class="fas fa-address-card"></i>Contact Details</a>
+                <a asp-controller="Admin" asp-action="Pages"><i class="fas fa-file-alt"></i>Manage Pages</a>
             </nav>
 
-            <main role="main" class="col-md-10 ml-sm-auto px-4 py-4">
+            <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-4 py-4">
                 @if (TempData["Success"] != null)
                 {
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle mr-1"></i>@TempData["Success"]
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+                        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 }
                 @if (TempData["Error"] != null)
                 {
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fas fa-exclamation-triangle mr-1"></i>@TempData["Error"]
-                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>@TempData["Error"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 }
 
@@ -105,15 +168,27 @@
             alertDiv.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center mb-1">
                     <strong class="font-weight-bold">${title}</strong>
-                    <button type="button" class="close p-1" data-dismiss="alert">&times;</button>
+                    <button type="button" class="btn-close p-1" data-bs-dismiss="alert"></button>
                 </div>
                 <div>${bodyHtml}</div>
             `;
             container.appendChild(alertDiv);
-            setTimeout(() => { $(alertDiv).alert('close'); }, 12000);
+            setTimeout(() => { 
+                if (alertDiv.parentNode) alertDiv.remove();
+            }, 12000);
         }
 
         connection.start().catch(err => console.log("SignalR Connection Error: ", err));
+
+        // Highlight active sidebar link
+        document.addEventListener("DOMContentLoaded", function () {
+            const currentPath = window.location.pathname.toLowerCase();
+            document.querySelectorAll(".admin-sidebar a").forEach(link => {
+                if (link.getAttribute("href") && currentPath.endsWith(link.getAttribute("href").toLowerCase())) {
+                    link.classList.add("active");
+                }
+            });
+        });
     </script>
     @RenderSection("Scripts", required: false)
 </body>

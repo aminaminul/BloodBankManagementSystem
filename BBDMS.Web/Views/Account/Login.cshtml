@@ -1,39 +1,106 @@
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "Donor Login - Blood Bank";
 }
 
-<div class="inner-banner-w3ls">
-    <div class="container">
-    </div>
-</div>
+<div class="container auth-split-container">
+    <div class="w-100 auth-split-wrapper">
+        <div class="row no-gutters">
+            <!-- Left Visual Side -->
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="auth-banner-side">
+                    <div>
+                        <div class="d-flex align-items-center mb-4">
+                            <img src="~/images/Logo.png" alt="Blood Bank Logo" style="height: 44px; filter: brightness(0) invert(1);" />
+                            <h4 class="text-white font-weight-bold ml-2 mb-0">Blood Bank</h4>
+                        </div>
+                        <h2 class="text-white font-weight-bold display-4 mb-3" style="font-size: 2.5rem; line-height: 1.2;">
+                            Your One Drop Can Save a Life.
+                        </h2>
+                        <p class="text-white-50 lead" style="font-size: 1.1rem;">
+                            Join our community of verified donors and help emergency patients in their critical moments of need.
+                        </p>
+                    </div>
 
-<div class="breadcrumb-agile">
-    <div aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a asp-controller="Home" asp-action="Index">Home</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">Login</li>
-        </ol>
-    </div>
-</div>
+                    <div class="pt-4 border-top border-light" style="border-color: rgba(255,255,255,0.2) !important;">
+                        <small class="text-white-50 d-block mb-1">Emergency Support 24/7</small>
+                        <span class="font-weight-bold text-white"><i class="fas fa-phone mr-1"></i> Helpline: 999 / 01700000000</span>
+                    </div>
+                </div>
+            </div>
 
-<div class="login px-4 mx-auto mw-100 py-5" style="max-width: 400px;">
-    <h5 class="text-center mb-4">Donor Login</h5>
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">@TempData["Success"]</div>
-    }
-    <form asp-action="Login" method="post">
-        <div class="form-group">
-            <label>Email Id</label>
-            <input type="email" class="form-control" name="email" required placeholder="Email Id">
+            <!-- Right Form Side -->
+            <div class="col-lg-7">
+                <div class="auth-form-side">
+                    <div class="d-flex align-items-center mb-3">
+                        <img src="~/images/Logo.png" alt="Blood Bank Logo" style="height: 38px;" class="mr-2" />
+                        <h4 class="font-weight-bold mb-0">Blood <span class="text-danger">Bank</span></h4>
+                    </div>
+
+                    <h3 class="font-weight-bold mb-1">Welcome Back</h3>
+                    <p class="text-muted small mb-4">Login to access your donor profile and view emergency requests.</p>
+
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle mr-1"></i> @TempData["Success"]
+                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle mr-1"></i> @TempData["Error"]
+                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        </div>
+                    }
+
+                    <form asp-action="Login" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="form-group mb-3">
+                            <label class="font-weight-bold small text-dark">Email Address</label>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-light border-right-0" style="border-radius: 10px 0 0 10px;">
+                                        <i class="far fa-envelope text-muted"></i>
+                                    </span>
+                                </div>
+                                <input type="email" class="form-control form-control-modern border-left-0" style="border-radius: 0 10px 10px 0;" name="email" required placeholder="name@example.com" />
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="font-weight-bold small text-dark mb-0">Password</label>
+                                <a href="#" class="small text-danger font-weight-bold">Forgot Password?</a>
+                            </div>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-light border-right-0" style="border-radius: 10px 0 0 10px;">
+                                        <i class="fas fa-lock text-muted"></i>
+                                    </span>
+                                </div>
+                                <input type="password" class="form-control form-control-modern border-left-0" style="border-radius: 0 10px 10px 0;" name="password" required placeholder="Enter your password" />
+                            </div>
+                        </div>
+
+                        <div class="form-group d-flex justify-content-between align-items-center mb-4">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="rememberMe" checked>
+                                <label class="custom-control-label small text-muted" for="rememberMe">Remember me</label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-brand-red btn-block py-2 font-weight-bold mb-3 shadow">
+                            <i class="fas fa-sign-in-alt mr-1"></i> Sign In
+                        </button>
+
+                        <div class="text-center pt-2">
+                            <span class="text-muted small">Don't have an account? </span>
+                            <a asp-action="Register" class="text-danger font-weight-bold small">Create an Account</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label>Password</label>
-            <input type="password" class="form-control" name="password" required placeholder="Password">
-        </div>
-        <button type="submit" class="btn btn-primary submit mb-4">Login</button>
-        <p class="text-center">Don't have an account? <a asp-action="Register">Register Now</a></p>
-    </form>
+    </div>
 </div>

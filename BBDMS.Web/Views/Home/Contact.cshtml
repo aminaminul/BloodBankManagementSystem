@@ -3,73 +3,150 @@
     ViewData["Title"] = "Contact Us";
 }
 
-<div class="inner-banner-w3ls">
+<section class="page-hero-sm" style="background: linear-gradient(135deg,#e63946 0%,#9b1a26 100%); color:#fff; padding: 56px 0 40px;">
     <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2" style="background:transparent; padding:0;">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white-50">Home</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Contact Us</li>
+            </ol>
+        </nav>
+        <h1 class="fw-bold mb-1" style="font-size:2rem;">Get In Touch</h1>
+        <p class="mb-0 text-white-50">We're available 24 hours a day, 7 days a week.</p>
     </div>
-</div>
-<div class="breadcrumb-agile">
-    <div aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a asp-controller="Home" asp-action="Index">Home</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">Contact Us</li>
-        </ol>
-    </div>
-</div>
+</section>
 
-<div class="contact-w3l py-5">
-    <div class="container py-xl-5 py-lg-3">
-        <div class="w3ls-titles text-center mb-5">
-            <h3 class="title">Contact Us</h3>
-            <span>
-                <i class="fas fa-user-md"></i>
-            </span>
-            <p class="mt-2">Feel free to contact us with any questions or comments.</p>
-        </div>
+<section class="py-5" style="background:#f8fafc;">
+    <div class="container py-3">
 
         @if (TempData["Message"] != null)
         {
-            <div class="alert alert-success">@TempData["Message"]</div>
+            <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                <i class="fas fa-check-circle me-2"></i>@TempData["Message"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
         }
 
-        <div class="row contact-grids">
-            <div class="col-lg-7 contact-left">
-                <form asp-action="Contact" method="post">
-                    @Html.AntiForgeryToken()
-                    <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" class="form-control" name="Name" required placeholder="Full Name">
+        <div class="row g-4 align-items-stretch">
+
+            @* Left: Contact Info Cards *@
+            <div class="col-lg-4">
+                <div class="card-modern h-100" style="background:linear-gradient(160deg,#1a1a2e 0%,#16213e 100%); color:#fff; border-radius:20px; padding:2rem;">
+                    <h4 class="fw-bold mb-1">Contact Information</h4>
+                    <p class="mb-4" style="color:rgba(255,255,255,.6); font-size:.9rem;">Fill out the form and our team will get back to you within 24 hours.</p>
+
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="service-icon-box me-3 flex-shrink-0" style="width:44px;height:44px;font-size:1rem;">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold mb-1">Our Address</div>
+                            <div style="color:rgba(255,255,255,.8); font-size:.9rem;">@(Model?.Address ?? "Medical District, Bangladesh")</div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Mobile Number</label>
-                        <input type="text" class="form-control" name="ContactNumber" required placeholder="Mobile Number">
+
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="service-icon-box me-3 flex-shrink-0" style="width:44px;height:44px;font-size:1rem;">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold mb-1">Phone / Helpline</div>
+                            <div style="color:rgba(255,255,255,.8); font-size:.9rem;">
+                                @if (!string.IsNullOrEmpty(Model?.ContactNo))
+                                {
+                                    <a href="tel:@Model.ContactNo" class="text-white fw-bold">@Model.ContactNo</a>
+                                }
+                                else
+                                {
+                                    <span>Helpline Active 24/7</span>
+                                }
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Email Address</label>
-                        <input type="email" class="form-control" name="EmailId" required placeholder="Email Address">
+
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="service-icon-box me-3 flex-shrink-0" style="width:44px;height:44px;font-size:1rem;">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold mb-1">Email Address</div>
+                            <div style="color:rgba(255,255,255,.8); font-size:.9rem;">
+                                @if (!string.IsNullOrEmpty(Model?.EmailId))
+                                {
+                                    <a href="mailto:@Model.EmailId" class="text-white">@Model.EmailId</a>
+                                }
+                                else
+                                {
+                                    <span>support@bloodbank.org</span>
+                                }
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Message</label>
-                        <textarea class="form-control" name="Message" required placeholder="Your Message"></textarea>
+
+                    <div class="d-flex align-items-start">
+                        <div class="service-icon-box me-3 flex-shrink-0" style="width:44px;height:44px;font-size:1rem;">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold mb-1">Working Hours</div>
+                            <div style="color:rgba(255,255,255,.7); font-size:.9rem;">
+                                <span class="badge" style="background:#e63946; font-size:.75rem;">24 / 7 Emergency</span>
+                                <div class="mt-1">Mon – Fri: 8:00 AM – 8:00 PM</div>
+                            </div>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-primary submit">Submit</button>
-                </form>
+
+                    <div class="mt-4 pt-3" style="border-top:1px solid rgba(255,255,255,.12);">
+                        <div class="text-white-50 small mb-2">Follow us</div>
+                        <div class="d-flex gap-2">
+                            <a href="#" class="btn btn-sm" style="background:rgba(255,255,255,.12); color:#fff; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm" style="background:rgba(255,255,255,.12); color:#fff; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
+                                <i class="fab fa-twitter"></i>
+                            </a>
+                            <a href="#" class="btn btn-sm" style="background:rgba(255,255,255,.12); color:#fff; border-radius:8px; width:36px; height:36px; display:flex; align-items:center; justify-content:center;">
+                                <i class="fab fa-instagram"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-lg-5 contact-right mt-lg-0 mt-5">
-                <div class="address-grid">
-                    <h4 class="font-weight-bold mb-3">Address</h4>
-                    <p>@Model?.Address</p>
-                </div>
-                <div class="address-grid my-4">
-                    <h4 class="font-weight-bold mb-3">Phone</h4>
-                    <p>+@Model?.ContactNo</p>
-                </div>
-                <div class="address-grid">
-                    <h4 class="font-weight-bold mb-3">Email</h4>
-                    <p><a href="mailto:@Model?.EmailId">@Model?.EmailId</a></p>
+
+            @* Right: Contact Form *@
+            <div class="col-lg-8">
+                <div class="card-modern h-100">
+                    <h4 class="fw-bold mb-1">Send Us a Message</h4>
+                    <p class="text-muted mb-4" style="font-size:.9rem;">Have a question about blood donation, emergency services, or want to volunteer? We'd love to hear from you.</p>
+
+                    <form asp-action="Contact" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-modern" name="Name" required placeholder="Enter your full name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Mobile Number <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control form-control-modern" name="ContactNumber" required placeholder="01XXXXXXXXX">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control form-control-modern" name="EmailId" required placeholder="your@email.com">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Message <span class="text-danger">*</span></label>
+                                <textarea class="form-control form-control-modern" name="Message" required rows="5" placeholder="Write your message here..."></textarea>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <button type="submit" class="btn btn-brand-red px-5 py-2">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</section>

@@ -1,0 +1,844 @@
+/* ============================================================
+   Blood Bank Management System — Modern Theme
+   Font: Inter (Universal) | Brand: #e63946 Crimson
+   ============================================================ */
+
+/* ── CSS Variables ── */
+:root {
+    --brand:        #e63946;
+    --brand-hover:  #c1121f;
+    --brand-dark:   #9b1a26;
+    --brand-light:  #fff0f1;
+    --brand-border: #fecdd3;
+    --dark:         #0f172a;
+    --text:         #1e293b;
+    --muted:        #64748b;
+    --border:       #e2e8f0;
+    --page-bg:      #f8fafc;
+    --card-bg:      #ffffff;
+    --radius:       14px;
+    --radius-pill:  999px;
+    --shadow:       0 2px 16px rgba(15,23,42,0.06);
+    --shadow-hover: 0 8px 32px rgba(225,29,70,0.14);
+}
+
+/* ── Universal Font: Inter ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+    background: var(--page-bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text);
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.2;
+}
+
+p, span, a, div, label, input, select, textarea, button, td, th, li {
+    font-family: 'Inter', sans-serif !important;
+}
+
+
+/* ── Section Widths — Full Viewport ── */
+.section-full {
+    width: 100%;
+}
+
+/* ============================================================
+   RESPONSIVE DYNAMIC CONTAINERS (Auto-scales with device display size)
+   ============================================================ */
+/* Default Bootstrap .container expansion on larger displays */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1380px !important;
+    }
+}
+@media (min-width: 1440px) {
+    .container {
+        max-width: 1600px !important;
+    }
+}
+@media (min-width: 1920px) {
+    .container {
+        max-width: 1840px !important;
+    }
+}
+
+/* Fluid Header Container with dynamic device-based padding */
+.header-fluid-container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    transition: padding 0.2s ease;
+}
+
+@media (min-width: 576px) {
+    .header-fluid-container {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .header-fluid-container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
+
+@media (min-width: 992px) {
+    .header-fluid-container {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+    }
+}
+
+@media (min-width: 1200px) {
+    .header-fluid-container {
+        padding-left: 3.5rem;
+        padding-right: 3.5rem;
+    }
+}
+
+@media (min-width: 1440px) {
+    .header-fluid-container {
+        padding-left: 4.5rem;
+        padding-right: 4.5rem;
+    }
+}
+
+@media (min-width: 1920px) {
+    .header-fluid-container {
+        padding-left: 5.5rem;
+        padding-right: 5.5rem;
+        max-width: 2560px;
+    }
+}
+
+/* ============================================================
+   NAVBAR / HEADER (LOCKED STICKY, PURE WHITE ON SCROLL)
+   ============================================================ */
+.navbar-modern,
+header.navbar-modern,
+.navbar-modern.isFixed,
+header.navbar-modern nav,
+header.navbar-modern nav.isFixed {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0, 0, 0, 0.04) !important;
+    padding: 0.6rem 0 !important;
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 1050 !important;
+    transition: none !important;
+}
+
+/* Neutralize legacy isFixed from style.css */
+.isFixed,
+nav.isFixed,
+nav.navbar.navbar-expand-lg.navbar-light.isFixed,
+nav.navbar.navbar-expand-lg.navbar-light.fixed-navi.isFixed {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    box-shadow: 0 1px 0 var(--border), 0 2px 12px rgba(0, 0, 0, 0.04) !important;
+    position: static !important;
+    top: auto !important;
+}
+
+html.whiteSpace {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+.navbar-brand-logo {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    gap: 10px;
+}
+
+.navbar-brand-logo img {
+    height: 44px;
+    width: auto;
+    object-fit: contain;
+}
+
+.navbar-brand-logo .brand-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--dark);
+    letter-spacing: -0.3px;
+}
+
+.navbar-brand-logo .brand-title span { color: var(--brand); }
+
+.nav-link-modern {
+    font-weight: 600;
+    color: var(--text) !important;
+    padding: 0.45rem 0.9rem !important;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    transition: color 0.18s, background 0.18s;
+}
+.nav-link-modern:hover,
+.nav-link-modern.active {
+    color: var(--brand) !important;
+    background: var(--brand-light);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn-brand-red {
+    background: var(--brand);
+    color: #fff !important;
+    border: none;
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.55rem 1.5rem;
+    box-shadow: 0 4px 14px rgba(225,57,70,0.28);
+    transition: all 0.22s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.btn-brand-red:hover {
+    background: var(--brand-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(225,57,70,0.36);
+    color: #fff !important;
+}
+
+.btn-brand-outline {
+    background: transparent;
+    color: var(--brand) !important;
+    border: 1.5px solid var(--brand);
+    border-radius: var(--radius-pill);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.55rem 1.5rem;
+    transition: all 0.22s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.btn-brand-outline:hover {
+    background: var(--brand);
+    color: #fff !important;
+    transform: translateY(-2px);
+}
+
+/* ============================================================
+   HERO SECTION — FULL WIDTH DARK
+   ============================================================ */
+.hero-modern {
+    width: 100%;
+    background: linear-gradient(135deg, var(--dark) 0%, #1a0a0c 55%, #2d1015 100%);
+    padding: 80px 0 72px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-modern::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 420px; height: 420px;
+    background: radial-gradient(circle, rgba(230,57,70,0.18) 0%, transparent 70%);
+    pointer-events: none;
+}
+.hero-modern::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: -40px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(230,57,70,0.10) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(230,57,70,0.18);
+    border: 1px solid rgba(230,57,70,0.35);
+    color: #fca5a5;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.35rem 1rem;
+    border-radius: var(--radius-pill);
+    margin-bottom: 1.2rem;
+    letter-spacing: 0.3px;
+}
+
+.hero-title {
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -1.5px;
+    color: #ffffff;
+    margin-bottom: 1.1rem;
+}
+.hero-title span { color: var(--brand); }
+
+.hero-subtitle {
+    font-size: 1.05rem;
+    color: #94a3b8;
+    line-height: 1.65;
+    margin-bottom: 2rem;
+    max-width: 520px;
+    font-weight: 400;
+}
+
+/* Hero right card */
+.hero-card {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+}
+.hero-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+}
+.hero-card-body {
+    padding: 1.4rem 1.6rem;
+}
+.hero-card-body h5 {
+    color: #fff;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+    font-size: 1rem;
+}
+.hero-card-body p {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+.hero-helpline-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 1rem;
+}
+.hero-helpline-row .label { font-size: 0.78rem; color: #64748b; display: block; }
+.hero-helpline-row .number { font-weight: 700; color: #fca5a5; font-size: 1rem; }
+
+/* Hero search box */
+.hero-search-box {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.2rem;
+    margin-bottom: 1.5rem;
+    max-width: 560px;
+}
+
+/* ============================================================
+   STATS STRIP — FULL WIDTH
+   ============================================================ */
+.stats-strip {
+    width: 100%;
+    background: #ffffff;
+    border-top: 3px solid var(--brand);
+    border-bottom: 1px solid var(--border);
+    padding: 0;
+}
+.stats-strip-inner {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+}
+.stat-item {
+    flex: 1 1 0;
+    min-width: 120px;
+    text-align: center;
+    padding: 1.5rem 0.75rem;
+    border-right: 1px solid var(--border);
+    transition: background 0.2s;
+}
+.stat-item:last-child { border-right: none; }
+.stat-item:hover { background: var(--brand-light); }
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--dark);
+    font-family: 'Inter', sans-serif;
+}
+.stat-number i { font-size: 1.1rem; margin-right: 4px; }
+.stat-label {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 0.3rem;
+}
+
+/* ============================================================
+   SERVICE CATEGORY GRID — FULL WIDTH ROW
+   ============================================================ */
+.services-section {
+    width: 100%;
+    background: #fff;
+    padding: 56px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.service-cat-card {
+    display: block;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.25rem;
+    text-align: center;
+    text-decoration: none !important;
+    color: var(--dark);
+    box-shadow: var(--shadow);
+    transition: all 0.24s ease;
+    height: 100%;
+}
+.service-cat-card:hover {
+    border-color: var(--brand);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-4px);
+    color: var(--brand);
+}
+
+.service-icon-box {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: var(--brand-light);
+    color: var(--brand);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    margin-bottom: 1rem;
+    transition: all 0.24s ease;
+}
+.service-cat-card:hover .service-icon-box {
+    background: var(--brand);
+    color: #fff;
+}
+
+/* ============================================================
+   BIGGER SERVICE CARDS (svc-card) — Index page grid
+   ============================================================ */
+.svc-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none !important;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    padding: 2.2rem 1rem 1.6rem;
+    box-shadow: 0 2px 16px rgba(15,23,42,0.05);
+    transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+.svc-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    border-radius: 0 0 18px 18px;
+}
+.svc-card:hover { transform: translateY(-6px); box-shadow: 0 12px 36px rgba(15,23,42,0.10); }
+.svc-card:hover::after { opacity: 1; }
+
+/* Icon wrap — big centered circle */
+.svc-icon-wrap {
+    width: 88px;
+    height: 88px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    margin-bottom: 1.1rem;
+    transition: all 0.25s ease;
+}
+.svc-card:hover .svc-icon-wrap { transform: scale(1.08); }
+
+.svc-count {
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+    font-family: 'Inter', sans-serif;
+}
+.svc-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 0.2rem;
+}
+.svc-sub {
+    font-size: 0.78rem;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+/* Color variants */
+.svc-red   .svc-icon-wrap { background: #fff0f1; color: #e63946; }
+.svc-red   .svc-count     { color: #e63946; }
+.svc-red::after            { background: #e63946; }
+
+.svc-crimson .svc-icon-wrap { background: #fff0f1; color: #c1121f; }
+.svc-crimson .svc-count     { color: #c1121f; }
+.svc-crimson::after          { background: #c1121f; }
+
+.svc-blue  .svc-icon-wrap { background: #eff6ff; color: #2563eb; }
+.svc-blue  .svc-count     { color: #2563eb; }
+.svc-blue::after           { background: #2563eb; }
+
+.svc-purple .svc-icon-wrap { background: #f5f3ff; color: #7c3aed; }
+.svc-purple .svc-count     { color: #7c3aed; }
+.svc-purple::after          { background: #7c3aed; }
+
+.svc-orange .svc-icon-wrap { background: #fff7ed; color: #ea580c; }
+.svc-orange .svc-count     { color: #ea580c; }
+.svc-orange::after          { background: #ea580c; }
+
+.svc-teal  .svc-icon-wrap { background: #f0fdfa; color: #0d9488; }
+.svc-teal  .svc-count     { color: #0d9488; }
+.svc-teal::after           { background: #0d9488; }
+
+/* Hover: icon fill */
+.svc-red:hover   .svc-icon-wrap { background: #e63946; color: #fff; }
+.svc-crimson:hover .svc-icon-wrap { background: #c1121f; color: #fff; }
+.svc-blue:hover  .svc-icon-wrap { background: #2563eb; color: #fff; }
+.svc-purple:hover .svc-icon-wrap { background: #7c3aed; color: #fff; }
+.svc-orange:hover .svc-icon-wrap { background: #ea580c; color: #fff; }
+.svc-teal:hover  .svc-icon-wrap { background: #0d9488; color: #fff; }
+
+/* ============================================================
+   BLOOD GROUP DIRECTORY — FULL WIDTH STRIP
+   ============================================================ */
+.bloodgroup-strip {
+    width: 100%;
+    background: linear-gradient(135deg, #fff0f1 0%, #fff8f8 100%);
+    border-top: 1px solid var(--brand-border);
+    border-bottom: 1px solid var(--brand-border);
+    padding: 48px 0;
+}
+.blood-group-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1.5px solid var(--brand-border);
+    border-radius: var(--radius-pill);
+    padding: 0.5rem 1.25rem;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--brand);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(230,57,70,0.08);
+}
+.blood-group-chip:hover {
+    background: var(--brand);
+    color: #fff;
+    border-color: var(--brand);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(230,57,70,0.28);
+}
+
+/* ============================================================
+   URGENT REQUESTS SECTION
+   ============================================================ */
+.urgent-section {
+    width: 100%;
+    background: #fff8f8;
+    border-top: 1px solid var(--brand-border);
+    border-bottom: 1px solid var(--brand-border);
+    padding: 60px 0;
+}
+
+/* ============================================================
+   DONORS / HOSPITALS SECTIONS
+   ============================================================ */
+.donors-section {
+    width: 100%;
+    background: var(--page-bg);
+    padding: 60px 0;
+}
+.hospitals-section {
+    width: 100%;
+    background: #ffffff;
+    padding: 60px 0;
+    border-top: 1px solid var(--border);
+}
+
+/* ============================================================
+   CTA BANNER — FULL WIDTH
+   ============================================================ */
+.cta-section {
+    width: 100%;
+    background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand) 100%);
+    padding: 72px 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.cta-section::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -40px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+}
+.cta-section h2 { color: #fff; font-size: 2.4rem; font-weight: 900; margin-bottom: 0.75rem; }
+.cta-section p { color: rgba(255,255,255,0.88); max-width: 580px; margin: 0 auto 2rem; font-size: 1.05rem; }
+
+/* ============================================================
+   MODERN CARDS
+   ============================================================ */
+.card-modern {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    transition: all 0.25s ease;
+    overflow: hidden;
+}
+.card-modern:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--brand-border);
+}
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+.form-control-modern,
+.form-select-modern {
+    height: 46px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    background: #fff;
+    color: var(--text);
+}
+.form-control-modern:focus,
+.form-select-modern:focus {
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(230,57,70,0.12);
+    outline: none;
+}
+
+/* ============================================================
+   PILL BADGES
+   ============================================================ */
+.badge-soft-danger {
+    background: var(--brand-light);
+    color: var(--brand);
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    padding: 0.3rem 0.8rem;
+    font-size: 0.82rem;
+    display: inline-block;
+}
+.badge-soft-success {
+    background: #ecfdf5;
+    color: #059669;
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    padding: 0.3rem 0.8rem;
+    font-size: 0.82rem;
+    display: inline-block;
+}
+.badge-soft-warning {
+    background: #fffbeb;
+    color: #d97706;
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    padding: 0.3rem 0.8rem;
+    font-size: 0.82rem;
+    display: inline-block;
+}
+.badge-soft-primary {
+    background: #eff6ff;
+    color: #2563eb;
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    padding: 0.3rem 0.8rem;
+    font-size: 0.82rem;
+    display: inline-block;
+}
+.badge-soft-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    padding: 0.3rem 0.8rem;
+    font-size: 0.82rem;
+    display: inline-block;
+}
+
+/* ============================================================
+   SECTION UTILITIES
+   ============================================================ */
+.section-title { font-size: 1.75rem; font-weight: 800; color: var(--dark); margin-bottom: 0.4rem; }
+.section-sub   { font-size: 0.92rem; color: var(--muted); margin-bottom: 0; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer-modern {
+    width: 100%;
+    background: #0f172a;
+    color: #94a3b8;
+    padding: 4rem 0 2rem;
+}
+.footer-modern h5 {
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 1.1rem;
+}
+.footer-modern a {
+    color: #94a3b8;
+    text-decoration: none;
+    transition: color 0.18s;
+    font-size: 0.9rem;
+}
+.footer-modern a:hover { color: #ffffff; }
+.footer-bottom {
+    border-top: 1px solid #1e293b;
+    padding-top: 1.25rem;
+    margin-top: 2.5rem;
+    font-size: 0.83rem;
+}
+
+/* ============================================================
+   AUTH PAGES
+   ============================================================ */
+.auth-split-container {
+    min-height: calc(100vh - 160px);
+    display: flex;
+    align-items: center;
+    padding: 2.5rem 0;
+}
+.auth-split-wrapper {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.10);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+.auth-banner-side {
+    background: linear-gradient(145deg, rgba(155,26,38,0.96), rgba(230,57,70,0.92)),
+                url('/images/banner1.jpg') no-repeat center / cover;
+    color: #ffffff;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 520px;
+}
+.auth-form-side { padding: 3rem; }
+.auth-brand-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--dark);
+    margin-bottom: 1.5rem;
+    text-decoration: none;
+}
+
+/* ============================================================
+   ADMIN LAYOUT
+   ============================================================ */
+.admin-sidebar {
+    background: var(--dark);
+    min-height: 100vh;
+    width: 240px;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1001;
+    overflow-y: auto;
+}
+.admin-content-wrap {
+    margin-left: 240px;
+    min-height: 100vh;
+    background: var(--page-bg);
+}
+
+/* ============================================================
+   PAGE HERO SMALL (sub-pages)
+   ============================================================ */
+.page-hero-sm {
+    width: 100%;
+    background: linear-gradient(135deg, var(--brand) 0%, var(--brand-dark) 100%);
+    color: #fff;
+    padding: 52px 0 38px;
+}
+.page-hero-sm .breadcrumb { background: transparent; padding: 0; margin-bottom: 0.5rem; }
+.page-hero-sm .breadcrumb-item a { color: rgba(255,255,255,0.65); text-decoration: none; }
+.page-hero-sm .breadcrumb-item.active { color: #fff; }
+.page-hero-sm .breadcrumb-item + .breadcrumb-item::before { color: rgba(255,255,255,0.4); }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 992px) {
+    .hero-title { font-size: 2.4rem; letter-spacing: -1px; }
+    .hero-modern { padding: 56px 0 48px; }
+    .stat-item { min-width: 100px; padding: 1.1rem 0.5rem; }
+    .stat-number { font-size: 1.5rem; }
+    .admin-sidebar { width: 100%; position: relative; min-height: auto; }
+    .admin-content-wrap { margin-left: 0; }
+}
+
+@media (max-width: 576px) {
+    .hero-title { font-size: 2rem; letter-spacing: -0.5px; }
+    .auth-form-side, .auth-banner-side { padding: 2rem; }
+    .cta-section h2 { font-size: 1.8rem; }
+    .stat-item { min-width: 50%; }
+}

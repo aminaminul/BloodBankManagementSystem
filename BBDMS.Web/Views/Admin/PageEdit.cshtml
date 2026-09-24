@@ -6,34 +6,39 @@
 
 <div class="row justify-content-center">
     <div class="col-lg-9">
-        <div class="card content-card shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h4 class="mb-0 font-weight-bold text-dark"><i class="fas fa-edit mr-2 text-primary"></i>Edit Page: @Model.PageName</h4>
+        <div class="card-modern p-4">
+            <div class="mb-4 pb-3 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                    <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-file-alt me-2 text-primary"></i>Edit CMS Page: @Model.PageName</h4>
+                    <p class="text-muted small mb-0">Modify public content stored for this page</p>
+                </div>
+                <a asp-action="Pages" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1"></i>Back
+                </a>
             </div>
-            <div class="card-body p-4">
-                <form method="post" asp-action="PageEdit">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="Id" />
-                    <input type="hidden" asp-for="Type" />
 
-                    <div class="form-group">
-                        <label asp-for="PageName" class="font-weight-bold">Page Title</label>
-                        <input asp-for="PageName" class="form-control" required />
-                    </div>
+            <form method="post" asp-action="PageEdit">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="Type" />
 
-                    <div class="form-group">
-                        <label asp-for="Detail" class="font-weight-bold">Page Body Content (HTML / Text)</label>
-                        <textarea asp-for="Detail" class="form-control" rows="8" required></textarea>
-                    </div>
+                <div class="mb-3">
+                    <label asp-for="PageName" class="form-label fw-semibold">Page Title <span class="text-danger">*</span></label>
+                    <input asp-for="PageName" class="form-control form-control-modern" required />
+                </div>
 
-                    <div class="text-right mt-4">
-                        <a asp-action="Pages" class="btn btn-secondary mr-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary font-weight-bold px-4">
-                            <i class="fas fa-save mr-1"></i>Save Page Changes
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <div class="mb-4">
+                    <label asp-for="Detail" class="form-label fw-semibold">Page Content (HTML / Text) <span class="text-danger">*</span></label>
+                    <textarea asp-for="Detail" class="form-control form-control-modern font-monospace" rows="10" required style="font-size:0.9rem;"></textarea>
+                </div>
+
+                <div class="text-end pt-2 border-top">
+                    <a asp-action="Pages" class="btn btn-outline-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-brand-red px-4">
+                        <i class="fas fa-save me-1"></i>Save Page Changes
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

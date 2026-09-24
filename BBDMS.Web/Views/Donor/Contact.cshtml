@@ -3,104 +3,123 @@
     ViewData["Title"] = "Contact For Blood";
 }
 
-<div class="inner-banner-w3ls">
-    <div class="container"></div>
-</div>
-<div class="breadcrumb-agile">
-    <div aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a asp-controller="Home" asp-action="Index">Home</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">Blood Needed Person</li>
-        </ol>
+<section class="page-hero-sm" style="background:linear-gradient(135deg,#e63946 0%,#9b1a26 100%); color:#fff; padding:56px 0 40px;">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2" style="background:transparent; padding:0;">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white-50">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Donor" asp-action="Search" class="text-white-50">Search Donors</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Send Blood Request</li>
+            </ol>
+        </nav>
+        <h1 class="fw-bold mb-1" style="font-size:2rem;">Request Blood Donation</h1>
+        <p class="mb-0 text-white-50">Send an emergency request directly to this donor.</p>
     </div>
-</div>
+</section>
 
-<div class="agileits-contact py-5">
-    <div class="py-xl-5 py-lg-3">
-        <div class="w3ls-titles text-center mb-5">
-            <h3 class="title">Contact For Blood</h3>
-            <span>
-                <i class="fas fa-user-md"></i>
-            </span>
-        </div>
-        <div class="row">
-            <div class="col-lg-5 mb-4">
+<section class="py-5" style="background:#f8fafc;">
+    <div class="container py-2">
+        <div class="row g-4 justify-content-center">
+            <!-- Donor Card -->
+            <div class="col-lg-4">
                 @{ var donor = ViewBag.Donor as BBDMS.Model.Models.Entities.BloodDonor; }
                 @if (donor != null)
                 {
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header bg-danger text-white py-3">
-                            <h5 class="mb-0 font-weight-bold"><i class="fas fa-user-circle mr-2"></i>Donor Information</h5>
+                    <div class="card-modern p-4 text-center">
+                        <div style="width:72px; height:72px; background:#fff5f5; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem;">
+                            <i class="fas fa-user-circle" style="font-size:2.5rem; color:#e63946;"></i>
                         </div>
-                        <div class="card-body">
-                            <div class="text-center mb-3">
-                                <span class="badge badge-danger px-3 py-2 font-weight-bold" style="font-size: 1.2rem;">
-                                    Blood Group: @donor.BloodGroup
+                        <h4 class="fw-bold text-dark mb-1">@donor.FullName</h4>
+                        <div class="mb-3">
+                            <span class="badge-soft-danger fw-bold px-3 py-1" style="font-size:1.1rem;">
+                                Blood Group: @donor.BloodGroup
+                            </span>
+                        </div>
+                        <p class="text-muted small mb-3">
+                            <i class="fas fa-map-marker-alt text-danger me-1"></i>@donor.Address
+                        </p>
+
+                        <div class="p-3 rounded-3 text-start small mb-3" style="background:#f8fafc; border:1px solid #edf2f7;">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Gender / Age:</span>
+                                <span class="fw-semibold text-dark">@donor.Gender / @donor.Age yrs</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Availability:</span>
+                                <span class="fw-bold @(donor.IsAvailable ? "text-success" : "text-warning")">
+                                    @(donor.IsAvailable ? "Available" : "Unavailable")
                                 </span>
                             </div>
-                            <h4 class="font-weight-bold text-center text-dark mb-1">@donor.FullName</h4>
-                            <p class="text-center text-muted small mb-3"><i class="fas fa-map-marker-alt mr-1 text-danger"></i>@donor.Address</p>
-                            <ul class="list-group list-group-flush small">
-                                <li class="list-group-item d-flex justify-content-between px-0">
-                                    <span>Gender / Age:</span>
-                                    <strong>@donor.Gender / @donor.Age yrs</strong>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between px-0">
-                                    <span>Donation Availability:</span>
-                                    <strong class="@(donor.IsAvailable ? "text-success" : "text-warning")">
-                                        @(donor.IsAvailable ? "Available" : "Unavailable")
-                                    </strong>
-                                </li>
-                            </ul>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Medical Status:</span>
+                                <span class="badge-soft-success">@(donor.IsEligibleToDonate ? "Eligible" : "Pending Gap")</span>
+                            </div>
                         </div>
+
+                        @if (!string.IsNullOrEmpty(donor.Message))
+                        {
+                            <div class="text-muted small fst-italic">
+                                &ldquo;@donor.Message&rdquo;
+                            </div>
+                        }
                     </div>
                 }
             </div>
-            <div class="col-lg-7 contact-right-w3l">
-                <h5 class="title-w3 text-center mb-4">Send Blood Request To This Donor</h5>
-                <form asp-action="Contact" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="BloodDonorID" value="@ViewBag.DonorId" />
-                    <div class="d-flex space-d-flex">
-                        <div class="form-group grid-inputs">
-                            <label class="col-form-label">Your Name</label>
-                            <input type="text" class="form-control" asp-for="Name" required placeholder="Please enter your name.">
-                        </div>
-                        <div class="form-group grid-inputs">
-                            <label class="col-form-label">Phone Number</label>
-                            <input type="tel" class="form-control" asp-for="ContactNumber" required placeholder="Please enter your phone number.">
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex space-d-flex">
-                        <div class="form-group grid-inputs">
-                            <label class="col-form-label">Email Address</label>
-                            <input type="email" class="form-control" asp-for="EmailId" required placeholder="Please enter your email address.">
-                        </div>
-                        <div class="form-group grid-inputs">
-                            <label class="col-form-label">Blood Require For</label>
-                            <select class="form-control" asp-for="BloodRequireFor" required>
-                                <option value="">Blood Require For</option>
-                                <option value="Father">Father</option>
-                                <option value="Mother">Mother</option>
-                                <option value="Brother">Brother</option>
-                                <option value="Sister">Sister</option>
-                                <option value="Others">Others</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div class="form-group">
-                        <label class="col-form-label">Message</label>
-                        <textarea rows="10" cols="100" class="form-control" asp-for="Message" placeholder="Please enter your message" maxlength="999" style="resize:none" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <input type="submit" value="Send Message" class="btn btn-primary">
-                    </div>
-                </form>
+            <!-- Form -->
+            <div class="col-lg-8">
+                <div class="card-modern p-4 p-md-5">
+                    <h4 class="fw-bold text-dark mb-1">Send Request Message</h4>
+                    <p class="text-muted small mb-4">Please specify who the blood is needed for and the hospital or patient details.</p>
+
+                    <form asp-action="Contact" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="BloodDonorID" value="@ViewBag.DonorId" />
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Your Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control form-control-modern" asp-for="Name" required placeholder="Enter full name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Phone Number <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control form-control-modern" asp-for="ContactNumber" required placeholder="01XXXXXXXXX">
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control form-control-modern" asp-for="EmailId" required placeholder="your@email.com">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Blood Required For <span class="text-danger">*</span></label>
+                                <select class="form-select form-control-modern" asp-for="BloodRequireFor" required>
+                                    <option value="">Select Relation</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Mother">Mother</option>
+                                    <option value="Brother">Brother</option>
+                                    <option value="Sister">Sister</option>
+                                    <option value="Child">Child</option>
+                                    <option value="Self">Self</option>
+                                    <option value="Friend / Others">Friend / Others</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Message &amp; Hospital Details <span class="text-danger">*</span></label>
+                            <textarea rows="5" class="form-control form-control-modern" asp-for="Message" placeholder="Specify hospital name, bed number, required units, and urgency level..." required></textarea>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="btn btn-brand-red px-5 py-2">
+                                <i class="fas fa-paper-plane me-2"></i>Send Blood Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
+</section>

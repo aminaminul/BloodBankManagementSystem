@@ -1,6 +1,46 @@
 @{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<section class="page-hero-sm" style="background:linear-gradient(135deg,#e63946 0%,#9b1a26 100%); color:#fff; padding:56px 0 40px;">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2" style="background:transparent; padding:0;">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white-50">Home</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Privacy Policy</li>
+            </ol>
+        </nav>
+        <h1 class="fw-bold mb-1" style="font-size:2rem;">Privacy &amp; Data Security</h1>
+        <p class="mb-0 text-white-50">How we protect donor confidentiality and healthcare patient information.</p>
+    </div>
+</section>
+
+<section class="py-5" style="background:#f8fafc;">
+    <div class="container py-2">
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <div class="card-modern p-4 p-md-5">
+                    <h4 class="fw-bold text-dark mb-3">1. Donor Information Protection</h4>
+                    <p class="text-muted mb-4">
+                        We value donor trust and safeguard personal information including names, contact numbers, email addresses, and medical eligibility records. Your contact details are only visible to authorized requesters during active emergency blood matching.
+                    </p>
+
+                    <h4 class="fw-bold text-dark mb-3">2. Emergency Requests &amp; Dispatch Transparency</h4>
+                    <p class="text-muted mb-4">
+                        Patient emergency requests (blood, ambulance, oxygen) are broadcast across our verified network to ensure timely delivery of life-saving medical resources.
+                    </p>
+
+                    <h4 class="fw-bold text-dark mb-3">3. Medical Safety &amp; Non-Commercial Guarantee</h4>
+                    <p class="text-muted mb-4">
+                        Blood donation through our platform is completely voluntary, humane, and free of commercial exploitation. We adhere strictly to standard World Health Organization (WHO) and local healthcare eligibility protocols.
+                    </p>
+
+                    <div class="pt-3 border-top d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Last updated: September 2026</small>
+                        <a asp-controller="Home" asp-action="Contact" class="btn btn-sm btn-brand-outline">Have Questions? Contact Us</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

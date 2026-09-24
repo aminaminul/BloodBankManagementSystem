@@ -4,29 +4,30 @@
     var bloodGroups = ViewBag.BloodGroups as IEnumerable<BBDMS.Model.Models.Entities.BloodGroup>;
 }
 
-<div class="inner-banner-w3ls">
+<section class="page-hero-sm" style="background:linear-gradient(135deg,#e63946 0%,#9b1a26 100%); color:#fff; padding:56px 0 40px;">
     <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2" style="background:transparent; padding:0;">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white-50">Home</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Find a Donor</li>
+            </ol>
+        </nav>
+        <h1 class="fw-bold mb-1" style="font-size:2rem;">Find a Blood Donor</h1>
+        <p class="mb-0 text-white-50">Search by blood group and location to connect with eligible donors near you.</p>
     </div>
-</div>
-<div class="breadcrumb-agile">
-    <div aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a asp-controller="Home" asp-action="Index">Home</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">Search Blood Donor</li>
-        </ol>
-    </div>
-</div>
+</section>
 
-<div class="agileits-contact py-5">
-    <div class="py-xl-5 py-lg-3">
-        <form asp-action="Search" method="get" style="padding-left: 30px;">
-            <div class="row">
-                <div class="col-lg-4 mb-4">
-                    <div class="font-italic">Blood Group<span style="color:red">*</span> </div>
-                    <div>
-                        <select name="bloodGroup" class="form-control" required>
+<section class="py-5" style="background:#f8fafc;">
+    <div class="container py-2">
+
+        @* Search Filter Card *@
+        <div class="card-modern mb-5" style="max-width:700px; margin-left:auto; margin-right:auto;">
+            <h5 class="fw-bold mb-4"><i class="fas fa-search me-2 text-danger"></i>Search Criteria</h5>
+            <form asp-action="Search" method="get">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold">Blood Group <span class="text-danger">*</span></label>
+                        <select name="bloodGroup" class="form-select form-control-modern" required>
                             <option value="">Select Blood Group</option>
                             @if (bloodGroups != null)
                             {
@@ -37,82 +38,102 @@
                             }
                         </select>
                     </div>
+                    <div class="col-md-5">
+                        <label class="form-label fw-semibold">Location <span class="text-muted small">(optional)</span></label>
+                        <input type="text" name="location" class="form-control form-control-modern" placeholder="e.g. Dhaka, Chittagong...">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-brand-red w-100">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
                 </div>
+            </form>
+        </div>
 
-                <div class="col-lg-4 mb-4">
-                    <div class="font-italic">Location </div>
-                    <div><textarea class="form-control" name="location"></textarea></div>
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col-lg-4 mb-4">
-                    <div><input type="submit" class="btn btn-primary" value="Submit" style="cursor:pointer"></div>
-                </div>
-            </div>
-        </form>
-
+        @* Results *@
         @if (Model != null)
         {
-            <div class="agileits-contact py-5">
-                <div class="py-xl-5 py-lg-3">
-                    <div class="w3ls-titles text-center mb-5">
-                        <h3 class="title">Search Blood Donor</h3>
-                        <span>
-                            <i class="fas fa-user-md"></i>
-                        </span>
-                    </div>
-                    <div class="d-flex">
-                        <div class="row package-grids mt-5" style="padding-left: 50px;">
-                            @if (Model.Any())
-                            {
-                                foreach (var donor in Model)
-                                {
-                                    <div class="col-md-6 pricing mb-5">
-                                        <div class="price-top">
-                                            <img src="~/images/blood-donor.jpg" alt="Blood Donor" style="border:1px #000 solid" class="img-fluid" />
-                                            <h3>@donor.FullName</h3>
-                                        </div>
-                                        <div class="price-bottom p-4">
-                                            <table class="table table-bordered">
-                                                <tbody>
-                                                    <tr><th>Gender</th><td>@donor.Gender</td></tr>
-                                                    <tr><td>Blood Group</td><td>@donor.BloodGroup</td></tr>
-                                                    <tr><td>Mobile No.</td><td>@donor.MobileNumber</td></tr>
-                                                    <tr><td>Email ID</td><td>@donor.EmailId</td></tr>
-                                                    <tr><td>Age</td><td>@donor.Age</td></tr>
-                                                    <tr><td>Address</td><td>@donor.Address</td></tr>
-                                                    <tr>
-                                                        <td>Eligibility</td>
-                                                        <td>
-                                                            @if (donor.IsEligibleToDonate)
-                                                            {
-                                                                <span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i>Eligible</span>
-                                                            }
-                                                            else
-                                                            {
-                                                                <span class="badge badge-warning text-dark px-2 py-1"><i class="fas fa-clock mr-1"></i>Eligible in @donor.DaysUntilEligible day(s)</span>
-                                                            }
-                                                        </td>
-                                                    </tr>
-                                                    <tr><td>Message</td><td>@donor.Message</td></tr>
-                                                </tbody>
-                                            </table>
-                                            <a class="btn btn-primary" style="color:#fff" asp-action="Contact" asp-route-id="@donor.Id">Request</a>
-                                        </div>
+            @if (Model.Any())
+            {
+                <div class="row g-4">
+                    @foreach (var donor in Model)
+                    {
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card-modern h-100 d-flex flex-column">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div style="width:52px; height:52px; background:#fff5f5; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:1rem;">
+                                        <i class="fas fa-user-circle" style="font-size:1.8rem; color:#e63946;"></i>
                                     </div>
-                                }
-                            }
-                            else
-                            {
-                                <div class="col-12 text-center">
-                                    <h4>No Record Found</h4>
+                                    <div>
+                                        <div class="fw-bold" style="color:#1e293b;">@donor.FullName</div>
+                                        <span class="badge-soft-danger fw-bold">@donor.BloodGroup</span>
+                                    </div>
                                 </div>
-                            }
+
+                                <table class="table table-sm mb-3" style="font-size:.875rem;">
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-muted fw-semibold border-0 py-1">Gender</td>
+                                            <td class="border-0 py-1">@donor.Gender</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-semibold border-0 py-1">Age</td>
+                                            <td class="border-0 py-1">@(donor.Age.HasValue ? $"{donor.Age} yrs" : "—")</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-semibold border-0 py-1">Phone</td>
+                                            <td class="border-0 py-1">@donor.MobileNumber</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-semibold border-0 py-1">Email</td>
+                                            <td class="border-0 py-1 small">@donor.EmailId</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-semibold border-0 py-1">Address</td>
+                                            <td class="border-0 py-1 small">@donor.Address</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted fw-semibold border-0 py-1">Eligibility</td>
+                                            <td class="border-0 py-1">
+                                                @if (donor.IsEligibleToDonate)
+                                                {
+                                                    <span class="badge-soft-success"><i class="fas fa-check-circle me-1"></i>Eligible</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge-soft-warning"><i class="fas fa-clock me-1"></i>@donor.DaysUntilEligible day(s)</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        @if (!string.IsNullOrEmpty(donor.Message))
+                                        {
+                                            <tr>
+                                                <td class="text-muted fw-semibold border-0 py-1">Note</td>
+                                                <td class="border-0 py-1 small fst-italic">@donor.Message</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+
+                                <div class="mt-auto">
+                                    <a class="btn btn-brand-red w-100" asp-action="Contact" asp-route-id="@donor.Id">
+                                        <i class="fas fa-hand-holding-heart me-2"></i>Request This Donor
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    }
                 </div>
-            </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3 d-block"></i>
+                    <h5 class="text-muted">No donors found matching your search criteria.</h5>
+                    <p class="text-muted small">Try a different blood group or location.</p>
+                </div>
+            }
         }
     </div>
-</div>
+</section>

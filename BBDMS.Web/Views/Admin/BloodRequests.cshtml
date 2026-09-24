@@ -7,113 +7,114 @@
     ViewData["ActionName"] = "BloodRequests";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
     <div>
-        <h3 class="font-weight-bold text-dark mb-0">Emergency Blood Requests</h3>
-        <p class="text-muted mb-0">Monitor, verify, and update patient blood requests across hospitals (@Model.TotalItems total)</p>
+        <h3 class="fw-bold text-dark mb-0">Emergency Blood Requests</h3>
+        <p class="text-muted mb-0">Monitor, verify, and update patient blood requests &mdash; <strong>@Model.TotalItems</strong> total</p>
     </div>
-    <div class="d-flex align-items-center">
-        <input type="text" id="requestsTableSearch" class="form-control mr-2" placeholder="Search requests..." style="width: 220px;" />
-        <a asp-action="ExportRequestsCsv" class="btn btn-outline-success font-weight-bold text-nowrap">
-            <i class="fas fa-file-csv mr-1"></i>Export CSV
+    <div class="d-flex align-items-center gap-2">
+        <input type="text" id="requestsTableSearch" class="form-control form-control-modern" placeholder="Search requests..." style="width:220px;" />
+        <a asp-action="ExportRequestsCsv" class="btn btn-brand-outline text-nowrap">
+            <i class="fas fa-file-csv me-1"></i>Export CSV
         </a>
     </div>
 </div>
 
-<div class="card content-card shadow-sm">
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-hover mb-0" id="requestsTable">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Patient / Requester</th>
-                        <th>Blood Group</th>
-                        <th>Units</th>
-                        <th>Hospital & Location</th>
-                        <th>Priority</th>
-                        <th>Posting Date</th>
-                        <th>Status</th>
-                        <th class="text-right">Update Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model.Items != null && Model.Items.Any())
+<div class="card-modern p-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" id="requestsTable">
+            <thead style="background:#f8fafc;">
+                <tr style="font-size:.78rem; text-transform:uppercase; color:#64748b; letter-spacing:.05em;">
+                    <th class="ps-4">Patient / Requester</th>
+                    <th>Blood Group</th>
+                    <th>Units</th>
+                    <th>Hospital &amp; Location</th>
+                    <th>Priority</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th class="text-end pe-4">Update</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items != null && Model.Items.Any())
+                {
+                    foreach (var item in Model.Items)
                     {
-                        foreach (var item in Model.Items)
-                        {
-                            <tr>
-                                <td>
-                                    <strong>@item.Name</strong>
-                                    <div class="small text-muted"><i class="fas fa-phone mr-1"></i>@item.ContactNumber</div>
-                                </td>
-                                <td>
-                                    <span class="badge badge-danger px-2 py-1 font-weight-bold">
-                                        @(item.BloodGroup ?? item.BloodRequireFor)
-                                    </span>
-                                </td>
-                                <td><span class="badge badge-dark">@item.UnitsRequired Unit@(item.UnitsRequired > 1 ? "s" : "")</span></td>
-                                <td>
-                                    <div>@(string.IsNullOrEmpty(item.HospitalName) ? "Hospital" : item.HospitalName)</div>
-                                    <small class="text-muted"><i class="fas fa-map-marker-alt mr-1 text-danger"></i>@item.Location</small>
-                                </td>
-                                <td>
-                                    <span class="badge @(item.Urgency == "Critical" || item.Urgency?.Contains("Critical") == true ? "badge-danger" : "badge-warning")">
-                                        @item.Urgency
-                                    </span>
-                                </td>
-                                <td class="small text-muted">@(item.ApplyDate.HasValue ? item.ApplyDate.Value.ToString("MMM dd, yyyy") : "")</td>
-                                <td>
-                                    @if (item.Status == "Fulfilled")
-                                    {
-                                        <span class="badge badge-success px-2 py-1"><i class="fas fa-check-circle mr-1"></i>Fulfilled</span>
-                                    }
-                                    else if (item.Status == "Approved")
-                                    {
-                                        <span class="badge badge-primary px-2 py-1">Approved</span>
-                                    }
-                                    else if (item.Status == "Cancelled")
-                                    {
-                                        <span class="badge badge-secondary px-2 py-1">Cancelled</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge badge-warning text-dark px-2 py-1"><i class="fas fa-clock mr-1"></i>Pending</span>
-                                    }
-                                </td>
-                                <td class="text-right">
-                                    <div class="btn-group btn-group-sm">
-                                        <form asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Approved" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-outline-primary" title="Approve Request">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
-                                        <form asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Fulfilled" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-outline-success" title="Mark as Fulfilled">
-                                                <i class="fas fa-hand-holding-heart"></i>
-                                            </button>
-                                        </form>
-                                        <form asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Cancelled" method="post" class="d-inline">
-                                            @Html.AntiForgeryToken()
-                                            <button type="submit" class="btn btn-outline-secondary" title="Cancel Request">
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="8" class="text-center py-4 text-muted">No blood requests submitted yet.</td>
+                        <tr style="vertical-align:middle;">
+                            <td class="ps-4">
+                                <div class="fw-semibold">@item.Name</div>
+                                <div class="text-muted small"><i class="fas fa-phone me-1"></i>@item.ContactNumber</div>
+                            </td>
+                            <td>
+                                <span class="badge-soft-danger fw-bold px-2" style="font-size:.85rem;">
+                                    @(item.BloodGroup ?? item.BloodRequireFor)
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge-soft-primary">@item.UnitsRequired Unit@(item.UnitsRequired > 1 ? "s" : "")</span>
+                            </td>
+                            <td>
+                                <div class="fw-semibold small">@(string.IsNullOrEmpty(item.HospitalName) ? "—" : item.HospitalName)</div>
+                                <div class="text-muted small"><i class="fas fa-map-marker-alt me-1 text-danger"></i>@item.Location</div>
+                            </td>
+                            <td>
+                                @if (item.Urgency?.Contains("Critical") == true || item.Urgency == "Critical")
+                                {
+                                    <span class="badge-soft-danger">@item.Urgency</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-soft-warning">@item.Urgency</span>
+                                }
+                            </td>
+                            <td class="small text-muted">@(item.ApplyDate.HasValue ? item.ApplyDate.Value.ToString("MMM dd, yyyy") : "—")</td>
+                            <td>
+                                @if (item.Status == "Fulfilled")
+                                {
+                                    <span class="badge-soft-success"><i class="fas fa-check-circle me-1"></i>Fulfilled</span>
+                                }
+                                else if (item.Status == "Approved")
+                                {
+                                    <span class="badge-soft-primary">Approved</span>
+                                }
+                                else if (item.Status == "Cancelled")
+                                {
+                                    <span class="badge bg-secondary text-white" style="border-radius:8px;">Cancelled</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-soft-warning"><i class="fas fa-clock me-1"></i>Pending</span>
+                                }
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group btn-group-sm">
+                                    <form asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Approved" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-primary" title="Approve"><i class="fas fa-check"></i></button>
+                                    </form>
+                                    <form asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Fulfilled" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Mark Fulfilled"><i class="fas fa-hand-holding-heart"></i></button>
+                                    </form>
+                                    <form asp-action="UpdateRequestStatus" asp-route-id="@item.ID" asp-route-status="Cancelled" method="post" class="d-inline">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary" title="Cancel"><i class="fas fa-times"></i></button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                     }
-                </tbody>
-            </table>
-        </div>
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fas fa-tint fa-2x mb-2 d-block text-danger"></i>No blood requests submitted yet.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 </div>
 
@@ -121,12 +122,10 @@
 
 @section Scripts {
     <script>
-        document.getElementById('requestsTableSearch')?.addEventListener('keyup', function() {
+        document.getElementById('requestsTableSearch')?.addEventListener('keyup', function () {
             var filter = this.value.toLowerCase();
-            var rows = document.querySelectorAll('#requestsTable tbody tr');
-            rows.forEach(function(row) {
-                var text = row.textContent.toLowerCase();
-                row.style.display = text.includes(filter) ? '' : 'none';
+            document.querySelectorAll('#requestsTable tbody tr').forEach(function (row) {
+                row.style.display = row.textContent.toLowerCase().includes(filter) ? '' : 'none';
             });
         });
     </script>

@@ -6,69 +6,74 @@
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card content-card shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h4 class="mb-0 font-weight-bold text-dark"><i class="fas fa-ambulance mr-2 text-warning"></i>Register Ambulance Fleet</h4>
+        <div class="card-modern p-4">
+            <div class="mb-4 pb-3 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                    <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-ambulance me-2 text-warning"></i>Register Ambulance Fleet</h4>
+                    <p class="text-muted small mb-0">Add dispatch vehicles, support classifications, and hotline</p>
+                </div>
+                <a asp-action="Ambulances" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1"></i>Back
+                </a>
             </div>
-            <div class="card-body p-4">
-                <form method="post" asp-action="AmbulanceCreate">
-                    @Html.AntiForgeryToken()
 
-                    <div class="form-row">
-                        <div class="form-group col-md-8">
-                            <label asp-for="ProviderName" class="font-weight-bold">Provider / Organization Name <span class="text-danger">*</span></label>
-                            <input asp-for="ProviderName" class="form-control" required />
-                            <span asp-validation-for="ProviderName" class="text-danger small"></span>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label asp-for="Location" class="font-weight-bold">Service Location / City <span class="text-danger">*</span></label>
-                            <input asp-for="Location" class="form-control" required />
-                            <span asp-validation-for="Location" class="text-danger small"></span>
-                        </div>
-                    </div>
+            <form method="post" asp-action="AmbulanceCreate">
+                @Html.AntiForgeryToken()
 
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label asp-for="AmbulanceType" class="font-weight-bold">Ambulance Classification <span class="text-danger">*</span></label>
-                            <select asp-for="AmbulanceType" class="form-control" required>
-                                <option value="Advanced Life Support (ALS) / ICU">Advanced Life Support (ALS) / ICU</option>
-                                <option value="Basic Life Support (BLS)">Basic Life Support (BLS)</option>
-                                <option value="AC Ambulance">AC Ambulance</option>
-                                <option value="Non-AC Ambulance">Non-AC Ambulance</option>
-                                <option value="Neonatal ICU Ambulance">Neonatal ICU Ambulance</option>
-                            </select>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label asp-for="VehicleNumber" class="font-weight-bold">Vehicle Registration Number</label>
-                            <input asp-for="VehicleNumber" class="form-control" placeholder="e.g. DHK-METRO-1122" />
-                        </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <label asp-for="ProviderName" class="form-label fw-semibold">Provider / Organization Name <span class="text-danger">*</span></label>
+                        <input asp-for="ProviderName" class="form-control form-control-modern" required placeholder="e.g. Care Express Ambulance" />
+                        <span asp-validation-for="ProviderName" class="text-danger small"></span>
                     </div>
+                    <div class="col-md-4">
+                        <label asp-for="Location" class="form-label fw-semibold">Service Location / City <span class="text-danger">*</span></label>
+                        <input asp-for="Location" class="form-control form-control-modern" required placeholder="e.g. Dhaka Central" />
+                        <span asp-validation-for="Location" class="text-danger small"></span>
+                    </div>
+                </div>
 
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label asp-for="ContactNumber" class="font-weight-bold">24/7 Hotline Number <span class="text-danger">*</span></label>
-                            <input asp-for="ContactNumber" class="form-control" required />
-                            <span asp-validation-for="ContactNumber" class="text-danger small"></span>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label asp-for="ServiceHours" class="font-weight-bold">Service Hours</label>
-                            <input asp-for="ServiceHours" class="form-control" value="24/7" />
-                        </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="AmbulanceType" class="form-label fw-semibold">Ambulance Classification <span class="text-danger">*</span></label>
+                        <select asp-for="AmbulanceType" class="form-select form-control-modern" required>
+                            <option value="Advanced Life Support (ALS) / ICU">Advanced Life Support (ALS) / ICU</option>
+                            <option value="Basic Life Support (BLS)">Basic Life Support (BLS)</option>
+                            <option value="AC Ambulance">AC Ambulance</option>
+                            <option value="Non-AC Ambulance">Non-AC Ambulance</option>
+                            <option value="Neonatal ICU Ambulance">Neonatal ICU Ambulance</option>
+                        </select>
                     </div>
+                    <div class="col-md-6">
+                        <label asp-for="VehicleNumber" class="form-label fw-semibold">Vehicle Registration Number</label>
+                        <input asp-for="VehicleNumber" class="form-control form-control-modern" placeholder="e.g. DHK-METRO-1122" />
+                    </div>
+                </div>
 
-                    <div class="form-group">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="isAvailable" asp-for="IsAvailable" checked />
-                            <label class="custom-control-label font-weight-bold" for="isAvailable">Vehicle is Currently Available for Dispatch</label>
-                        </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="ContactNumber" class="form-label fw-semibold">24/7 Hotline Number <span class="text-danger">*</span></label>
+                        <input asp-for="ContactNumber" class="form-control form-control-modern" required placeholder="01XXXXXXXXX" />
+                        <span asp-validation-for="ContactNumber" class="text-danger small"></span>
                     </div>
+                    <div class="col-md-6">
+                        <label asp-for="ServiceHours" class="form-label fw-semibold">Service Hours</label>
+                        <input asp-for="ServiceHours" class="form-control form-control-modern" value="24/7" />
+                    </div>
+                </div>
 
-                    <div class="text-right mt-4">
-                        <a asp-action="Ambulances" class="btn btn-secondary mr-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary font-weight-bold px-4">Save Ambulance</button>
+                <div class="mb-4">
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="isAvailable" asp-for="IsAvailable" checked style="width:2.5em; height:1.4em;" />
+                        <label class="form-check-label fw-semibold ms-2" for="isAvailable">Vehicle is Currently Available for Dispatch</label>
                     </div>
-                </form>
-            </div>
+                </div>
+
+                <div class="text-end pt-2 border-top">
+                    <a asp-action="Ambulances" class="btn btn-outline-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-brand-red px-4">Save Ambulance</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

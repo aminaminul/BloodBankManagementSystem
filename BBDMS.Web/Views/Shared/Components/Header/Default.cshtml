@@ -1,150 +1,102 @@
 @model BBDMS.Model.Models.ViewModels.HeaderViewModel
 
-<header>
-    <div class="top-bar py-3">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-7 top-social-agile">
-                    <div class="row">
-                        <ul class="col-lg-4 col-6 top-right-info text-center">
-                            <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
-                            <li class="mx-3"><a href="#"><i class="fab fa-twitter"></i></a></li>
-                            <li><a href="#"><i class="fab fa-google-plus-g"></i></a></li>
-                            <li class="ml-3"><a href="#"><i class="fab fa-pinterest-p"></i></a></li>
-                        </ul>
-                        @if (Model.ContactInfo != null)
-                        {
-                            <div class="col-6 header-top_w3layouts pl-3 text-lg-left text-center">
-                                <p class="text-white">
-                                    <i class="fas fa-map-marker-alt mr-2"></i>@Model.ContactInfo.Address
-                                </p>
-                            </div>
-                        }
-                    </div>
-                </div>
-                <div class="col-lg-5 top-social-agile text-lg-right text-center">
-                    @if (Model.ContactInfo != null)
+<header class="sticky-top navbar-modern">
+    <div class="header-fluid-container">
+        <nav class="navbar navbar-expand-lg navbar-light p-0">
+            <!-- Brand Logo & Name -->
+            <a class="navbar-brand navbar-brand-logo py-1" asp-controller="Home" asp-action="Index">
+                <img src="~/images/Logo.png" alt="Blood Bank Logo" />
+                <span class="brand-title">Blood <span>Bank</span></span>
+            </a>
+
+            <!-- Mobile Toggler -->
+            <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#mainNavbar"
+                    aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Navigation Links -->
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav mx-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern" asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern" asp-controller="Home" asp-action="About">About</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link nav-link-modern dropdown-toggle" href="#" id="servicesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Services
+                        </a>
+                        <div class="dropdown-menu border-0 shadow-lg" style="border-radius: 14px; padding: 0.5rem;" aria-labelledby="servicesDropdown">
+                            <a class="dropdown-item py-2 font-weight-bold text-danger" asp-controller="Emergency" asp-action="Index">
+                                <i class="fas fa-search-location mr-2"></i>Nearby Emergency Hub
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item py-2" asp-controller="Emergency" asp-action="Hospitals">
+                                <i class="fas fa-hospital mr-2 text-primary"></i>Hospitals & ICU Beds
+                            </a>
+                            <a class="dropdown-item py-2" asp-controller="Emergency" asp-action="BloodBanks">
+                                <i class="fas fa-landmark mr-2 text-danger"></i>Blood Banks
+                            </a>
+                            <a class="dropdown-item py-2" asp-controller="Emergency" asp-action="Ambulances">
+                                <i class="fas fa-ambulance mr-2 text-warning"></i>Ambulance Fleets
+                            </a>
+                            <a class="dropdown-item py-2" asp-controller="Emergency" asp-action="Oxygen">
+                                <i class="fas fa-lungs mr-2 text-info"></i>Oxygen Supplies
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item py-2" asp-controller="Emergency" asp-action="BloodRequests">
+                                <i class="fas fa-heartbeat mr-2 text-danger"></i>Emergency Blood Requests
+                            </a>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern" asp-controller="Donor" asp-action="Search">Find Donors</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link nav-link-modern" asp-controller="Home" asp-action="Contact">Contact</a>
+                    </li>
+                </ul>
+
+                <!-- Right Action Buttons -->
+                <div class="d-flex align-items-center mt-3 mt-lg-0">
+                    <a asp-controller="Emergency" asp-action="CreateBloodRequest" class="btn btn-brand-outline btn-sm font-weight-bold mr-2">
+                        <i class="fas fa-tint mr-1 text-danger"></i> Need Blood
+                    </a>
+
+                    @if (Model.IsDonorLoggedIn)
                     {
-                        <div class="row">
-                            <div class="col-lg-7 col-6 top-w3layouts">
-                                <p class="text-white">
-                                    <i class="far fa-envelope-open mr-2"></i>
-                                    <a href="mailto:@Model.ContactInfo.EmailId" class="text-white">@Model.ContactInfo.EmailId</a>
-                                </p>
-                            </div>
-                            <div class="col-lg-5 col-6 header-w3layouts pl-4 text-lg-left">
-                                <p class="text-white">
-                                    <i class="fas fa-phone mr-2"></i>+@Model.ContactInfo.ContactNo
-                                </p>
+                        <div class="dropdown">
+                            <button class="btn btn-brand-red btn-sm dropdown-toggle font-weight-bold d-flex align-items-center" type="button" id="donorMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-user-circle mr-1 fa-lg"></i> My Account
+                            </button>
+                            <div class="dropdown-menu dropdown-menu-right border-0 shadow-lg" style="border-radius: 14px;" aria-labelledby="donorMenu">
+                                <a class="dropdown-item py-2" asp-controller="Account" asp-action="Profile"><i class="fas fa-id-card mr-2 text-primary"></i>Profile</a>
+                                <a class="dropdown-item py-2" asp-controller="Account" asp-action="ChangePassword"><i class="fas fa-key mr-2 text-warning"></i>Change Password</a>
+                                <a class="dropdown-item py-2" asp-controller="Account" asp-action="RequestReceived"><i class="fas fa-inbox mr-2 text-info"></i>Requests Received</a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item py-2 text-danger font-weight-bold" asp-controller="Account" asp-action="Logout"><i class="fas fa-sign-out-alt mr-2"></i>Logout</a>
                             </div>
                         </div>
                     }
-                </div>
-            </div>
-        </div>
-    </div>
-</header>
-<div id="home">
-    <div class="main-top py-1">
-        <nav class="navbar navbar-expand-lg navbar-light fixed-navi">
-            <div class="container">
-                <h1>
-                    <a class="navbar-brand font-weight-bold font-italic" asp-controller="Home" asp-action="Index">
-                        <img src="~/images/Logo.png" alt="Blood Donor" style="border:0px #000 solid" class="img-fluid" />
-                    </a>
-                </h1>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse text-center" id="navbarSupportedContent">
-                    <ul class="navbar-nav ml-lg-auto align-items-center">
-                        <li class="nav-item">
-                            <a class="nav-link font-weight-bold" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item dropdown mx-lg-2">
-                            <a class="nav-link dropdown-toggle font-weight-bold text-danger" href="#" id="emergencyDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-ambulance mr-1"></i>Emergency Services
-                            </a>
-                            <div class="dropdown-menu shadow" aria-labelledby="emergencyDropdown">
-                                <a class="dropdown-item font-weight-bold text-danger" asp-controller="Emergency" asp-action="Index">
-                                    <i class="fas fa-search-location mr-2"></i>Nearby Emergency Hub
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" asp-controller="Emergency" asp-action="Hospitals">
-                                    <i class="fas fa-hospital mr-2 text-primary"></i>Hospitals & ICU Beds
-                                </a>
-                                <a class="dropdown-item" asp-controller="Emergency" asp-action="BloodBanks">
-                                    <i class="fas fa-landmark mr-2 text-danger"></i>Blood Banks
-                                </a>
-                                <a class="dropdown-item" asp-controller="Emergency" asp-action="Ambulances">
-                                    <i class="fas fa-ambulance mr-2 text-warning"></i>Ambulance Fleets
-                                </a>
-                                <a class="dropdown-item" asp-controller="Emergency" asp-action="Oxygen">
-                                    <i class="fas fa-lungs mr-2 text-info"></i>Oxygen Supply
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" asp-controller="Emergency" asp-action="BloodRequests">
-                                    <i class="fas fa-heartbeat mr-2 text-danger"></i>Emergency Blood Requests
-                                </a>
-                            </div>
-                        </li>
-                        <li class="nav-item mx-lg-2">
-                            <a class="nav-link" asp-controller="Donor" asp-action="Search">Search Donor</a>
-                        </li>
-                        <li class="nav-item mx-lg-2">
-                            <a class="nav-link" asp-controller="Donor" asp-action="Index">Donor Directory</a>
-                        </li>
-                        <li class="nav-item mx-lg-2">
-                            <a class="nav-link" asp-controller="Home" asp-action="About">About</a>
-                        </li>
-                        <li class="nav-item mx-lg-2">
-                            <a class="nav-link" asp-controller="Home" asp-action="Contact">Contact</a>
-                        </li>
-                        
-                        @if (Model.IsDonorLoggedIn)
-                        {
-                            <li class="nav-item dropdown mx-lg-2">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fas fa-user-circle mr-1"></i>My Account
-                                </a>
-                                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" asp-controller="Account" asp-action="Profile">Profile</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">Change Password</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" asp-controller="Account" asp-action="RequestReceived">Requests Received</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" asp-controller="Account" asp-action="Logout">Logout</a>
-                                </div>
-                            </li>
-                        }
-                        else if (Model.IsAdminLoggedIn)
-                        {
-                            <li class="nav-item mx-lg-2">
-                                <a class="nav-link text-warning font-weight-bold" asp-controller="Admin" asp-action="Dashboard">Admin Panel</a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item mx-lg-2">
-                                <a class="nav-link" asp-controller="Admin" asp-action="Index">Admin</a>
-                            </li>
-                        }
-                    </ul>
-                    <div class="d-flex align-items-center ml-lg-3 mt-3 mt-lg-0">
-                        <a asp-controller="Emergency" asp-action="CreateBloodRequest" class="btn btn-danger btn-sm font-weight-bold mr-2 text-white px-3 shadow-sm">
-                            <i class="fas fa-tint mr-1"></i>Need Blood
+                    else if (Model.IsAdminLoggedIn)
+                    {
+                        <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-dark btn-sm btn-pill font-weight-bold px-3">
+                            <i class="fas fa-shield-alt mr-1 text-warning"></i> Admin Panel
                         </a>
-                        @if (!Model.IsDonorLoggedIn && !Model.IsAdminLoggedIn)
-                        {
-                            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-danger btn-sm font-weight-bold px-3">
-                                <i class="fas fa-sign-in-alt mr-1"></i>Login
-                            </a>
-                        }
-                    </div>
+                    }
+                    else
+                    {
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-light btn-pill btn-sm font-weight-bold px-3 mr-2 border">
+                            Login
+                        </a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-brand-red btn-sm font-weight-bold px-3">
+                            Register
+                        </a>
+                    }
                 </div>
             </div>
         </nav>
     </div>
-</div>
+</header>

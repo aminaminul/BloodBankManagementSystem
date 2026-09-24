@@ -6,77 +6,82 @@
 
 <div class="row justify-content-center">
     <div class="col-lg-9">
-        <div class="card content-card shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h4 class="mb-0 font-weight-bold text-dark"><i class="fas fa-edit mr-2 text-primary"></i>Edit Hospital: @Model.Name</h4>
+        <div class="card-modern p-4">
+            <div class="mb-4 pb-3 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                    <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-edit me-2 text-danger"></i>Edit Hospital: @Model.Name</h4>
+                    <p class="text-muted small mb-0">Update contact and live bed/ICU availability details</p>
+                </div>
+                <a asp-action="Hospitals" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1"></i>Back
+                </a>
             </div>
-            <div class="card-body p-4">
-                <form method="post" asp-action="HospitalEdit">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="Id" />
 
-                    <div class="form-row">
-                        <div class="form-group col-md-8">
-                            <label asp-for="Name" class="font-weight-bold">Hospital Name <span class="text-danger">*</span></label>
-                            <input asp-for="Name" class="form-control" required />
-                            <span asp-validation-for="Name" class="text-danger small"></span>
+            <form method="post" asp-action="HospitalEdit">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <label asp-for="Name" class="form-label fw-semibold">Hospital Name <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control form-control-modern" required />
+                        <span asp-validation-for="Name" class="text-danger small"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="City" class="form-label fw-semibold">City / District <span class="text-danger">*</span></label>
+                        <input asp-for="City" class="form-control form-control-modern" required />
+                        <span asp-validation-for="City" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Address" class="form-label fw-semibold">Full Address</label>
+                    <input asp-for="Address" class="form-control form-control-modern" />
+                </div>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label asp-for="ContactNumber" class="form-label fw-semibold">General Contact Number</label>
+                        <input asp-for="ContactNumber" class="form-control form-control-modern" />
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="EmergencyHelpline" class="form-label fw-semibold">24/7 Emergency Helpline <span class="text-danger">*</span></label>
+                        <input asp-for="EmergencyHelpline" class="form-control form-control-modern" required />
+                    </div>
+                </div>
+
+                <div class="p-3 rounded-3 mb-4" style="background:#f8fafc; border:1px solid #e2e8f0;">
+                    <h6 class="fw-bold text-dark mb-3"><i class="fas fa-bed me-2 text-primary"></i>Emergency Bed &amp; ICU Capacity</h6>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label asp-for="TotalEmergencyBeds" class="form-label small fw-semibold text-muted">Total Emergency Beds</label>
+                            <input asp-for="TotalEmergencyBeds" type="number" min="0" class="form-control form-control-modern" />
                         </div>
-                        <div class="form-group col-md-4">
-                            <label asp-for="City" class="font-weight-bold">City / District <span class="text-danger">*</span></label>
-                            <input asp-for="City" class="form-control" required />
-                            <span asp-validation-for="City" class="text-danger small"></span>
+                        <div class="col-md-3">
+                            <label asp-for="AvailableEmergencyBeds" class="form-label small fw-semibold text-success">Available Emergency Beds</label>
+                            <input asp-for="AvailableEmergencyBeds" type="number" min="0" class="form-control form-control-modern" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="TotalIcuBeds" class="form-label small fw-semibold text-muted">Total ICU Beds</label>
+                            <input asp-for="TotalIcuBeds" type="number" min="0" class="form-control form-control-modern" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="AvailableIcuBeds" class="form-label small fw-semibold text-danger">Available ICU Beds</label>
+                            <input asp-for="AvailableIcuBeds" type="number" min="0" class="form-control form-control-modern" />
                         </div>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label asp-for="Address" class="font-weight-bold">Full Address</label>
-                        <input asp-for="Address" class="form-control" />
-                    </div>
+                <div class="mb-4">
+                    <label asp-for="EmergencyServices" class="form-label fw-semibold">Specialized Emergency Services</label>
+                    <textarea asp-for="EmergencyServices" class="form-control form-control-modern" rows="2"></textarea>
+                </div>
 
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label asp-for="ContactNumber" class="font-weight-bold">General Contact Number</label>
-                            <input asp-for="ContactNumber" class="form-control" />
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label asp-for="EmergencyHelpline" class="font-weight-bold">24/7 Emergency Helpline <span class="text-danger">*</span></label>
-                            <input asp-for="EmergencyHelpline" class="form-control" required />
-                        </div>
-                    </div>
-
-                    <div class="card bg-light p-3 mb-3 border-0">
-                        <h6 class="font-weight-bold text-dark mb-3"><i class="fas fa-bed mr-2 text-primary"></i>Emergency Bed & ICU Capacity</h6>
-                        <div class="form-row">
-                            <div class="form-group col-md-3">
-                                <label asp-for="TotalEmergencyBeds" class="small font-weight-bold">Total Emergency Beds</label>
-                                <input asp-for="TotalEmergencyBeds" type="number" min="0" class="form-control" />
-                            </div>
-                            <div class="form-group col-md-3">
-                                <label asp-for="AvailableEmergencyBeds" class="small font-weight-bold text-success">Available Emergency Beds</label>
-                                <input asp-for="AvailableEmergencyBeds" type="number" min="0" class="form-control" />
-                            </div>
-                            <div class="form-group col-md-3">
-                                <label asp-for="TotalIcuBeds" class="small font-weight-bold">Total ICU Beds</label>
-                                <input asp-for="TotalIcuBeds" type="number" min="0" class="form-control" />
-                            </div>
-                            <div class="form-group col-md-3">
-                                <label asp-for="AvailableIcuBeds" class="small font-weight-bold text-danger">Available ICU Beds</label>
-                                <input asp-for="AvailableIcuBeds" type="number" min="0" class="form-control" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label asp-for="EmergencyServices" class="font-weight-bold">Specialized Emergency Services</label>
-                        <textarea asp-for="EmergencyServices" class="form-control" rows="2"></textarea>
-                    </div>
-
-                    <div class="text-right mt-4">
-                        <a asp-action="Hospitals" class="btn btn-secondary mr-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary font-weight-bold px-4">Update Hospital</button>
-                    </div>
-                </form>
-            </div>
+                <div class="text-end pt-2 border-top">
+                    <a asp-action="Hospitals" class="btn btn-outline-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-brand-red px-4">Update Hospital</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -5,131 +5,157 @@
     var donorBloodGroup = ViewBag.DonorBloodGroup as string;
 }
 
-<div class="inner-banner-w3ls">
-    <div class="container"></div>
-</div>
-<div class="breadcrumb-agile">
-    <div aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-                <a asp-controller="Home" asp-action="Index">Home</a>
-            </li>
-            <li class="breadcrumb-item active" aria-current="page">Requests Received</li>
-        </ol>
+<section class="page-hero-sm" style="background:linear-gradient(135deg,#e63946 0%,#9b1a26 100%); color:#fff; padding:56px 0 40px;">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2" style="background:transparent; padding:0;">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white-50">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Account" asp-action="Profile" class="text-white-50">Account</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Requests Received</li>
+            </ol>
+        </nav>
+        <h1 class="fw-bold mb-1" style="font-size:2rem;">Blood Requests Inbox</h1>
+        <p class="mb-0 text-white-50">Review direct patient requests and regional matches for your blood group.</p>
     </div>
-</div>
+</section>
 
-<div class="agileits-contact py-5">
-    <div class="py-xl-5 py-lg-3">
-        <div class="w3ls-titles text-center mb-5">
-            <h3 class="title">Blood Requests Received</h3>
-            <span><i class="fas fa-user-md"></i></span>
+<section class="py-5" style="background:#f8fafc;">
+    <div class="container py-2">
+
+        <!-- Direct Requests -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="fw-bold text-dark mb-0">
+                    <i class="fas fa-inbox me-2 text-danger"></i>Requests Addressed Directly to You
+                </h4>
+                <p class="text-muted small mb-0">Patients or hospitals who directly selected your profile</p>
+            </div>
         </div>
 
-        <div class="container">
-
-            <!-- Direct Requests (addressed to this donor) -->
-            <h5 class="font-weight-bold text-danger mb-3">
-                <i class="fas fa-envelope mr-1"></i> Requests Addressed Directly to You
-            </h5>
-            <table class="table table-bordered table-striped mb-5">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Requester Name</th>
-                        <th>Mobile Number</th>
-                        <th>Email</th>
-                        <th>Blood Required For</th>
-                        <th>Message</th>
-                        <th>Apply Date</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var request in Model)
-                        {
-                            <tr>
-                                <td>@request.Name</td>
-                                <td>@request.ContactNumber</td>
-                                <td>@request.EmailId</td>
-                                <td>@request.BloodRequireFor</td>
-                                <td>@request.Message</td>
-                                <td>@request.ApplyDate?.ToString("yyyy-MM-dd")</td>
-                                <td>
-                                    @if (!string.IsNullOrEmpty(request.Status))
-                                    {
-                                        <span class="badge @(request.Status == "Pending" ? "badge-warning" : request.Status == "Fulfilled" ? "badge-success" : "badge-secondary")">
-                                            @request.Status
-                                        </span>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="7" class="text-center text-muted">No direct blood requests received yet.</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-
-            <!-- Community Requests matching donor's blood group -->
-            @if (!string.IsNullOrEmpty(donorBloodGroup))
-            {
-                <h5 class="font-weight-bold text-primary mb-3">
-                    <i class="fas fa-users mr-1"></i> Community Requests for Blood Group: <span class="badge badge-danger">@donorBloodGroup</span>
-                </h5>
-                <p class="text-muted small mb-3">These are open requests from patients who need your blood group. You can reach out to them directly.</p>
-                <table class="table table-bordered table-hover mb-5">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>Patient Name</th>
-                            <th>Blood Group</th>
-                            <th>Hospital</th>
-                            <th>Location</th>
-                            <th>Contact</th>
-                            <th>Urgency</th>
-                            <th>Units Needed</th>
+        <div class="card-modern p-0 mb-5">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead style="background:#f8fafc;">
+                        <tr style="font-size:.78rem; text-transform:uppercase; color:#64748b; letter-spacing:.05em;">
+                            <th class="ps-4">Requester Name</th>
+                            <th>Mobile Number</th>
+                            <th>Email</th>
+                            <th>Requirement</th>
+                            <th>Message</th>
                             <th>Date</th>
+                            <th class="text-end pe-4">Status</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @if (communityRequests != null && communityRequests.Any())
+                        @if (Model != null && Model.Any())
                         {
-                            foreach (var req in communityRequests)
+                            foreach (var request in Model)
                             {
-                                <tr>
-                                    <td>@req.Name</td>
-                                    <td><span class="badge badge-danger">@(req.BloodGroup ?? req.BloodRequireFor)</span></td>
-                                    <td>@(req.HospitalName ?? "—")</td>
-                                    <td>@(req.Location ?? "—")</td>
-                                    <td>@req.ContactNumber</td>
+                                <tr style="vertical-align:middle;">
+                                    <td class="ps-4"><strong class="text-dark">@request.Name</strong></td>
                                     <td>
-                                        @if (!string.IsNullOrEmpty(req.Urgency))
+                                        <a href="tel:@request.ContactNumber" class="text-dark fw-semibold small">
+                                            <i class="fas fa-phone me-1 text-success"></i>@request.ContactNumber
+                                        </a>
+                                    </td>
+                                    <td><a href="mailto:@request.EmailId" class="text-primary small">@request.EmailId</a></td>
+                                    <td><span class="badge-soft-danger">@request.BloodRequireFor</span></td>
+                                    <td style="max-width: 250px;"><small class="text-muted">@request.Message</small></td>
+                                    <td class="small text-muted">@request.ApplyDate?.ToString("MMM dd, yyyy")</td>
+                                    <td class="text-end pe-4">
+                                        @if (!string.IsNullOrEmpty(request.Status))
                                         {
-                                            <span class="badge @(req.Urgency == "Critical" ? "badge-danger" : req.Urgency == "Urgent" ? "badge-warning" : "badge-info")">
-                                                @req.Urgency
+                                            <span class="badge @(request.Status == "Pending" ? "badge-soft-warning" : request.Status == "Fulfilled" ? "badge-soft-success" : "badge-soft-secondary")">
+                                                @request.Status
                                             </span>
                                         }
                                     </td>
-                                    <td>@(req.UnitsRequired > 0 ? req.UnitsRequired.ToString() : "—")</td>
-                                    <td>@req.ApplyDate?.ToString("yyyy-MM-dd")</td>
                                 </tr>
                             }
                         }
                         else
                         {
                             <tr>
-                                <td colspan="8" class="text-center text-muted">No community requests found for your blood group right now.</td>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="fas fa-envelope-open fa-2x mb-2 d-block text-secondary"></i>No direct blood requests received yet.
+                                </td>
                             </tr>
                         }
                     </tbody>
                 </table>
-            }
-
+            </div>
         </div>
+
+        <!-- Community Requests matching donor's blood group -->
+        @if (!string.IsNullOrEmpty(donorBloodGroup))
+        {
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h4 class="fw-bold text-dark mb-0">
+                        <i class="fas fa-users me-2 text-primary"></i>Community Requests Matching <span class="badge-soft-danger px-2">@donorBloodGroup</span>
+                    </h4>
+                    <p class="text-muted small mb-0">Open emergency requests needing your blood group across local hospitals</p>
+                </div>
+            </div>
+
+            <div class="card-modern p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead style="background:#f8fafc;">
+                            <tr style="font-size:.78rem; text-transform:uppercase; color:#64748b; letter-spacing:.05em;">
+                                <th class="ps-4">Patient / Requester</th>
+                                <th>Blood Group</th>
+                                <th>Hospital</th>
+                                <th>Location</th>
+                                <th>Contact</th>
+                                <th>Urgency</th>
+                                <th>Units</th>
+                                <th class="text-end pe-4">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (communityRequests != null && communityRequests.Any())
+                            {
+                                foreach (var req in communityRequests)
+                                {
+                                    <tr style="vertical-align:middle;">
+                                        <td class="ps-4"><strong class="text-dark">@req.Name</strong></td>
+                                        <td><span class="badge-soft-danger fw-bold">@(req.BloodGroup ?? req.BloodRequireFor)</span></td>
+                                        <td><div class="small fw-semibold text-dark">@(req.HospitalName ?? "—")</div></td>
+                                        <td><div class="small text-muted"><i class="fas fa-map-marker-alt text-danger me-1"></i>@(req.Location ?? "—")</div></td>
+                                        <td>
+                                            <a href="tel:@req.ContactNumber" class="text-dark fw-semibold small">
+                                                <i class="fas fa-phone me-1 text-success"></i>@req.ContactNumber
+                                            </a>
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(req.Urgency))
+                                            {
+                                                <span class="badge @(req.Urgency == "Critical" ? "badge-soft-danger" : req.Urgency == "Urgent" ? "badge-soft-warning" : "badge-soft-primary")">
+                                                    @req.Urgency
+                                                </span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <span class="badge-soft-primary">@(req.UnitsRequired > 0 ? req.UnitsRequired.ToString() + " Unit(s)" : "—")</span>
+                                        </td>
+                                        <td class="text-end pe-4 small text-muted">@req.ApplyDate?.ToString("MMM dd, yyyy")</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="8" class="text-center py-5 text-muted">
+                                        <i class="fas fa-check-circle fa-2x mb-2 d-block text-success"></i>No community requests open for your blood group right now.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
     </div>
-</div>
+</section>

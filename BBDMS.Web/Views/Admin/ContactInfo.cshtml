@@ -6,42 +6,41 @@
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card content-card shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h4 class="mb-0 font-weight-bold text-dark"><i class="fas fa-address-card mr-2 text-primary"></i>Website Contact Details</h4>
+        <div class="card-modern p-4">
+            <div class="mb-4 pb-3 border-bottom">
+                <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-address-card me-2 text-danger"></i>Website Contact Details</h4>
                 <p class="text-muted small mb-0">Changes saved here will update the header, footer, and Contact Us page across the whole website.</p>
             </div>
-            <div class="card-body p-4">
-                <form method="post" asp-action="ContactInfo">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="Id" />
+            
+            <form method="post" asp-action="ContactInfo">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
 
-                    <div class="form-group">
-                        <label asp-for="Address" class="font-weight-bold">Office / Headquarters Address <span class="text-danger">*</span></label>
-                        <textarea asp-for="Address" class="form-control" rows="2" required></textarea>
-                        <span asp-validation-for="Address" class="text-danger small"></span>
-                    </div>
+                <div class="mb-3">
+                    <label asp-for="Address" class="form-label fw-semibold">Office / Headquarters Address <span class="text-danger">*</span></label>
+                    <textarea asp-for="Address" class="form-control form-control-modern" rows="2" required></textarea>
+                    <span asp-validation-for="Address" class="text-danger small"></span>
+                </div>
 
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label asp-for="EmailId" class="font-weight-bold">Emergency Support Email <span class="text-danger">*</span></label>
-                            <input asp-for="EmailId" type="email" class="form-control" required />
-                            <span asp-validation-for="EmailId" class="text-danger small"></span>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label asp-for="ContactNo" class="font-weight-bold">Helpline / Phone Number <span class="text-danger">*</span></label>
-                            <input asp-for="ContactNo" class="form-control" required maxlength="15" />
-                            <span asp-validation-for="ContactNo" class="text-danger small"></span>
-                        </div>
+                <div class="row g-3">
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="EmailId" class="form-label fw-semibold">Emergency Support Email <span class="text-danger">*</span></label>
+                        <input asp-for="EmailId" type="email" class="form-control form-control-modern" required />
+                        <span asp-validation-for="EmailId" class="text-danger small"></span>
                     </div>
+                    <div class="col-md-6 mb-3">
+                        <label asp-for="ContactNo" class="form-label fw-semibold">Helpline / Phone Number <span class="text-danger">*</span></label>
+                        <input asp-for="ContactNo" class="form-control form-control-modern" required maxlength="15" />
+                        <span asp-validation-for="ContactNo" class="text-danger small"></span>
+                    </div>
+                </div>
 
-                    <div class="text-right mt-4">
-                        <button type="submit" class="btn btn-primary font-weight-bold px-4">
-                            <i class="fas fa-save mr-1"></i>Save Contact Information
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <div class="text-end mt-3">
+                    <button type="submit" class="btn btn-brand-red px-4">
+                        <i class="fas fa-save me-2"></i>Save Contact Information
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

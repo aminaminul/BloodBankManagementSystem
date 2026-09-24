@@ -6,72 +6,77 @@
 
 <div class="row justify-content-center">
     <div class="col-lg-8">
-        <div class="card content-card shadow-sm">
-            <div class="card-header bg-white py-3">
-                <h4 class="mb-0 font-weight-bold text-dark"><i class="fas fa-edit mr-2 text-info"></i>Edit Oxygen Supplier: @Model.ProviderName</h4>
+        <div class="card-modern p-4">
+            <div class="mb-4 pb-3 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                    <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-edit me-2 text-success"></i>Edit Oxygen Supplier: @Model.ProviderName</h4>
+                    <p class="text-muted small mb-0">Update medical oxygen stock, cylinder capacities, and delivery status</p>
+                </div>
+                <a asp-action="Oxygen" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1"></i>Back
+                </a>
             </div>
-            <div class="card-body p-4">
-                <form method="post" asp-action="OxygenEdit">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="Id" />
 
-                    <div class="form-row">
-                        <div class="form-group col-md-8">
-                            <label asp-for="ProviderName" class="font-weight-bold">Supplier / Company Name <span class="text-danger">*</span></label>
-                            <input asp-for="ProviderName" class="form-control" required />
-                            <span asp-validation-for="ProviderName" class="text-danger small"></span>
-                        </div>
-                        <div class="form-group col-md-4">
-                            <label asp-for="Location" class="font-weight-bold">Location / City <span class="text-danger">*</span></label>
-                            <input asp-for="Location" class="form-control" required />
-                            <span asp-validation-for="Location" class="text-danger small"></span>
-                        </div>
-                    </div>
+            <form method="post" asp-action="OxygenEdit">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
 
-                    <div class="form-group">
-                        <label asp-for="Address" class="font-weight-bold">Address / Outlet Location</label>
-                        <input asp-for="Address" class="form-control" />
+                <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <label asp-for="ProviderName" class="form-label fw-semibold">Supplier / Company Name <span class="text-danger">*</span></label>
+                        <input asp-for="ProviderName" class="form-control form-control-modern" required />
+                        <span asp-validation-for="ProviderName" class="text-danger small"></span>
                     </div>
+                    <div class="col-md-4">
+                        <label asp-for="Location" class="form-label fw-semibold">Location / City <span class="text-danger">*</span></label>
+                        <input asp-for="Location" class="form-control form-control-modern" required />
+                        <span asp-validation-for="Location" class="text-danger small"></span>
+                    </div>
+                </div>
 
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label asp-for="ContactNumber" class="font-weight-bold">Hotline / WhatsApp Number <span class="text-danger">*</span></label>
-                            <input asp-for="ContactNumber" class="form-control" required />
-                            <span asp-validation-for="ContactNumber" class="text-danger small"></span>
-                        </div>
-                        <div class="form-group col-md-6">
-                            <label asp-for="OxygenAvailability" class="font-weight-bold">Stock Availability</label>
-                            <select asp-for="OxygenAvailability" class="form-control">
-                                <option value="In Stock">In Stock (Available)</option>
-                                <option value="Limited">Limited Stock</option>
-                                <option value="Out of Stock">Out of Stock</option>
-                            </select>
-                        </div>
-                    </div>
+                <div class="mb-3">
+                    <label asp-for="Address" class="form-label fw-semibold">Address / Outlet Location</label>
+                    <input asp-for="Address" class="form-control form-control-modern" />
+                </div>
 
-                    <div class="form-group">
-                        <label asp-for="CylinderCapacity" class="font-weight-bold">Available Cylinder Types & Capacities</label>
-                        <input asp-for="CylinderCapacity" class="form-control" />
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="ContactNumber" class="form-label fw-semibold">Hotline / WhatsApp Number <span class="text-danger">*</span></label>
+                        <input asp-for="ContactNumber" class="form-control form-control-modern" required />
+                        <span asp-validation-for="ContactNumber" class="text-danger small"></span>
                     </div>
+                    <div class="col-md-6">
+                        <label asp-for="OxygenAvailability" class="form-label fw-semibold">Stock Availability</label>
+                        <select asp-for="OxygenAvailability" class="form-select form-control-modern">
+                            <option value="In Stock">In Stock (Available)</option>
+                            <option value="Limited">Limited Stock</option>
+                            <option value="Out of Stock">Out of Stock</option>
+                        </select>
+                    </div>
+                </div>
 
-                    <div class="form-group">
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="homeDelivery" asp-for="HomeDeliveryAvailable" />
-                            <label class="custom-control-label font-weight-bold" for="homeDelivery">Home Delivery Available (24/7)</label>
-                        </div>
-                    </div>
+                <div class="mb-3">
+                    <label asp-for="CylinderCapacity" class="form-label fw-semibold">Available Cylinder Types &amp; Capacities</label>
+                    <input asp-for="CylinderCapacity" class="form-control form-control-modern" />
+                </div>
 
-                    <div class="form-group">
-                        <label asp-for="ServiceDetails" class="font-weight-bold">Service Details & Included Accessories</label>
-                        <textarea asp-for="ServiceDetails" class="form-control" rows="2"></textarea>
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="homeDelivery" asp-for="HomeDeliveryAvailable" style="width:2.5em; height:1.4em;" />
+                        <label class="form-check-label fw-semibold ms-2" for="homeDelivery">Home Delivery Available (24/7)</label>
                     </div>
+                </div>
 
-                    <div class="text-right mt-4">
-                        <a asp-action="Oxygen" class="btn btn-secondary mr-2">Cancel</a>
-                        <button type="submit" class="btn btn-info font-weight-bold text-white px-4">Update Oxygen Supplier</button>
-                    </div>
-                </form>
-            </div>
+                <div class="mb-4">
+                    <label asp-for="ServiceDetails" class="form-label fw-semibold">Service Details &amp; Included Accessories</label>
+                    <textarea asp-for="ServiceDetails" class="form-control form-control-modern" rows="2"></textarea>
+                </div>
+
+                <div class="text-end pt-2 border-top">
+                    <a asp-action="Oxygen" class="btn btn-outline-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-brand-red px-4">Update Oxygen Supplier</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
