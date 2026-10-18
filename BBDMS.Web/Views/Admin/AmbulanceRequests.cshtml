@@ -52,40 +52,39 @@
                             <td>@(string.IsNullOrEmpty(item.DestinationHospital) ? "Not Specified" : item.DestinationHospital)</td>
                             <td><span class="badge-soft-primary">@item.AmbulanceType</span></td>
                             <td>
-                                <span class="badge @(item.Urgency.Contains("Emergency") ? "badge-soft-danger" : "badge-soft-warning")">
-                                    @item.Urgency
+                                @{ var urgency = string.IsNullOrWhiteSpace(item.Urgency) ? "Emergency" : item.Urgency; }
+                                <span class="badge @(urgency.Contains("Emergency") ? "badge-soft-danger" : "badge-soft-warning")">
+                                    @urgency
                                 </span>
                             </td>
                             <td class="small text-muted">@item.RequestDate.ToString("MMM dd, yyyy - hh:mm tt")</td>
                             <td>
-                                @if (item.Status == "Dispatched")
-                                {
-                                    <span class="badge-soft-warning fw-bold"><i class="fas fa-shipping-fast me-1"></i>Dispatched</span>
-                                }
-                                else if (item.Status == "Completed")
-                                {
-                                    <span class="badge-soft-success"><i class="fas fa-check me-1"></i>Completed</span>
-                                }
-                                else if (item.Status == "Cancelled")
-                                {
-                                    <span class="badge-soft-secondary">Cancelled</span>
-                                }
-                                else
-                                {
-                                    <span class="badge-soft-danger"><i class="fas fa-clock me-1"></i>Pending</span>
-                                }
+                                <span class="@AmbulanceTracking.StatusBadge(item.Status)">
+                                    <i class="fas @AmbulanceTracking.StatusIcon(item.Status) me-1"></i>@AmbulanceTracking.StatusLabel(item.Status)
+                                </span>
                             </td>
                             <td class="text-end pe-4">
-                                <div class="btn-group btn-group-sm">
-                                    <a asp-action="UpdateAmbulanceRequestStatus" asp-route-id="@item.Id" asp-route-status="Dispatched" class="btn btn-outline-warning" title="Mark Dispatched">
-                                        <i class="fas fa-paper-plane"></i>
+                                <div class="d-flex justify-content-end align-items-center gap-2">
+                                    <a asp-controller="Emergency" asp-action="TrackAmbulance" asp-route-token="@item.TrackingToken"
+                                       class="btn btn-sm btn-light border" target="_blank"
+                                       title="Open the patient's live tracking timeline">
+                                        <i class="fas fa-satellite-dish text-danger"></i>
                                     </a>
-                                    <a asp-action="UpdateAmbulanceRequestStatus" asp-route-id="@item.Id" asp-route-status="Completed" class="btn btn-outline-success" title="Mark Completed">
-                                        <i class="fas fa-check"></i>
-                                    </a>
-                                    <a asp-action="UpdateAmbulanceRequestStatus" asp-route-id="@item.Id" asp-route-status="Cancelled" class="btn btn-outline-secondary" title="Cancel Request">
-                                        <i class="fas fa-times"></i>
-                                    </a>
+                                    <form method="post" asp-action="UpdateAmbulanceRequestStatus" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <div class="btn-group btn-group-sm" role="group" aria-label="Update dispatch status">
+                                            <button type="submit" name="status" value="Dispatched" class="btn btn-outline-warning" title="Mark Dispatched">
+                                                <i class="fas fa-paper-plane"></i>
+                                            </button>
+                                            <button type="submit" name="status" value="Completed" class="btn btn-outline-success" title="Mark Completed">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button type="submit" name="status" value="Cancelled" class="btn btn-outline-secondary" title="Cancel Request">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

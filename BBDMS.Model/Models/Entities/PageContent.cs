@@ -8,9 +8,9 @@ namespace BBDMS.Model.Models.Entities
         [Key]
         public int Id { get; set; }
         [StringLength(255)]
-        public string PageName { get; set; }
+        public string PageName { get; set; } = string.Empty;
         [StringLength(255)]
-        public string Type { get; set; }
-        public string Detail { get; set; }
+        public string Type { get; set; } = string.Empty;
+        public string Detail { get; set; } = string.Empty;
     }
 }

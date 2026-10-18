@@ -1,0 +1,315 @@
+@model BBDMS.Model.Models.Entities.AmbulanceRequest
+@using BBDMS.Model.Models.ViewModels
+@{
+    ViewData["Title"] = "Track Ambulance Dispatch";
+    var contact = ViewBag.Contact as string;
+    var provider = ViewBag.Provider as BBDMS.Model.Models.Entities.AmbulanceService;
+    var request = Model;
+    var status = AmbulanceTracking.NormalizeStatus(request?.Status);
+    var steps = AmbulanceTracking.BuildSteps(request);
+    var progress = AmbulanceTracking.ProgressPercent(status);
+}
+
+<section class="page-hero-sm">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Emergency" asp-action="Ambulances">Ambulances</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Track Dispatch</li>
+            </ol>
+        </nav>
+        <h1 class="fw-bold mb-1">Track Your Ambulance Dispatch</h1>
+        <p class="mb-0">Live status of your emergency ambulance request, updating automatically.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row justify-content-center g-4">
+            <div class="col-lg-9">
+
+                <!-- Lookup form -->
+                <div class="card-modern mb-4" data-motion>
+                    <form method="get" asp-action="TrackAmbulance">
+                        <label class="form-label"><i class="fas fa-phone text-danger me-1"></i>Contact Number used for the booking</label>
+                        <div class="input-group">
+                            <input type="text" name="contact" value="@contact" class="form-control form-control-modern" placeholder="e.g. 01712345678" />
+                            <div class="input-group-append">
+                                <button type="submit" class="btn btn-brand-red"><i class="fas fa-satellite-dish"></i> Track Dispatch</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                @if (request == null)
+                {
+                    <div class="card-modern text-center py-5" data-motion>
+                        <i class="fas fa-ambulance fa-2x text-muted mb-3 d-block"></i>
+                        <h5 class="fw-bold">No dispatch request found</h5>
+                        <p class="text-muted mb-4">We couldn't find an ambulance booking for that contact number. Check the number or book a new dispatch now.</p>
+                        <div class="d-flex flex-wrap justify-content-center gap-2">
+                            <a asp-action="RequestAmbulance" class="btn btn-brand-red"><i class="fas fa-bell me-1"></i>Request Ambulance</a>
+                            <a asp-action="AmbulanceContact" class="btn btn-brand-outline"><i class="fas fa-phone-volume me-1"></i>Emergency Contacts</a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-modern mb-4" data-motion>
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1">Dispatch #@request.Id</h5>
+                                <div class="small text-muted">
+                                    <i class="fas fa-user-injured me-1"></i>@request.PatientName
+                                    <span class="mx-1">•</span>
+                                    <i class="fas fa-clock me-1"></i>@request.RequestDate.ToString("dd MMM yyyy, hh:mm tt")
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                @{
+                                    var ambShareUrl = Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path + Context.Request.QueryString;
+                                    var ambShareMsg = $"🚨 Ambulance dispatched for {request.PatientName}. Live Status: {AmbulanceTracking.StatusLabel(status)}. Track live here: {ambShareUrl}";
+                                    var ambWaUrl = "https://api.whatsapp.com/send?text=" + System.Net.WebUtility.UrlEncode(ambShareMsg);
+                                }
+                                <a href="@ambWaUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success text-white">
+                                    <i class="fab fa-whatsapp me-1"></i> Share with Family
+                                </a>
+                                <span class="live-pill" id="ambLivePill"><span class="live-dot"></span> LIVE</span>
+                                <span id="ambStatusBadge" class="badge-soft-danger @AmbulanceTracking.StatusBadge(status)">
+                                    <i class="fas @AmbulanceTracking.StatusIcon(status) me-1"></i><span id="ambStatusLabel">@AmbulanceTracking.StatusLabel(status)</span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 small">
+                            <div class="col-sm-6 col-lg-3">
+                                <span class="text-muted d-block">Pickup</span>
+                                <span class="fw-semibold text-dark">@request.PickupAddress</span>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <span class="text-muted d-block">Destination</span>
+                                <span class="fw-semibold text-dark">@(string.IsNullOrEmpty(request.DestinationHospital) ? "Not decided yet" : request.DestinationHospital)</span>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <span class="text-muted d-block">Ambulance Type</span>
+                                <span class="fw-semibold text-dark">@request.AmbulanceType</span>
+                            </div>
+                            <div class="col-sm-6 col-lg-3">
+                                <span class="text-muted d-block">Urgency</span>
+                                <span class="fw-semibold text-dark">@request.Urgency</span>
+                            </div>
+                        </div>
+
+                        @if (provider != null)
+                        {
+                            <div class="alert alert-light border mt-3 mb-0 d-flex justify-content-between align-items-center flex-wrap gap-2" role="alert">
+                                <div>
+                                    <i class="fas fa-ambulance text-danger me-2"></i>
+                                    <strong>@provider.ProviderName</strong>
+                                    <span class="text-muted small ms-2">@provider.Location</span>
+                                </div>
+                                <a href="tel:@provider.ContactNumber" class="btn btn-sm btn-brand-red">
+                                    <i class="fas fa-phone me-1"></i>@provider.ContactNumber
+                                </a>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Live timeline -->
+                    <div class="card-modern mb-4" data-motion>
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                            <h5 class="fw-bold mb-0">Live Dispatch Status</h5>
+                            <span class="small text-muted">Updated <span id="ambUpdated">@DateTime.Now.ToString("hh:mm:ss tt")</span></span>
+                        </div>
+                        <p class="small text-muted mb-3" id="ambEta">@AmbulanceTracking.EtaText(status)</p>
+
+                        <div class="progress mb-4" style="height:8px;">
+                            <div class="progress-bar" id="ambProgress" role="progressbar" style="width:@progress%;" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+
+                        <ul class="track-timeline track-timeline-live" id="ambTimeline" data-motion-stagger>
+                            @foreach (var step in steps)
+                            {
+                                var cls = step.Done ? "done" : step.Current ? "current" : "";
+                                if (step.Cancelled) { cls = "current cancelled"; }
+                                <li class="@cls">
+                                    <span class="dot"><i class="fas @step.Icon"></i></span>
+                                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                        <div>
+                                            <div class="t-title">@step.Title</div>
+                                            <div class="t-sub">@step.Sub</div>
+                                        </div>
+                                        <span class="t-time">@step.Time</span>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="row g-3" data-motion>
+                        <div class="col-md-6">
+                            <div class="card-modern h-100">
+                                <h6 class="fw-bold mb-2"><i class="fas fa-phone-volume text-danger me-1"></i>Need to reach the dispatcher?</h6>
+                                <p class="small text-muted">Call the fleet directly or open the emergency contact desk for hotlines and nearby providers.</p>
+                                <div class="d-flex flex-wrap gap-2">
+                                    @if (provider != null)
+                                    {
+                                        <a href="tel:@provider.ContactNumber" class="btn btn-sm btn-brand-red"><i class="fas fa-phone me-1"></i>Call Fleet</a>
+                                    }
+                                    <a asp-action="AmbulanceContact" asp-route-id="@request.Id" class="btn btn-sm btn-brand-outline">
+                                        <i class="fas fa-address-book me-1"></i>Emergency Contacts
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card-modern h-100">
+                                <h6 class="fw-bold mb-2"><i class="fas fa-notes-medical text-danger me-1"></i>Request details</h6>
+                                <ul class="list-unstyled small text-muted mb-3">
+                                    <li><strong class="text-dark">Contact:</strong> @request.ContactNumber</li>
+                                    <li><strong class="text-dark">Type:</strong> @request.AmbulanceType</li>
+                                    @if (!string.IsNullOrEmpty(request.Notes))
+                                    {
+                                        <li><strong class="text-dark">Notes:</strong> @request.Notes</li>
+                                    }
+                                </ul>
+                                <a asp-action="RequestAmbulance" class="btn btn-sm btn-brand-outline"><i class="fas fa-plus me-1"></i>Book another ambulance</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    @if (request != null)
+    {
+        <script>
+            (function () {
+                var requestId = @request.Id;
+                var endpoint = '@Url.Action("AmbulanceStatus", "Emergency", new { token = request.TrackingToken })';
+                var pollTimer = null;
+
+                // Signature of the server rendered timeline so the first poll does not re-render needlessly
+                function currentSignature() {
+                    var parts = [];
+                    document.querySelectorAll('#ambTimeline li').forEach(function (li) {
+                        var t = li.querySelector('.t-title');
+                        parts.push((li.classList.contains('done') ? '1' : '0') +
+                                   (li.classList.contains('current') ? 'c' : '') +
+                                   (t ? t.textContent.trim() : ''));
+                    });
+                    return parts.join('|');
+                }
+                var lastSignature = currentSignature();
+
+                function esc(value) {
+                    return String(value == null ? '' : value)
+                        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+                }
+
+                function renderSteps(steps) {
+                    var list = document.getElementById('ambTimeline');
+                    if (!list || !steps) return;
+                    var signature = steps.map(function (s) { return (s.done ? '1' : '0') + (s.current ? 'c' : '') + s.title; }).join('|');
+                    if (signature === lastSignature) return;
+
+                    var previousDone = {};
+                    list.querySelectorAll('li').forEach(function (li) {
+                        var t = li.querySelector('.t-title');
+                        if (t) previousDone[t.textContent.trim()] = li.classList.contains('done');
+                    });
+
+                    list.innerHTML = '';
+                    steps.forEach(function (step, index) {
+                        var li = document.createElement('li');
+                        li.className = step.done ? 'done' : (step.current ? 'current' : '');
+                        if (step.cancelled) { li.className = 'current cancelled'; }
+                        li.style.setProperty('--i', index);
+                        if (previousDone[step.title] === false && step.done) { li.classList.add('step-flash'); }
+                        li.innerHTML =
+                            '<span class="dot"><i class="fas ' + esc(step.icon) + '"></i></span>' +
+                            '<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">' +
+                                '<div>' +
+                                    '<div class="t-title">' + esc(step.title) + '</div>' +
+                                    '<div class="t-sub">' + esc(step.sub) + '</div>' +
+                                '</div>' +
+                                '<span class="t-time">' + esc(step.time) + '</span>' +
+                            '</div>';
+                        list.appendChild(li);
+                    });
+
+                    // Re-draw so a freshly pushed step animates in like the first render
+                    list.classList.remove('is-drawn');
+                    void list.offsetWidth;
+                    list.classList.add('is-drawn');
+
+                    lastSignature = signature;
+                }
+
+                function render(payload) {
+                    if (!payload) return;
+                    var label = document.getElementById('ambStatusLabel');
+                    var badge = document.getElementById('ambStatusBadge');
+                    var eta = document.getElementById('ambEta');
+                    var updated = document.getElementById('ambUpdated');
+                    var progress = document.getElementById('ambProgress');
+                    var pill = document.getElementById('ambLivePill');
+
+                    if (label) label.textContent = payload.statusLabel;
+                    if (badge) {
+                        badge.className = payload.badge;
+                        badge.innerHTML = '<i class="fas ' + esc(payload.icon) + ' me-1"></i><span id="ambStatusLabel">' + esc(payload.statusLabel) + '</span>';
+                    }
+                    if (eta) eta.textContent = payload.eta;
+                    if (updated) updated.textContent = payload.updatedAt;
+                    if (progress && typeof payload.progress === 'number') {
+                        progress.style.width = payload.progress + '%';
+                    }
+                    if (pill) { pill.classList.toggle('is-idle', !payload.isActive); }
+
+                    renderSteps(payload.steps);
+
+                    // Stop polling once the dispatch is closed (completed or cancelled)
+                    if (!payload.isActive && pollTimer !== null) { clearInterval(pollTimer); pollTimer = null; }
+                    if (payload.isActive && pollTimer === null) { startPolling(); }
+                }
+
+                function refresh() {
+                    fetch(endpoint, { headers: { 'Accept': 'application/json' }, credentials: 'same-origin' })
+                        .then(function (r) { return r.ok ? r.json() : null; })
+                        .then(function (data) { if (data) render(data); })
+                        .catch(function () { /* keep the last known state, poller retries */ });
+                }
+
+                function startPolling() {
+                    if (pollTimer !== null) return;
+                    pollTimer = setInterval(refresh, 10000);
+                }
+
+                // Real-time status push from the hub (also covers other tabs / dispatcher actions)
+                if (window.signalR) {
+                    var hub = new signalR.HubConnectionBuilder()
+                        .withUrl('/emergencyHub')
+                        .withAutomaticReconnect()
+                        .build();
+                    hub.on('ReceiveAmbulanceStatusUpdate', function (data) {
+                        if (!data || parseInt(data.id, 10) !== requestId) return;
+                        refresh();
+                    });
+                    hub.start().catch(function () { /* polling keeps the page live */ });
+                }
+
+                startPolling();
+                document.addEventListener('visibilitychange', function () {
+                    if (!document.hidden) refresh();
+                });
+            })();
+        </script>
+    }
+}

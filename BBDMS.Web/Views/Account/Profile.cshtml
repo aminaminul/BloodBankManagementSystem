@@ -92,10 +92,18 @@
                                 <input type="text" class="form-control form-control-modern" name="Address" value="@Model?.Address" required placeholder="Your area / city">
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-semibold">Last Blood Donation Date</label>
-                                <input type="date" class="form-control form-control-modern" name="LastDonatedDate"
-                                       value="@(Model?.LastDonatedDate?.ToString("yyyy-MM-dd"))" />
-                                <div class="form-text text-muted">A minimum of 90 days is required between donations for medical safety.</div>
+                                <label class="form-label fw-semibold">
+                                    Last Blood Donation Date
+                                    <span class="text-muted small ms-1">(derived from your donation history)</span>
+                                </label>
+                                <input type="text" class="form-control form-control-modern" readonly
+                                       value="@(Model?.LastDonatedDate?.ToString("dd MMM yyyy") ?? "No donation recorded yet")"
+                                       style="background:#f8fafc;" />
+                                <div class="form-text text-muted">
+                                    A minimum of 90 days is required between donations for medical safety.
+                                    This date updates automatically when you
+                                    <a asp-controller="Donor" asp-action="LogDonation">record a donation</a>.
+                                </div>
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Donation Note / Message</label>

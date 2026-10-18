@@ -7,10 +7,10 @@ namespace BBDMS.Model.Models.Entities
     {
         [Key]
         public int Id { get; set; }
-        public string Address { get; set; }
+        public string Address { get; set; } = string.Empty;
         [StringLength(255)]
-        public string EmailId { get; set; }
+        public string EmailId { get; set; } = string.Empty;
         [StringLength(11)]
-        public string ContactNo { get; set; }
+        public string ContactNo { get; set; } = string.Empty;
     }
 }

@@ -1,0 +1,156 @@
+@model BBDMS.Model.Models.ViewModels.PagedResult<BBDMS.Model.Models.ViewModels.DonorListItemViewModel>
+@{
+    ViewData["Title"] = "Nearby Donors";
+    var bloodGroups = ViewBag.BloodGroups as IEnumerable<BBDMS.Model.Models.Entities.BloodGroup>;
+    ViewData["PagerAction"] = "Nearby";
+    ViewData["PagerBloodGroup"] = ViewBag.BloodGroup;
+    ViewData["PagerLocation"] = ViewBag.Location;
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+}
+
+<section class="page-hero-sm">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Nearby Donors</li>
+            </ol>
+        </nav>
+        <h1 class="fw-bold mb-1">Nearby Donors</h1>
+        <p class="mb-0">Find available donors near your location and reach out instantly.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+
+        <!-- Filter bar -->
+        <div class="filter-bar mb-4">
+            <form method="get" asp-action="Nearby">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label"><i class="fas fa-tint text-danger me-1"></i>Blood Group</label>
+                        <select name="bloodGroup" class="form-select form-control-modern">
+                            <option value="">All Blood Groups</option>
+                            @if (bloodGroups != null)
+                            {
+                                foreach (var bg in bloodGroups)
+                                {
+                                    <option value="@bg.GroupName" selected="@(ViewBag.BloodGroup == bg.GroupName)">@bg.GroupName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label"><i class="fas fa-map-marker-alt text-danger me-1"></i>Location</label>
+                        <input type="text" name="location" value="@ViewBag.Location" class="form-control form-control-modern" placeholder="e.g. Dhaka, Mirpur..." />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Radius</label>
+                        <select class="form-select form-control-modern">
+                            <option>10 KM</option>
+                            <option>25 KM</option>
+                            <option>50 KM</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-brand-red w-100"><i class="fas fa-search"></i> Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="row g-4">
+            <!-- Donor list -->
+            <div class="col-lg-6">
+                <div class="text-muted small mb-2 fw-semibold">@Model.TotalItems donor(s) found</div>
+                @if (Model.TotalItems > 0)
+                {
+                    foreach (var donor in Model.Items)
+                    {
+                        var initials = string.Concat((donor.FullName ?? "D").Split(' ').Take(2).Select(s => s.Length > 0 ? s[0] : ' ')).ToUpper();
+                        <div class="donor-row mb-2">
+                            <div class="avatar-circle">@initials</div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="fw-bold text-dark">@donor.FullName</div>
+                                    <span class="badge-soft-danger">@donor.BloodGroup</span>
+                                </div>
+                                <div class="small text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i>@donor.Address
+                                    <span class="mx-1">•</span>@(donor.Age.HasValue ? donor.Age + " yrs" : "—")
+                                    @if (donor.IsAvailable)
+                                    {
+                                        <span class="badge-soft-success ms-1"><i class="fas fa-check-circle"></i>Available</span>
+                                    }
+                                </div>
+                            </div>
+                            <a asp-action="Contact" asp-route-id="@donor.Id" class="btn btn-sm btn-brand-outline flex-shrink-0">Contact</a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="card-modern text-center py-5">
+                        <i class="fas fa-users fa-2x text-muted mb-2 d-block"></i>
+                        <p class="text-muted mb-0">No donors found. Try a different blood group or location.</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Map -->
+            <div class="col-lg-6">
+                <div class="card-modern p-0 overflow-hidden" style="position:sticky; top:80px;">
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                        <span class="fw-bold"><i class="fas fa-map-marked-alt text-danger me-2"></i>Donor Distribution</span>
+                        <span class="badge-soft-success"><i class="fas fa-satellite-dish"></i> Live Map</span>
+                    </div>
+                    <div id="donorsMap" style="height: 460px; width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var el = document.getElementById("donorsMap");
+            if (!el) return;
+            var map = L.map("donorsMap").setView([23.8103, 90.4125], 7);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors', maxZoom: 18
+            }).addTo(map);
+
+            var cityCoords = {
+                'dhaka': [23.8103, 90.4125], 'mirpur': [23.8223, 90.3654], 'uttara': [23.8759, 90.3795],
+                'dhanmondi': [23.7461, 90.3742], 'chittagong': [22.3569, 91.7832], 'sylhet': [24.8949, 91.8687],
+                'khulna': [22.8456, 89.5403], 'rajshahi': [24.3745, 88.6042], 'rangpur': [25.7439, 89.2752],
+                'mymensingh': [24.7471, 90.4203]
+            };
+
+            var donors = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+                Model.Items.Select(d => new { name = d.FullName, group = d.BloodGroup, address = d.Address })
+            ));
+
+            var markers = [];
+            donors.forEach(function (d, i) {
+                var key = (d.address || "").toLowerCase();
+                var coord = [23.8103, 90.4125];
+                Object.keys(cityCoords).forEach(function (c) { if (key.indexOf(c) !== -1) coord = cityCoords[c]; });
+                var lat = coord[0] + ((i % 5) - 2) * 0.02;
+                var lng = coord[1] + (Math.floor(i / 5) - 2) * 0.02;
+                var m = L.marker([lat, lng]).bindPopup('<strong>' + d.name + '</strong><br/>Blood: ' + d.group + '<br/>' + d.address);
+                m.addTo(map);
+                markers.push(m);
+            });
+            if (markers.length) map.fitBounds(new L.featureGroup(markers).getBounds().pad(0.2));
+        });
+    </script>
+}
+
+@await Html.PartialAsync("_DonorPager", Model)

@@ -10,23 +10,19 @@ namespace BBDMS.Model.Models.Entities
 
         [Required]
         [StringLength(250)]
-        public string ProviderName { get; set; }
-
+        public string ProviderName { get; set; } = string.Empty;
         [Required]
         [StringLength(100)]
-        public string Location { get; set; }
-
+        public string Location { get; set; } = string.Empty;
         [Required]
         [StringLength(100)]
         public string AmbulanceType { get; set; } = "Basic Life Support (BLS)";
 
         [StringLength(50)]
-        public string VehicleNumber { get; set; }
-
+        public string VehicleNumber { get; set; } = string.Empty;
         [Required]
         [StringLength(50)]
-        public string ContactNumber { get; set; }
-
+        public string ContactNumber { get; set; } = string.Empty;
         public bool IsAvailable { get; set; } = true;
 
         [StringLength(50)]

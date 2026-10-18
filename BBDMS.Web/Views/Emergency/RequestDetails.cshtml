@@ -1,0 +1,193 @@
+@model BBDMS.Model.Models.Entities.BloodRequest
+@{
+    ViewData["Title"] = "Blood Request Details";
+    var hospital = ViewBag.Hospital as BBDMS.Model.Models.Entities.Hospital;
+    var urgency = string.IsNullOrEmpty(Model.Urgency) ? "Urgent" : Model.Urgency;
+    var isCritical = urgency.Contains("Critical");
+}
+
+<section class="page-hero-sm">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-action="BloodRequests">Blood Requests</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Request #@Model.ID</li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center gap-2">
+            <a asp-action="BloodRequests" class="btn btn-sm btn-light border"><i class="fas fa-arrow-left"></i></a>
+            <h1 class="fw-bold mb-0">Blood Request Details</h1>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Left: request information -->
+            <div class="col-lg-7">
+                <div class="card-modern mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge-soft-danger" style="font-size:1.1rem;"><i class="fas fa-tint"></i>@(Model.BloodGroup ?? Model.BloodRequireFor)</span>
+                            <span class="fw-bold text-dark fs-5">@(Model.BloodGroup ?? Model.BloodRequireFor) Blood Required</span>
+                        </div>
+                        <span class="@(isCritical ? "badge-soft-danger" : "badge-soft-warning")">@urgency</span>
+                    </div>
+
+                    <p class="text-muted mb-3">
+                        <i class="fas fa-hospital text-danger me-1"></i>
+                        <span class="fw-semibold text-dark">@(Model.HospitalName ?? "Emergency Facility")</span>
+                        @if (!string.IsNullOrEmpty(Model.Location))
+                        {
+                            <span>, @Model.Location</span>
+                        }
+                    </p>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-4">
+                            <div class="p-3 rounded text-center" style="background:#f8fafc;border:1px solid var(--border);">
+                                <div class="text-muted small">Required Units</div>
+                                <div class="fw-bold fs-5 text-dark">@Model.UnitsRequired</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 rounded text-center" style="background:#f8fafc;border:1px solid var(--border);">
+                                <div class="text-muted small">Posted On</div>
+                                <div class="fw-bold small text-dark">@(Model.ApplyDate?.ToString("dd MMM yyyy") ?? "—")</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 rounded text-center" style="background:#f8fafc;border:1px solid var(--border);">
+                                <div class="text-muted small">Status</div>
+                                <div class="fw-bold small text-dark">@(string.IsNullOrEmpty(Model.Status) ? "Pending" : Model.Status)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top pt-3">
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <div class="text-muted small">Contact Person</div>
+                                <div class="fw-semibold text-dark">@Model.Name</div>
+                            </div>
+                            <div class="col-sm-6">
+                                <div class="text-muted small">Contact Number</div>
+                                <a href="tel:@Model.ContactNumber" class="fw-bold text-dark"><i class="fas fa-phone text-success me-1"></i>@Model.ContactNumber</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-top mt-3 pt-3">
+                        <div class="text-muted small mb-1">Description</div>
+                        <p class="mb-0 text-dark">@Model.Message</p>
+                    </div>
+                </div>
+
+                <!-- Hospital information -->
+                @if (hospital != null)
+                {
+                    <div class="card-modern">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-hospital text-danger me-2"></i>Hospital Information</h6>
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                            <div>
+                                <div class="fw-bold text-dark">@hospital.Name</div>
+                                <div class="small text-muted"><i class="fas fa-map-marker-alt me-1"></i>@hospital.Address, @hospital.City</div>
+                                <div class="small text-muted mt-1"><i class="fas fa-phone me-1"></i>@hospital.EmergencyHelpline</div>
+                            </div>
+                            <a href="tel:@hospital.EmergencyHelpline" class="btn btn-sm btn-brand-outline"><i class="fas fa-phone"></i> Call Hospital</a>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Right: respond / share -->
+            <div class="col-lg-5">
+                <div class="card-modern mb-4" style="position:sticky; top:80px;">
+                    <h6 class="fw-bold mb-1">Respond to Request</h6>
+                    <p class="text-muted small mb-3">If you can donate, please contact the requester directly or respond below.</p>
+
+                    <a href="tel:@Model.ContactNumber" class="btn btn-brand-red w-100 mb-2"><i class="fas fa-phone"></i> Respond Now</a>
+
+                    <div class="border-top mt-3 pt-3">
+                        <h6 class="fw-bold mb-1"><i class="fas fa-bullhorn text-danger mr-1"></i> Urgent Broadcast</h6>
+                        <p class="text-muted small mb-3">Mobilize local donors across messaging circles immediately:</p>
+                        
+                        @{
+                            var reqGroup = Model.BloodGroup ?? Model.BloodRequireFor;
+                            var reqHospital = Model.HospitalName ?? "Emergency Hospital";
+                            var reqUnits = Model.UnitsRequired > 0 ? Model.UnitsRequired.ToString() : "1";
+                            var reqLoc = string.IsNullOrEmpty(Model.Location) ? "" : $"in {Model.Location}";
+                            var currentUrl = Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path + Context.Request.QueryString;
+                            var msgText = $"🚨 URGENT: {reqUnits} unit(s) of {reqGroup} blood urgently needed at {reqHospital} {reqLoc}. Respond or view details here: {currentUrl}";
+                            var waUrl = "https://api.whatsapp.com/send?text=" + System.Net.WebUtility.UrlEncode(msgText);
+                            var tgUrl = "https://t.me/share/url?url=" + System.Net.WebUtility.UrlEncode(currentUrl) + "&text=" + System.Net.WebUtility.UrlEncode($"🚨 URGENT: {reqGroup} Blood needed at {reqHospital}");
+                        }
+
+                        <div class="d-grid gap-2">
+                            <a href="@waUrl" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-block py-2 font-weight-bold mb-2 shadow-sm text-white">
+                                <i class="fab fa-whatsapp fa-lg mr-1"></i> Broadcast on WhatsApp
+                            </a>
+                            <div class="row no-gutters">
+                                <div class="col-6 pr-1">
+                                    <a href="@tgUrl" target="_blank" rel="noopener noreferrer" class="btn btn-info btn-block py-2 font-weight-bold shadow-sm text-white">
+                                        <i class="fab fa-telegram-plane mr-1"></i> Telegram
+                                    </a>
+                                </div>
+                                <div class="col-6 pl-1">
+                                    <button type="button" class="btn btn-outline-secondary btn-block py-2 font-weight-bold shadow-sm" id="nativeShareBtn" onclick="shareEmergencyRequest()">
+                                        <i class="fas fa-share-alt mr-1"></i> Share
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-brand-outline btn-block mt-2 font-weight-bold" id="copyLinkBtn">
+                                <i class="fas fa-link mr-1"></i> Copy Link
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="border-top mt-3 pt-3 small">
+                        <div class="d-flex justify-content-between mb-1"><span class="text-muted">Need blood for</span><span class="fw-semibold text-dark">@Model.BloodRequireFor</span></div>
+                        <div class="d-flex justify-content-between"><span class="text-muted">Location</span><span class="fw-semibold text-dark">@(Model.Location ?? "—")</span></div>
+                    </div>
+                </div>
+
+                <a asp-action="TrackRequest" asp-route-id="@Model.ID" class="btn btn-light border w-100">
+                    <i class="fas fa-stream me-1"></i> Track This Request
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const shareTitle = '🚨 Urgent Blood Request: @(Model.BloodGroup ?? Model.BloodRequireFor)';
+        const shareText = 'Urgent blood needed at @(Model.HospitalName ?? "Emergency Center"). Can you donate or help share?';
+        const shareUrl = window.location.href;
+
+        function shareEmergencyRequest() {
+            if (navigator.share) {
+                navigator.share({
+                    title: shareTitle,
+                    text: shareText,
+                    url: shareUrl
+                }).catch(err => console.log('Share dismissed', err));
+            } else {
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    alert('Request link copied to clipboard!');
+                });
+            }
+        }
+
+        document.getElementById('copyLinkBtn')?.addEventListener('click', function () {
+            navigator.clipboard.writeText(window.location.href).then(function () {
+                document.getElementById('copyLinkBtn').innerHTML = '<i class="fas fa-check mr-1"></i> Link Copied';
+                setTimeout(() => {
+                    document.getElementById('copyLinkBtn').innerHTML = '<i class="fas fa-link mr-1"></i> Copy Link';
+                }, 2500);
+            });
+        });
+    </script>
+}

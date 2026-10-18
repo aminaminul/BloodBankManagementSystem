@@ -1,0 +1,102 @@
+@model BBDMS.Model.Models.Entities.BloodDonor
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Verified Donor Record";
+    var donor = Model;
+    var totalDonations = (int)(ViewBag.TotalDonations ?? 0);
+    var lastDonation = (DateTime?)ViewBag.LastDonationDate;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="bg-primary text-white p-4 text-center position-relative" style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;">
+                    <div class="mb-2">
+                        <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold shadow-sm">
+                            <i class="fas fa-check-circle text-success me-1"></i> VERIFIED VOLUNTARY DONOR
+                        </span>
+                    </div>
+                    <h4 class="fw-bold mb-0">@(donor.FullName)</h4>
+                    <small class="opacity-75">Donor ID: BBDMS-@donor.Id.ToString("D5")</small>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-4" style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.2);">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; font-size: 1.3rem;">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <div>
+                                <span class="text-muted small text-uppercase fw-bold">Blood Group</span>
+                                <h3 class="mb-0 fw-bold text-danger">@(donor.BloodGroup ?? "—")</h3>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            <span class="text-muted small text-uppercase fw-bold">Eligibility</span>
+                            <div>
+                                @if (donor.IsEligibleToDonate)
+                                {
+                                    <span class="badge bg-success-subtle text-success fs-6 px-3 py-1">
+                                        <i class="fas fa-check me-1"></i> Eligible
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning-subtle text-warning fs-6 px-3 py-1">
+                                        Wait @donor.DaysUntilEligible Days
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <span class="text-muted small d-block">Gender / Age</span>
+                                <span class="fw-bold text-dark">@(donor.Gender), @(donor.Age) yrs</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <span class="text-muted small d-block">Total Donations</span>
+                                <span class="fw-bold text-dark">@totalDonations records</span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <span class="text-muted small d-block">Last Donated Date</span>
+                                <span class="fw-bold text-dark">
+                                    @(lastDonation?.ToString("dd MMMM yyyy") ?? "No previous donation logged")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <span class="text-muted small d-block">Registered City / Area</span>
+                                <span class="fw-bold text-dark"><i class="fas fa-map-marker-alt text-danger me-1"></i> @(donor.Address)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info border-0 rounded-3 d-flex align-items-center gap-2 mb-0" role="alert">
+                        <i class="fas fa-shield-alt text-info fs-4"></i>
+                        <div class="small">
+                            This record has been authenticated against the active BBDMS national emergency database.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white border-0 text-center pb-4">
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-home me-1"></i> Home
+                    </a>
+                    <a asp-controller="Emergency" asp-action="CreateBloodRequest" asp-route-donorId="@donor.Id" class="btn btn-danger btn-sm ms-2">
+                        <i class="fas fa-heartbeat me-1"></i> Request Blood
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

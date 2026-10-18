@@ -1,0 +1,239 @@
+@model BBDMS.Model.Models.Entities.BloodDonor
+@{
+    Layout = "_DonorLayout";
+    ViewData["Title"] = "Digital Life-Saver Card";
+    var donor = Model;
+    var totalDonations = (int)(ViewBag.TotalDonations ?? 0);
+    var totalUnits = (int)(ViewBag.TotalUnits ?? 0);
+    var qrCode = (string)(ViewBag.QrCode ?? "");
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-1">Digital Life-Saver Card</h3>
+        <p class="text-muted mb-0">Your verified donor identification card with dynamic authentication QR code.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-outline-primary" onclick="window.print()">
+            <i class="fas fa-print me-1"></i> Print / Save PDF
+        </button>
+        <a asp-controller="Donor" asp-action="Dashboard" class="btn btn-light border">
+            <i class="fas fa-arrow-left me-1"></i> Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-7">
+        <!-- Physical card preview wrapper -->
+        <div class="donor-id-card-wrapper mb-4">
+            <div class="donor-id-card shadow-lg" id="donorCardElement">
+                <!-- Card Header -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="card-logo-badge">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div>
+                            <div class="card-brand-title">Blood<b>Bank</b> LifeSaver</div>
+                            <div class="card-brand-sub">Emergency Healthcare Network</div>
+                        </div>
+                    </div>
+                    <div class="donor-blood-badge">
+                        <span class="blood-drop"><i class="fas fa-tint"></i></span>
+                        <span class="blood-type">@(donor.BloodGroup ?? "—")</span>
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="row align-items-center g-3">
+                    <div class="col-7">
+                        <div class="card-donor-name">@(donor.FullName)</div>
+                        <div class="card-donor-role">Verified Voluntary Blood Donor</div>
+
+                        <div class="card-meta-grid mt-3">
+                            <div>
+                                <span class="meta-label">Donor ID</span>
+                                <span class="meta-value">BBDMS-@donor.Id.ToString("D5")</span>
+                            </div>
+                            <div>
+                                <span class="meta-label">Status</span>
+                                <span class="meta-value @(donor.IsEligibleToDonate ? "text-success" : "text-warning")">
+                                    @(donor.IsEligibleToDonate ? "Eligible" : $"{donor.DaysUntilEligible}d Wait")
+                                </span>
+                            </div>
+                            <div>
+                                <span class="meta-label">Gender / Age</span>
+                                <span class="meta-value">@(donor.Gender), @(donor.Age) yrs</span>
+                            </div>
+                            <div>
+                                <span class="meta-label">Total Impact</span>
+                                <span class="meta-value">@totalDonations donations (@totalUnits units)</span>
+                            </div>
+                        </div>
+
+                        <div class="card-address mt-2">
+                            <i class="fas fa-map-marker-alt text-danger me-1"></i> @(donor.Address)
+                        </div>
+                    </div>
+
+                    <div class="col-5 text-center">
+                        <div class="qr-box p-2 bg-white rounded shadow-sm d-inline-block">
+                            @if (!string.IsNullOrEmpty(qrCode))
+                            {
+                                <img src="@qrCode" alt="Verification QR Code" class="img-fluid" style="width: 130px; height: 130px;" />
+                            }
+                            <div class="small text-muted mt-1" style="font-size: 0.68rem; font-weight: 600;">SCAN TO VERIFY</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Footer -->
+                <div class="card-footer-strip mt-3 pt-2 border-top d-flex justify-content-between align-items-center">
+                    <span class="card-serial">REG: @donor.PostingDate.ToString("MMM yyyy")</span>
+                    <span class="card-validity">
+                        <i class="fas fa-shield-alt text-success me-1"></i> Official Digital Card
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instructions card -->
+        <div class="card border-0 shadow-sm rounded-3 p-3 bg-light">
+            <div class="d-flex gap-3 align-items-center">
+                <i class="fas fa-info-circle text-primary fs-3"></i>
+                <div class="small text-muted">
+                    Present this card at accredited blood banks or hospital transfusion centers. Medical staff can scan the QR code to instantly verify your blood group and donation eligibility date.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.donor-id-card-wrapper {
+    perspective: 1000px;
+}
+.donor-id-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+}
+.donor-id-card::before {
+    content: "";
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(220, 38, 38, 0.25) 0%, rgba(0,0,0,0) 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+.card-logo-badge {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+}
+.card-brand-title {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.3px;
+}
+.card-brand-sub {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+.donor-blood-badge {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    padding: 4px 12px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.donor-blood-badge .blood-drop {
+    color: #ef4444;
+}
+.donor-blood-badge .blood-type {
+    font-weight: 800;
+    font-size: 1.15rem;
+    color: #fff;
+}
+.card-donor-name {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #f8fafc;
+    letter-spacing: -0.2px;
+}
+.card-donor-role {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.card-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 12px;
+}
+.meta-label {
+    display: block;
+    font-size: 0.65rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+.meta-value {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #e2e8f0;
+}
+.card-address {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 240px;
+}
+.card-footer-strip {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    font-size: 0.7rem;
+    color: #64748b;
+}
+
+@@media print {
+    body * {
+        visibility: hidden;
+    }
+    #donorCardElement, #donorCardElement * {
+        visibility: visible;
+    }
+    #donorCardElement {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 480px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
+</style>

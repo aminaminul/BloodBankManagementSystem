@@ -13,72 +13,33 @@ namespace BBDMS.Web.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IDonorService _donorService;
         private readonly IPageService _pageService;
         private readonly IBloodGroupService _bloodGroupService;
-        private readonly IBloodRequestService _bloodRequestService;
-        private readonly IHospitalService _hospitalService;
-        private readonly IBloodBankService _bloodBankService;
-        private readonly IAmbulanceService _ambulanceService;
-        private readonly IOxygenService _oxygenService;
+        private readonly IHomeSummaryService _homeSummaryService;
 
         public HomeController(
             ILogger<HomeController> logger,
-            IDonorService donorService,
             IPageService pageService,
             IBloodGroupService bloodGroupService,
-            IBloodRequestService bloodRequestService,
-            IHospitalService hospitalService,
-            IBloodBankService bloodBankService,
-            IAmbulanceService ambulanceService,
-            IOxygenService oxygenService)
+            IHomeSummaryService homeSummaryService)
         {
             _logger = logger;
-            _donorService = donorService;
             _pageService = pageService;
             _bloodGroupService = bloodGroupService;
-            _bloodRequestService = bloodRequestService;
-            _hospitalService = hospitalService;
-            _bloodBankService = bloodBankService;
-            _ambulanceService = ambulanceService;
-            _oxygenService = oxygenService;
+            _homeSummaryService = homeSummaryService;
         }
 
+        // Home
         public async Task<IActionResult> Index()
         {
-            var donors = (await _donorService.GetAllDonorsAsync()) ?? Enumerable.Empty<BloodDonor>();
-            var hospitals = (await _hospitalService.GetAllHospitalsAsync()) ?? Enumerable.Empty<Hospital>();
-            var bloodBanks = (await _bloodBankService.GetAllBloodBanksAsync()) ?? Enumerable.Empty<BloodBank>();
-            var ambulances = (await _ambulanceService.GetAllAmbulancesAsync()) ?? Enumerable.Empty<AmbulanceService>();
-            var oxygenServices = (await _oxygenService.GetAllOxygenServicesAsync()) ?? Enumerable.Empty<OxygenService>();
-            var requests = (await _bloodRequestService.GetAllRequestsAsync()) ?? Enumerable.Empty<BloodRequest>();
-            var bloodGroups = (await _bloodGroupService.GetAllGroupsAsync()) ?? Enumerable.Empty<BloodGroup>();
-            var contactInfo = await _pageService.GetContactInfoAsync();
-
-            var viewModel = new HomeIndexViewModel
-            {
-                TotalDonors = donors.Count(),
-                TotalHospitals = hospitals.Count(),
-                TotalAvailableIcuBeds = hospitals.Sum(h => h.AvailableIcuBeds),
-                TotalAvailableEmergencyBeds = hospitals.Sum(h => h.AvailableEmergencyBeds),
-                TotalBloodBanks = bloodBanks.Count(),
-                TotalAmbulances = ambulances.Count(),
-                TotalOxygenSuppliers = oxygenServices.Count(),
-                TotalActiveRequests = requests.Count(r => r.Status != "Fulfilled" && r.Status != "Cancelled"),
-
-                ContactInfo = contactInfo,
-                BloodGroups = bloodGroups,
-                ActiveDonors = donors.Where(d => d.Status == 1).OrderByDescending(d => d.Id).Take(6).ToList(),
-                UrgentRequests = requests.Where(r => r.Status != "Fulfilled" && r.Status != "Cancelled").OrderByDescending(r => r.ID).Take(3).ToList(),
-                FeaturedHospitals = hospitals.Take(3).ToList(),
-                FeaturedBloodBanks = bloodBanks.Take(3).ToList(),
-                FeaturedAmbulances = ambulances.Where(a => a.IsAvailable).Take(3).ToList(),
-                FeaturedOxygenSuppliers = oxygenServices.Take(3).ToList()
-            };
+            var viewModel = await _homeSummaryService.GetSummaryAsync();
+            viewModel.BloodGroups = (await _bloodGroupService.GetAllGroupsAsync()) ?? Enumerable.Empty<BloodGroup>();
+            viewModel.ContactInfo = await _pageService.GetContactInfoAsync();
 
             return View(viewModel);
         }
 
+        // About Us
         public async Task<IActionResult> About()
         {
             var pages = await _pageService.GetAllPagesAsync();
@@ -87,6 +48,7 @@ namespace BBDMS.Web.Controllers
             return View(aboutPage);
         }
 
+        // Contact Us
         public async Task<IActionResult> Contact()
         {
             var contactInfo = await _pageService.GetContactInfoAsync();
@@ -106,11 +68,45 @@ namespace BBDMS.Web.Controllers
             return View(await _pageService.GetContactInfoAsync());
         }
 
+        // Access Denied (403)
+        public IActionResult AccessDenied()
+        {
+            Response.StatusCode = 403;
+            ViewBag.Code = 403;
+            ViewBag.Message = "You do not have permission to open that page.";
+            return View("Status");
+        }
+
+        // HTTP Status Handler (400, 403, 404, 429, 500)
+        public IActionResult Status(int code)
+        {
+            Response.Headers.CacheControl = "no-store";
+            Response.StatusCode = code;
+            ViewBag.Code = code;
+            ViewBag.Message = code switch
+            {
+                400 => "That request could not be understood. Please go back and try again.",
+                403 => "You do not have permission to open that page.",
+                404 => "We could not find the page you were looking for.",
+                429 => "Too many requests from this device. Please wait a moment and retry.",
+                _ => "Something went wrong while handling that request."
+            };
+            return View();
+        }
+
+        // Blood Compatibility Matrix & Eligibility Quiz
+        public IActionResult Compatibility()
+        {
+            return View();
+        }
+
+        // Privacy Policy
         public IActionResult Privacy()
         {
             return View();
         }
 
+        // Error Handler
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {

@@ -8,7 +8,7 @@ namespace BBDMS.Model.Models.Entities
         [Key]
         public int Id { get; set; }
         [StringLength(20)]
-        public string GroupName { get; set; }
+        public string GroupName { get; set; } = string.Empty;
         public DateTime PostingDate { get; set; } = DateTime.Now;
     }
 }

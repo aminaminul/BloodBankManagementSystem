@@ -10,19 +10,15 @@ namespace BBDMS.Model.Models.Entities
 
         [Required]
         [StringLength(250)]
-        public string ProviderName { get; set; }
-
+        public string ProviderName { get; set; } = string.Empty;
         [Required]
         [StringLength(100)]
-        public string Location { get; set; }
-
+        public string Location { get; set; } = string.Empty;
         [StringLength(500)]
-        public string Address { get; set; }
-
+        public string Address { get; set; } = string.Empty;
         [Required]
         [StringLength(50)]
-        public string ContactNumber { get; set; }
-
+        public string ContactNumber { get; set; } = string.Empty;
         [StringLength(50)]
         public string OxygenAvailability { get; set; } = "In Stock"; // "In Stock", "Limited", "Out of Stock"
 
@@ -32,8 +28,7 @@ namespace BBDMS.Model.Models.Entities
         public bool HomeDeliveryAvailable { get; set; } = true;
 
         [StringLength(500)]
-        public string ServiceDetails { get; set; }
-
+        public string ServiceDetails { get; set; } = string.Empty;
         public DateTime LastUpdated { get; set; } = DateTime.Now;
     }
 }

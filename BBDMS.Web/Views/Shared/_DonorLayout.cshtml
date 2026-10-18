@@ -1,0 +1,133 @@
+@{
+    var donorName = (User.Identity?.Name ?? "Donor");
+    var initial = string.IsNullOrEmpty(donorName) ? "D" : donorName.Substring(0, 1).ToUpper();
+}
+<!DOCTYPE html>
+<html lang="en" data-theme="@ThemePreference.Read(Context)">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Blood Bank</title>
+
+    @* Applies the stored light/dark choice (and motion opt-in) before the first paint. *@
+    <script>
+        (function () {
+            try {
+                var m = document.cookie.match(/(?:^|;\s*)bbdms\.theme=([^;]+)/);
+                var t = m ? decodeURIComponent(m[1]) : localStorage.getItem('bbdms-theme');
+                if (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t = 'dark';
+                t = t === 'dark' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', t);
+                document.documentElement.style.colorScheme = t;
+                if (!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+                    document.documentElement.classList.add('bbdms-motion');
+                }
+            } catch (e) { /* keep the server rendered theme */ }
+        })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/bootstrap.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modern-theme.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="dash-shell">
+        <aside class="dash-sidebar" id="dashSidebar">
+            <a class="dash-brand text-decoration-none" asp-controller="Home" asp-action="Index">
+                <img src="~/images/Logo.png" alt="Logo" />
+                <span>Blood<b>Bank</b></span>
+            </a>
+
+            <div class="dash-heading">Menu</div>
+            <nav class="dash-nav">
+                <a asp-controller="Donor" asp-action="Dashboard"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
+                <a asp-controller="Account" asp-action="Profile"><i class="fas fa-user"></i>My Profile</a>
+                <a asp-controller="Donor" asp-action="DonorCard"><i class="fas fa-id-card"></i>Digital Donor Card</a>
+                <a asp-controller="Donor" asp-action="Certificate"><i class="fas fa-award"></i>My Certificate</a>
+                <a asp-controller="Donor" asp-action="DonationHistory"><i class="fas fa-history"></i>Donation History</a>
+                <a asp-controller="Donor" asp-action="MyRequests"><i class="fas fa-heartbeat"></i>Blood Requests</a>
+                <a asp-controller="Donor" asp-action="Nearby"><i class="fas fa-map-marked-alt"></i>Nearby Donors</a>
+                <a asp-controller="Emergency" asp-action="CreateBloodRequest"><i class="fas fa-plus-circle"></i>Request Blood</a>
+                <a asp-controller="Emergency" asp-action="RequestAmbulance"><i class="fas fa-ambulance"></i>Request Ambulance</a>
+                <a asp-controller="Emergency" asp-action="TrackAmbulance"><i class="fas fa-satellite-dish"></i>Track Dispatch</a>
+                <a asp-controller="Emergency" asp-action="AmbulanceContact"><i class="fas fa-phone-volume"></i>Emergency Contacts</a>
+            </nav>
+
+            <div class="dash-heading">Account</div>
+            <nav class="dash-nav">
+                <a asp-controller="Account" asp-action="ChangePassword"><i class="fas fa-key"></i>Security</a>
+                <a asp-controller="Account" asp-action="RequestReceived"><i class="fas fa-inbox"></i>Inbox</a>
+                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                    <button type="submit" class="btn btn-link p-0 text-danger text-decoration-none"><i class="fas fa-sign-out-alt"></i>Logout</button>
+                </form>
+            </nav>
+        </aside>
+
+        <main class="dash-main">
+            <div class="dash-topbar">
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-sm btn-light d-lg-none border" type="button" onclick="document.getElementById('dashSidebar').classList.toggle('open')">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div>
+                        <h4 class="mb-0 fw-bold">@ViewData["Title"]</h4>
+                        <small class="text-muted">Manage your donor activity and emergency requests</small>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    @await Html.PartialAsync("_ThemeToggle")
+                    @await Html.PartialAsync("_NotificationBell")
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="avatar-circle">@initial</div>
+                        <div class="d-none d-sm-block">
+                            <div class="fw-bold" style="line-height:1.1;">@donorName</div>
+                            <small class="text-muted">Blood Donor</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>@TempData["Error"]
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            }
+
+            @await Html.PartialAsync("_ValidationSummary")
+
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/js/jquery-2.2.3.min.js" asp-append-version="true"></script>
+    <script src="~/js/bootstrap.js" asp-append-version="true"></script>
+    <script>
+        // highlight active sidebar link
+        document.addEventListener("DOMContentLoaded", function () {
+            var path = window.location.pathname.toLowerCase();
+            document.querySelectorAll(".dash-nav a").forEach(function (link) {
+                var href = (link.getAttribute("href") || "").toLowerCase();
+                if (href && href !== "/" && path.endsWith(href)) { link.classList.add("active"); }
+            });
+        });
+    </script>
+    <script src="~/js/bbdms-theme.js" asp-append-version="true"></script>
+    <script src="~/js/bbdms-motion.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script src="~/js/bbdms-notifications.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

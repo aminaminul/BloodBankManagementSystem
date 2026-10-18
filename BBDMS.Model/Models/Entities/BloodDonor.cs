@@ -53,6 +53,10 @@ namespace BBDMS.Model.Models.Entities
         // Medical Eligibility Tracking (90-day minimum between donations)
         public DateTime? LastDonatedDate { get; set; }
 
+        /// <summary>Preferred UI theme for this donor ("light" or "dark").</summary>
+        [StringLength(10)]
+        public string? ThemePreference { get; set; }
+
         public bool IsEligibleToDonate =>
             !LastDonatedDate.HasValue || (DateTime.Now - LastDonatedDate.Value).TotalDays >= 90;
 

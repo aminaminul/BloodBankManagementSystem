@@ -1,40 +1,34 @@
-using System;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Controllers;
+using System.Security.Claims;
+using System.Security.Principal;
+using Microsoft.AspNetCore.Authorization;
 
 namespace BBDMS.Web.Filters
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class AdminAuthorizeAttribute : Attribute, IAuthorizationFilter
+    // Roles
+    public static class Roles
     {
-        public void OnAuthorization(AuthorizationFilterContext context)
-        {
-            var actionDescriptor = context.ActionDescriptor as ControllerActionDescriptor;
-            if (actionDescriptor != null && string.Equals(actionDescriptor.ActionName, "Index", StringComparison.OrdinalIgnoreCase))
-            {
-                return; // Exempt login page
-            }
-
-            var adminId = context.HttpContext.Session.GetInt32("adminId");
-            if (adminId == null)
-            {
-                context.Result = new RedirectToActionResult("Index", "Admin", null);
-            }
-        }
+        public const string Donor = "Donor";
+        public const string Admin = "Admin";
     }
 
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class DonorAuthorizeAttribute : Attribute, IAuthorizationFilter
+    // Role-based Authorization Attributes
+    public class AdminAuthorizeAttribute : AuthorizeAttribute
     {
-        public void OnAuthorization(AuthorizationFilterContext context)
+        public AdminAuthorizeAttribute() => Roles = BBDMS.Web.Filters.Roles.Admin;
+    }
+
+    public class DonorAuthorizeAttribute : AuthorizeAttribute
+    {
+        public DonorAuthorizeAttribute() => Roles = BBDMS.Web.Filters.Roles.Donor;
+    }
+
+    // Claims Principal Extensions
+    public static class ClaimsPrincipalExtensions
+    {
+        public static int? GetUserId(this IPrincipal? user)
         {
-            var donorId = context.HttpContext.Session.GetInt32("bbdmsdid");
-            if (donorId == null)
-            {
-                context.Result = new RedirectToActionResult("Login", "Account", null);
-            }
+            var value = (user?.Identity as ClaimsIdentity)?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(value, out var id) ? id : null;
         }
     }
 }

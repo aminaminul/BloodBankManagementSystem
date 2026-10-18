@@ -10,20 +10,26 @@ namespace BBDMS.Model.Models.Entities
 
         public int? AmbulanceServiceId { get; set; }
 
+        /// <summary>
+        /// Unguessable public reference for the tracking page. Sequential ids must never be used to
+        /// look up a request: anyone could enumerate other patients' names and phone numbers.
+        /// </summary>
+        [StringLength(64)]
+        public string? TrackingToken { get; set; }
+
         [Required]
         [StringLength(250)]
-        public string PatientName { get; set; }
-
+        public string PatientName { get; set; } = string.Empty;
         [Required]
         [StringLength(50)]
-        public string ContactNumber { get; set; }
-
+        public string ContactNumber { get; set; } = string.Empty;
         [Required]
         [StringLength(500)]
-        public string PickupAddress { get; set; }
-
+        public string PickupAddress { get; set; } = string.Empty;
+        // Optional in the booking form — must stay nullable, otherwise model binding
+        // rejects the whole request when the patient leaves the field empty.
         [StringLength(250)]
-        public string DestinationHospital { get; set; }
+        public string? DestinationHospital { get; set; }
 
         [StringLength(100)]
         public string AmbulanceType { get; set; } = "Basic Life Support (BLS)";
@@ -36,6 +42,7 @@ namespace BBDMS.Model.Models.Entities
         [StringLength(50)]
         public string Status { get; set; } = "Pending";
 
-        public string Notes { get; set; }
+        [StringLength(500)]
+        public string? Notes { get; set; }
     }
 }

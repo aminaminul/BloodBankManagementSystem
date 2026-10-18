@@ -1,10 +1,16 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using BBDMS.Model.Models.Entities;
 using BBDMS.Model.Models.ViewModels;
 using BBDMS.Service.Interfaces;
 using BBDMS.Web.Filters;
+using BBDMS.Web.Hubs;
 
 namespace BBDMS.Web.Controllers
 {
@@ -19,6 +25,10 @@ namespace BBDMS.Web.Controllers
         private readonly IOxygenService _oxygenService;
         private readonly IBloodRequestService _bloodRequestService;
         private readonly IPageService _pageService;
+        private readonly IDonationService _donationService;
+        private readonly IAuditService _auditService;
+        private readonly IReportService _reportService;
+        private readonly IHubContext<EmergencyHub> _hubContext;
 
         public AdminController(
             IAdminService adminService,
@@ -28,8 +38,15 @@ namespace BBDMS.Web.Controllers
             IAmbulanceService ambulanceService,
             IOxygenService oxygenService,
             IBloodRequestService bloodRequestService,
-            IPageService pageService)
+            IPageService pageService,
+            IDonationService donationService,
+            IAuditService auditService,
+            IReportService reportService,
+            IHubContext<EmergencyHub> hubContext)
         {
+            _hubContext = hubContext;
+            _auditService = auditService;
+            _reportService = reportService;
             _adminService = adminService;
             _donorService = donorService;
             _hospitalService = hospitalService;
@@ -38,10 +55,13 @@ namespace BBDMS.Web.Controllers
             _oxygenService = oxygenService;
             _bloodRequestService = bloodRequestService;
             _pageService = pageService;
+            _donationService = donationService;
         }
 
-        private bool IsAdminLoggedIn => HttpContext.Session.GetInt32("adminId") != null;
+        private bool IsAdminLoggedIn => User.IsInRole(Roles.Admin);
 
+        /// <summary>Administrator sign-in page — must stay reachable while signed out.</summary>
+        [Microsoft.AspNetCore.Authorization.AllowAnonymous]
         public IActionResult Index()
         {
             if (IsAdminLoggedIn)
@@ -52,13 +72,32 @@ namespace BBDMS.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("authLimiter")]
+        [Microsoft.AspNetCore.Authorization.AllowAnonymous]
         public async Task<IActionResult> Index(string username, string password)
         {
             var admin = await _adminService.LoginAsync(username, password);
             if (admin != null)
             {
-                HttpContext.Session.Clear(); // Prevent session fixation
-                HttpContext.Session.SetInt32("adminId", admin.ID);
+                var claims = new List<System.Security.Claims.Claim>
+                {
+                    new(System.Security.Claims.ClaimTypes.NameIdentifier, admin.ID.ToString()),
+                    new(System.Security.Claims.ClaimTypes.Name, admin.AdminName ?? admin.UserName ?? "Administrator"),
+                    new(System.Security.Claims.ClaimTypes.Email, admin.Email ?? string.Empty),
+                    new(System.Security.Claims.ClaimTypes.Role, Roles.Admin)
+                };
+
+                var identity = new System.Security.Claims.ClaimsIdentity(
+                    claims, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignInAsync(
+                    Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme,
+                    new System.Security.Claims.ClaimsPrincipal(identity));
+
+                // Restore this administrator's saved light/dark preference
+                if (!string.IsNullOrWhiteSpace(admin.ThemePreference))
+                {
+                    BBDMS.Web.Common.ThemePreference.ApplyCookie(HttpContext, admin.ThemePreference);
+                }
+
                 return RedirectToAction(nameof(Dashboard));
             }
             TempData["Error"] = "Invalid administrator username or password.";
@@ -81,9 +120,13 @@ namespace BBDMS.Web.Controllers
             return View(viewModel);
         }
 
-        public IActionResult Logout()
+        /// <summary>POST only: a GET logout can be forged by any third-party page.</summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
         {
-            HttpContext.Session.Clear();
+            await HttpContext.SignOutAsync(
+                Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction(nameof(Index));
         }
 
@@ -99,6 +142,7 @@ namespace BBDMS.Web.Controllers
         public async Task<IActionResult> ToggleDonorAvailability(int id)
         {
             await _donorService.ToggleAvailabilityAsync(id);
+            await _auditService.LogAsync("AvailabilityToggled", nameof(BloodDonor), id.ToString());
             TempData["Success"] = "Donor availability status updated.";
             return RedirectToAction(nameof(DonorList));
         }
@@ -108,6 +152,7 @@ namespace BBDMS.Web.Controllers
         public async Task<IActionResult> ToggleDonorStatus(int id)
         {
             await _donorService.ToggleStatusAsync(id);
+            await _auditService.LogAsync("StatusToggled", nameof(BloodDonor), id.ToString());
             TempData["Success"] = "Donor active/inactive status updated.";
             return RedirectToAction(nameof(DonorList));
         }
@@ -117,6 +162,7 @@ namespace BBDMS.Web.Controllers
         public async Task<IActionResult> DeleteDonor(int id)
         {
             await _donorService.DeleteDonorAsync(id);
+            await _auditService.LogAsync("Deleted", nameof(BloodDonor), id.ToString());
             TempData["Success"] = "Donor deleted successfully.";
             return RedirectToAction(nameof(DonorList));
         }
@@ -297,7 +343,22 @@ namespace BBDMS.Web.Controllers
         public async Task<IActionResult> UpdateAmbulanceRequestStatus(int id, string status)
         {
             await _ambulanceService.UpdateAmbulanceRequestStatusAsync(id, status);
-            TempData["Success"] = $"Ambulance request status updated to {status}.";
+            var request = await _ambulanceService.GetAmbulanceRequestByIdAsync(id);
+            var normalized = AmbulanceTracking.NormalizeStatus(status);
+            await _auditService.LogAsync("StatusChanged", nameof(AmbulanceRequest), id.ToString(), $"status -> {normalized}");
+
+            // Push the change to every open tracking page instantly
+            await _hubContext.Clients.All.SendAsync("ReceiveAmbulanceStatusUpdate", new
+            {
+                id,
+                patientName = request?.PatientName,
+                status = normalized,
+                statusLabel = AmbulanceTracking.StatusLabel(normalized),
+                badge = AmbulanceTracking.StatusBadge(normalized),
+                updatedAt = DateTime.Now.ToString("hh:mm:ss tt")
+            });
+
+            TempData["Success"] = $"Ambulance request #{id} updated to {AmbulanceTracking.StatusLabel(normalized)} — the patient's live timeline has been refreshed.";
             return RedirectToAction(nameof(AmbulanceRequests));
         }
         #endregion
@@ -386,6 +447,7 @@ namespace BBDMS.Web.Controllers
         public async Task<IActionResult> DeleteContactQuery(int id)
         {
             await _pageService.DeleteContactQueryAsync(id);
+            await _auditService.LogAsync("Deleted", nameof(ContactQuery), id.ToString());
             TempData["Success"] = "Contact query removed.";
             return RedirectToAction(nameof(ContactQueries));
         }
@@ -403,6 +465,7 @@ namespace BBDMS.Web.Controllers
             if (ModelState.IsValid)
             {
                 await _pageService.UpdateContactInfoAsync(info);
+                await _auditService.LogAsync("Updated", nameof(ContactInfo), info.Id.ToString());
                 TempData["Success"] = "Website contact details updated successfully in database.";
                 return RedirectToAction(nameof(ContactInfo));
             }
@@ -480,6 +543,79 @@ namespace BBDMS.Web.Controllers
 
             var bytes = System.Text.Encoding.UTF8.GetBytes(builder.ToString());
             return File(bytes, "text/csv", $"BloodRequests_Export_{System.DateTime.Now:yyyyMMdd_HHmmss}.csv");
+        }
+        #endregion
+
+        #region Reports & Analytics
+        public async Task<IActionResult> Reports()
+        {
+            // Figures come from SQL aggregates; detail rows are capped inside the service.
+            var viewModel = await _reportService.BuildAsync(DateTime.Today);
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportDonationsCsv()
+        {
+            var donations = await _donationService.GetAllDonationsAsync();
+            var donors = (await _donorService.SearchDonorsAsync(null, null, 1, 10000, true)).Items?.ToDictionary(d => d.Id, d => d.FullName)
+                         ?? new Dictionary<int, string>();
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("DonationID,DonorID,DonorName,BloodGroup,DonationDate,UnitsDonated,CenterName,Location,Notes");
+
+            foreach (var d in donations)
+            {
+                var donorName = donors.TryGetValue(d.DonorId, out var name) ? name : "Unknown";
+                var cleanNotes = (d.Notes ?? "").Replace("\"", "\"\"").Replace("\n", " ").Replace("\r", " ");
+                var cleanCenter = (d.CenterName ?? "").Replace("\"", "\"\"").Replace("\n", " ").Replace("\r", " ");
+                var cleanLoc = (d.Location ?? "").Replace("\"", "\"\"").Replace("\n", " ").Replace("\r", " ");
+                sb.AppendLine($"{d.Id},{d.DonorId},\"{donorName}\",{d.BloodGroup},{d.DonationDate:yyyy-MM-dd},{d.UnitsDonated},\"{cleanCenter}\",\"{cleanLoc}\",\"{cleanNotes}\"");
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetBytes(sb.ToString());
+            return File(bytes, "text/csv", $"Donations_Export_{DateTime.Today:yyyyMMdd}.csv");
+        }
+        #endregion
+
+        #region Audit Trail
+        /// <summary>Who changed what, newest first.</summary>
+        public async Task<IActionResult> AuditTrail(int page = 1, int pageSize = 25)
+        {
+            var logs = await _auditService.GetPagedAsync(page, pageSize);
+            return View(logs);
+        }
+        #endregion
+
+        #region Account Settings
+        public async Task<IActionResult> Settings()
+        {
+            var adminId = User.GetUserId();
+            if (adminId == null) return RedirectToAction(nameof(Index));
+            var admin = await _adminService.GetAdminByIdAsync(adminId.Value);
+            if (admin == null) return RedirectToAction(nameof(Index));
+            return View(admin);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Settings(Admin model)
+        {
+            var adminId = User.GetUserId();
+            if (adminId == null) return RedirectToAction(nameof(Index));
+
+            var admin = await _adminService.GetAdminByIdAsync(adminId.Value);
+            if (admin == null) return RedirectToAction(nameof(Index));
+
+            admin.AdminName = model.AdminName;
+            admin.Email = model.Email;
+            admin.MobileNumber = model.MobileNumber;
+            await _adminService.UpdateAdminAsync(admin);
+            await _auditService.LogAsync("SettingsUpdated", nameof(Admin), admin.ID.ToString(),
+                $"name='{admin.AdminName}', email='{admin.Email}'");
+
+            TempData["Success"] = "Settings updated successfully.";
+            return RedirectToAction(nameof(Settings));
         }
         #endregion
     }

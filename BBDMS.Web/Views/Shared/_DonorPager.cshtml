@@ -1,0 +1,29 @@
+@model BBDMS.Model.Models.ViewModels.PagedResult<BBDMS.Model.Models.ViewModels.DonorListItemViewModel>
+@{
+    var pagerAction = ViewData["PagerAction"] as string ?? "Search";
+    var bloodGroup = ViewData["PagerBloodGroup"] as string;
+    var location = ViewData["PagerLocation"] as string;
+}
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Donor result pages" class="mt-4">
+        <ul class="pagination justify-content-center flex-wrap">
+            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                <a class="page-link" asp-action="@pagerAction"
+                   asp-route-bloodGroup="@bloodGroup" asp-route-location="@location"
+                   asp-route-page="@(Model.PageIndex - 1)">Previous</a>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">
+                    Page @Model.PageIndex of @Model.TotalPages
+                    <span class="text-muted">(@Model.TotalItems donors)</span>
+                </span>
+            </li>
+            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                <a class="page-link" asp-action="@pagerAction"
+                   asp-route-bloodGroup="@bloodGroup" asp-route-location="@location"
+                   asp-route-page="@(Model.PageIndex + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+}

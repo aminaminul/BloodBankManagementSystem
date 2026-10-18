@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using BBDMS.Model.Models.Entities;
 using BBDMS.Repository.Interfaces;
 using BBDMS.Service.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace BBDMS.Service.Services
 {
@@ -85,8 +86,40 @@ namespace BBDMS.Service.Services
             {
                 request.Status = "Pending";
             }
+
+            if (string.IsNullOrWhiteSpace(request.TrackingToken))
+            {
+                request.TrackingToken = NewTrackingToken();
+            }
+
             await _requestRepository.AddAsync(request);
             await _requestRepository.SaveChangesAsync();
+        }
+
+        // Generate Tracking Token
+        public static string NewTrackingToken() => System.Guid.NewGuid().ToString("N");
+
+        public async Task<AmbulanceRequest?> GetAmbulanceRequestByTokenAsync(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) return null;
+
+            var normalized = token.Trim();
+            return await _requestRepository.Query()
+                .Where(r => r.TrackingToken == normalized)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<AmbulanceRequest?> GetLatestAmbulanceRequestByContactAsync(string contact)
+        {
+            if (string.IsNullOrWhiteSpace(contact)) return null;
+
+            var digits = new string(contact.Where(char.IsDigit).ToArray());
+            if (digits.Length == 0) return null;
+
+            return await _requestRepository.Query()
+                .Where(r => r.ContactNumber != null && r.ContactNumber.Contains(digits))
+                .OrderByDescending(r => r.RequestDate)
+                .FirstOrDefaultAsync();
         }
 
         public async Task<IEnumerable<AmbulanceRequest>> GetAllAmbulanceRequestsAsync()

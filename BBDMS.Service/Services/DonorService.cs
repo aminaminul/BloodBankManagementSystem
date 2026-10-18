@@ -48,6 +48,18 @@ namespace BBDMS.Service.Services
             return await _donorRepository.GetByIdAsync(id);
         }
 
+        // Get Donor By Email
+        public async Task<BloodDonor?> GetDonorByEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email)) return null;
+
+            var normalized = email.Trim().ToLowerInvariant();
+            return await _donorRepository.Query()
+                .Where(d => d.EmailId != null && d.EmailId.ToLower() == normalized)
+                .OrderBy(d => d.Id)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task RegisterDonorAsync(BloodDonor donor)
         {
             await _donorRepository.AddAsync(donor);
@@ -60,13 +72,23 @@ namespace BBDMS.Service.Services
             await _donorRepository.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<BloodDonor>> SearchDonorsAsync(string? bloodGroup, string? location)
+        // Search Donors (Paged DTO)
+        public async Task<PagedResult<DonorListItemViewModel>> SearchDonorsAsync(
+            string? bloodGroup,
+            string? location,
+            int page = 1,
+            int pageSize = 12,
+            bool includeContact = false)
         {
+            if (page < 1) page = 1;
+            if (pageSize < 1 || pageSize > 60) pageSize = 12;
+
             var query = _donorRepository.Query().Where(d => d.Status == 1);
 
             if (!string.IsNullOrEmpty(bloodGroup) && bloodGroup != "All")
             {
-                query = query.Where(d => d.BloodGroup == bloodGroup);
+                var group = bloodGroup;
+                query = query.Where(d => d.BloodGroup == group);
             }
 
             if (!string.IsNullOrEmpty(location))
@@ -75,7 +97,53 @@ namespace BBDMS.Service.Services
                 query = query.Where(d => d.Address != null && d.Address.Contains(loc));
             }
 
-            return await query.ToListAsync();
+            var totalCount = await query.CountAsync();
+
+            var rows = await query
+                .OrderByDescending(d => d.IsAvailable)
+                .ThenByDescending(d => d.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<DonorListItemViewModel>
+            {
+                Items = rows.Select(d => MapToListItem(d, includeContact)).ToList(),
+                PageIndex = page,
+                PageSize = pageSize,
+                TotalItems = totalCount
+            };
+        }
+
+        // DTO Mapping
+        private static DonorListItemViewModel MapToListItem(BloodDonor donor, bool includeContact) => new()
+        {
+            Id = donor.Id,
+            FullName = donor.FullName ?? string.Empty,
+            BloodGroup = donor.BloodGroup ?? string.Empty,
+            Gender = donor.Gender,
+            Age = donor.Age,
+            Address = donor.Address,
+            Message = donor.Message,
+            IsAvailable = donor.IsAvailable,
+            LastDonatedDate = donor.LastDonatedDate,
+            ContactVisible = includeContact,
+            MobileNumber = includeContact ? (donor.MobileNumber ?? string.Empty) : "Sign in to view",
+            EmailId = includeContact ? (donor.EmailId ?? string.Empty) : string.Empty
+        };
+
+        // Count Donors by Blood Group
+        public async Task<int> CountDonorsByBloodGroupAsync(string? bloodGroup, int excludeDonorId = 0)
+        {
+            var query = _donorRepository.Query().Where(d => d.Status == 1 && d.Id != excludeDonorId);
+
+            if (!string.IsNullOrWhiteSpace(bloodGroup))
+            {
+                var group = bloodGroup.Trim();
+                query = query.Where(d => d.BloodGroup == group);
+            }
+
+            return await query.CountAsync();
         }
 
         public async Task ToggleAvailabilityAsync(int id)

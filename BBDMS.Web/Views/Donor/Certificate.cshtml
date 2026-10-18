@@ -1,0 +1,206 @@
+@model BBDMS.Model.Models.Entities.BloodDonor
+@{
+    ViewData["Title"] = "Donor Certificate of Appreciation - Blood Bank";
+    Layout = "_Layout";
+    var milestone = ViewBag.Milestone as string ?? "Life Saver";
+    var totalDonations = (int)(ViewBag.TotalDonations ?? 0);
+    var totalUnits = (int)(ViewBag.TotalUnits ?? 0);
+    var issueDate = ViewBag.IssueDate as string ?? DateTime.Today.ToString("MMMM dd, yyyy");
+    var qrCode = ViewBag.QrCode as string;
+}
+
+<div class="container py-5">
+    <!-- Toolbar / Action Bar (Hidden when printing) -->
+    <div class="d-flex justify-content-between align-items-center mb-4 no-print flex-wrap gap-2">
+        <a asp-action="Dashboard" class="btn btn-outline-secondary font-weight-bold">
+            <i class="fas fa-arrow-left mr-1"></i> Back to Dashboard
+        </a>
+        <div class="btn-group shadow-sm">
+            <button type="button" class="btn btn-danger font-weight-bold px-4" onclick="window.print();">
+                <i class="fas fa-print mr-1"></i> Print / Save as PDF
+            </button>
+            <a asp-action="NextDonationCalendar" class="btn btn-outline-danger font-weight-bold">
+                <i class="fas fa-calendar-plus mr-1"></i> Add Next Date to Calendar (.ics)
+            </a>
+            <a asp-action="DonorCard" class="btn btn-outline-secondary font-weight-bold">
+                <i class="fas fa-id-card mr-1"></i> Digital Donor Card
+            </a>
+        </div>
+    </div>
+
+    <!-- Official Certificate Frame -->
+    <div class="certificate-wrapper shadow mx-auto">
+        <div class="certificate-inner">
+            <!-- Corner Filigrees / Ornaments -->
+            <div class="cert-corner cert-top-left"></div>
+            <div class="cert-corner cert-top-right"></div>
+            <div class="cert-corner cert-bottom-left"></div>
+            <div class="cert-corner cert-bottom-right"></div>
+
+            <!-- Header Header -->
+            <div class="text-center mb-4">
+                <div class="d-inline-flex align-items-center mb-2">
+                    <img src="~/images/Logo.png" alt="Logo" style="height: 54px;" class="mr-2" />
+                    <h2 class="font-weight-bold text-danger mb-0" style="letter-spacing: 2px;">BLOOD BANK MANAGEMENT SYSTEM</h2>
+                </div>
+                <div class="text-muted text-uppercase tracking-wide small" style="letter-spacing: 4px;">
+                    National Emergency Blood &amp; Healthcare Network
+                </div>
+                <div class="cert-ribbon-title mt-3">
+                    CERTIFICATE OF APPRECIATION
+                </div>
+                <p class="text-muted italic mt-2" style="font-size: 1.1rem; font-style: italic;">
+                    This certificate is honorably awarded to
+                </p>
+            </div>
+
+            <!-- Recipient Name -->
+            <div class="text-center my-4">
+                <h1 class="cert-donor-name mb-1">@Model.FullName</h1>
+                <div class="cert-name-underline mx-auto"></div>
+                <div class="badge badge-danger text-uppercase font-weight-bold px-3 py-2 mt-3" style="font-size: 1rem; letter-spacing: 1px;">
+                    <i class="fas fa-medal mr-1"></i> @milestone
+                </div>
+            </div>
+
+            <!-- Commendation Text -->
+            <div class="text-center mx-auto my-4" style="max-width: 760px;">
+                <p class="lead text-dark" style="font-size: 1.15rem; line-height: 1.7;">
+                    In sincere and grateful recognition of your voluntary humanitarian commitment to donating blood and saving precious human lives. Through your selflessness and compassion, you embody the true spirit of community healthcare.
+                </p>
+            </div>
+
+            <!-- Stats Ribbon -->
+            <div class="row text-center my-4 py-3 bg-light rounded mx-auto" style="max-width: 640px; border: 1px dashed #cbd5e1;">
+                <div class="col-4">
+                    <small class="text-muted text-uppercase font-weight-bold d-block">Blood Group</small>
+                    <span class="h4 font-weight-bold text-danger mb-0">@Model.BloodGroup</span>
+                </div>
+                <div class="col-4 border-left border-right">
+                    <small class="text-muted text-uppercase font-weight-bold d-block">Verified Donations</small>
+                    <span class="h4 font-weight-bold text-dark mb-0">@totalDonations</span>
+                </div>
+                <div class="col-4">
+                    <small class="text-muted text-uppercase font-weight-bold d-block">Total Units</small>
+                    <span class="h4 font-weight-bold text-dark mb-0">@totalUnits Units</span>
+                </div>
+            </div>
+
+            <!-- Signatures & Verification Seal -->
+            <div class="row align-items-end mt-5 pt-4">
+                <div class="col-4 text-center">
+                    <div class="cert-sig-line mx-auto mb-2"></div>
+                    <p class="font-weight-bold mb-0 text-dark">Medical Director</p>
+                    <small class="text-muted">Blood Transfusion Authority</small>
+                </div>
+                <div class="col-4 text-center">
+                    @if (!string.IsNullOrEmpty(qrCode))
+                    {
+                        <div class="d-inline-block p-1 bg-white border shadow-sm rounded">
+                            <img src="@qrCode" alt="Certificate Verification QR" style="width: 84px; height: 84px;" />
+                        </div>
+                        <div class="text-muted small mt-1" style="font-size: 0.75rem;">
+                            Scan to verify credentials
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="cert-seal">
+                            <i class="fas fa-certificate text-danger fa-2x"></i>
+                        </div>
+                    }
+                </div>
+                <div class="col-4 text-center">
+                    <div class="cert-sig-line mx-auto mb-2"></div>
+                    <p class="font-weight-bold mb-0 text-dark">Date: @issueDate</p>
+                    <small class="text-muted">Donor ID: #@Model.Id</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .certificate-wrapper {
+        max-width: 900px;
+        background: #fff;
+        padding: 16px;
+        border: 4px solid #b91c1c;
+        border-radius: 8px;
+        position: relative;
+    }
+
+    .certificate-inner {
+        border: 2px solid #e2e8f0;
+        padding: 48px 40px;
+        background: radial-gradient(circle at center, #ffffff 0%, #fdfbf7 100%);
+        position: relative;
+    }
+
+    .cert-corner {
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        border: 3px solid #b91c1c;
+    }
+
+    .cert-top-left { top: 12px; left: 12px; border-right: none; border-bottom: none; }
+    .cert-top-right { top: 12px; right: 12px; border-left: none; border-bottom: none; }
+    .cert-bottom-left { bottom: 12px; left: 12px; border-right: none; border-top: none; }
+    .cert-bottom-right { bottom: 12px; right: 12px; border-left: none; border-top: none; }
+
+    .cert-ribbon-title {
+        display: inline-block;
+        font-size: 1.7rem;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: 3px;
+        border-top: 2px solid #b91c1c;
+        border-bottom: 2px solid #b91c1c;
+        padding: 6px 28px;
+    }
+
+    .cert-donor-name {
+        font-family: 'Georgia', 'Playfair Display', serif;
+        font-size: 2.8rem;
+        font-weight: 700;
+        color: #0f172a;
+        letter-spacing: 1px;
+    }
+
+    .cert-name-underline {
+        width: 280px;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #b91c1c, transparent);
+    }
+
+    .cert-sig-line {
+        width: 160px;
+        height: 1px;
+        background: #334155;
+    }
+
+    @@media print {
+        body {
+            background: #fff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        .no-print, header, footer, .navbar, .back-to-top {
+            display: none !important;
+        }
+        .certificate-wrapper {
+            box-shadow: none !important;
+            border: 4px solid #b91c1c !important;
+            margin: 0 auto !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            page-break-inside: avoid;
+        }
+        .container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding: 0 !important;
+        }
+    }
+</style>

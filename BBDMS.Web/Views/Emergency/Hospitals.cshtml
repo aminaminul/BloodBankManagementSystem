@@ -3,6 +3,10 @@
     ViewData["Title"] = "Hospitals, Emergency Beds & ICU Directory";
 }
 
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+}
+
 <div class="container my-5">
     <div class="mb-4">
         <h2 class="font-weight-bold mb-1">Find a Hospital</h2>
@@ -134,6 +138,7 @@
 </div>
 
 @section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             const mapElement = document.getElementById("hospitalsMap");

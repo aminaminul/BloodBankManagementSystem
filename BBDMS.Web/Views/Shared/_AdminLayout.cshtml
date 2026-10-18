@@ -1,195 +1,197 @@
+@{
+    var adminName = (User.Identity?.Name ?? "Administrator");
+    var initial = string.IsNullOrEmpty(adminName) ? "A" : adminName.Substring(0, 1).ToUpper();
+}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="@ThemePreference.Read(Context)">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Admin Panel</title>
+
+    @* Applies the stored light/dark choice (and motion opt-in) before the first paint. *@
+    <script>
+        (function () {
+            try {
+                var m = document.cookie.match(/(?:^|;\s*)bbdms\.theme=([^;]+)/);
+                var t = m ? decodeURIComponent(m[1]) : localStorage.getItem('bbdms-theme');
+                if (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t = 'dark';
+                t = t === 'dark' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', t);
+                document.documentElement.style.colorScheme = t;
+                if (!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+                    document.documentElement.classList.add('bbdms-motion');
+                }
+            } catch (e) { /* keep the server rendered theme */ }
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="~/css/bootstrap.css" />
-    <link rel="stylesheet" href="~/css/modern-theme.css" />
+    <link rel="stylesheet" href="~/css/bootstrap.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modern-theme.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
-        body { 
-            padding-top: 64px; 
-            background-color: #f1f5f9; 
-            font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
-            color: #1e293b;
-        }
+        body { background: var(--page-bg); }
         .admin-navbar {
-            height: 64px;
-            background: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            z-index: 1030;
+            height: 64px; background: #fff; border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 2px rgba(16,24,40,0.03); z-index: 1030;
         }
-        .admin-sidebar { 
-            min-height: calc(100vh - 64px); 
-            background: #0f172a; 
-            padding: 24px 12px;
-            box-shadow: 2px 0 12px rgba(0,0,0,0.05);
-        }
-        .admin-sidebar a { 
-            color: #94a3b8; 
-            padding: 10px 14px; 
-            display: flex;
-            align-items: center;
-            text-decoration: none; 
-            font-size: 0.88rem;
-            font-weight: 500;
-            border-radius: 10px;
-            margin-bottom: 4px;
-            transition: all 0.2s ease;
-        }
-        .admin-sidebar a:hover { 
-            color: #ffffff; 
-            background: rgba(255,255,255,0.08); 
-        }
-        .admin-sidebar a.active {
-            color: #ffffff;
-            background: #e63946;
-            font-weight: 600;
-        }
-        .admin-sidebar a i {
-            width: 20px;
-            text-align: center;
-            margin-right: 10px;
-            font-size: 0.95rem;
-        }
-        .admin-sidebar-heading { 
-            color: #475569; 
-            font-size: 0.72rem; 
-            text-transform: uppercase; 
-            font-weight: 700; 
-            letter-spacing: 0.08em;
-            padding: 16px 14px 6px; 
-        }
-        .live-toast-container { 
-            position: fixed; 
-            top: 76px; 
-            right: 24px; 
-            z-index: 9999; 
-            max-width: 400px; 
+        .admin-shell { display: flex; min-height: calc(100vh - 64px); }
+        .admin-sidebar { width: 244px; flex-shrink: 0; position: sticky; top: 64px; align-self: flex-start; height: calc(100vh - 64px); overflow-y: auto; }
+        .admin-main { flex: 1 1 auto; min-width: 0; padding: 1.6rem 1.8rem 3rem; }
+        .live-toast-container { position: fixed; top: 76px; right: 24px; z-index: 9999; max-width: 400px; }
+        @@media (max-width: 992px) {
+            .admin-sidebar { position: fixed; left: 0; top: 64px; z-index: 1040; transform: translateX(-100%); transition: transform .25s; }
+            .admin-sidebar.open { transform: translateX(0); }
+            .admin-main { padding: 1.2rem 1rem 3rem; }
         }
     </style>
 </head>
 <body>
     <nav class="navbar navbar-expand fixed-top admin-navbar px-3 px-lg-4">
         <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark text-decoration-none" asp-controller="Admin" asp-action="Dashboard">
-            <img src="~/images/Logo.png" alt="Logo" height="34" class="rounded" onerror="this.style.display='none'" />
-            <span style="font-size:1.05rem; letter-spacing:-0.02em;">Blood &amp; Emergency <span class="text-danger">Admin</span></span>
+            <img src="~/images/Logo.png" alt="Logo" height="32" style="border-radius:6px;" onerror="this.style.display='none'" />
+            <span style="font-size:1.05rem; letter-spacing:-0.02em;">Blood<span class="text-danger">Bank</span> Admin</span>
         </a>
         <ul class="navbar-nav ms-auto flex-row align-items-center gap-2">
+            <li class="nav-item d-flex align-items-center">
+                @await Html.PartialAsync("_ThemeToggle")
+            </li>
+            <li class="nav-item d-flex align-items-center">
+                @await Html.PartialAsync("_NotificationBell")
+            </li>
             <li class="nav-item">
-                <a class="btn btn-sm btn-outline-secondary rounded-pill px-3" href="/" target="_blank">
+                <a class="btn btn-sm btn-light border rounded-pill px-3" href="/" target="_blank">
                     <i class="fas fa-external-link-alt me-1"></i>View Site
                 </a>
             </li>
+            <li class="nav-item d-none d-sm-flex align-items-center gap-2 ps-2">
+                <div class="avatar-circle" style="width:38px;height:38px;font-size:.9rem;">@initial</div>
+            </li>
             <li class="nav-item">
-                <a class="btn btn-sm btn-brand-outline rounded-pill px-3" asp-controller="Admin" asp-action="Logout">
-                    <i class="fas fa-sign-out-alt me-1"></i>Logout
-                </a>
+                <form asp-controller="Admin" asp-action="Logout" method="post" class="m-0">
+                    <button type="submit" class="btn btn-sm btn-brand-outline rounded-pill px-3">
+                        <i class="fas fa-sign-out-alt me-1"></i>Logout
+                    </button>
+                </form>
             </li>
         </ul>
     </nav>
 
-    <!-- SignalR Live Emergency Alert Toasts Container -->
     <div id="liveAlertContainer" class="live-toast-container"></div>
 
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-3 col-lg-2 admin-sidebar d-none d-md-block">
-                <div class="admin-sidebar-heading">Core Systems</div>
+    <div class="admin-shell">
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="admin-sidebar-heading">Overview</div>
+            <nav>
                 <a asp-controller="Admin" asp-action="Dashboard"><i class="fas fa-tachometer-alt"></i>Dashboard</a>
+                <a asp-controller="Admin" asp-action="Reports"><i class="fas fa-chart-line"></i>Reports &amp; Analytics</a>
+            </nav>
+
+            <div class="admin-sidebar-heading">Management</div>
+            <nav>
                 <a asp-controller="Admin" asp-action="DonorList"><i class="fas fa-users"></i>Blood Donors</a>
                 <a asp-controller="Admin" asp-action="BloodRequests"><i class="fas fa-tint"></i>Blood Requests</a>
-
-                <div class="admin-sidebar-heading">Emergency Resources</div>
                 <a asp-controller="Admin" asp-action="Hospitals"><i class="fas fa-hospital"></i>Hospitals &amp; ICU</a>
                 <a asp-controller="Admin" asp-action="BloodBanks"><i class="fas fa-landmark"></i>Blood Banks</a>
                 <a asp-controller="Admin" asp-action="Ambulances"><i class="fas fa-ambulance"></i>Ambulance Fleets</a>
                 <a asp-controller="Admin" asp-action="AmbulanceRequests"><i class="fas fa-bell"></i>Ambulance Bookings</a>
-                <a asp-controller="Admin" asp-action="Oxygen"><i class="fas fa-lungs"></i>Oxygen Services</a>
+                <a asp-controller="Admin" asp-action="Oxygen"><i class="fas fa-lungs"></i>Oxygen Providers</a>
+            </nav>
 
-                <div class="admin-sidebar-heading">Website &amp; Inquiries</div>
+            <div class="admin-sidebar-heading">Website</div>
+            <nav>
                 <a asp-controller="Admin" asp-action="ContactQueries"><i class="fas fa-envelope-open-text"></i>User Messages</a>
                 <a asp-controller="Admin" asp-action="ContactInfo"><i class="fas fa-address-card"></i>Contact Details</a>
                 <a asp-controller="Admin" asp-action="Pages"><i class="fas fa-file-alt"></i>Manage Pages</a>
+                <a asp-controller="Admin" asp-action="Settings"><i class="fas fa-cog"></i>Settings</a>
+                <a asp-controller="Admin" asp-action="AuditTrail"><i class="fas fa-clipboard-list"></i>Audit Trail</a>
             </nav>
+        </aside>
 
-            <main role="main" class="col-md-9 ms-sm-auto col-lg-10 px-4 py-4">
-                @if (TempData["Success"] != null)
-                {
-                    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-                        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                }
-                @if (TempData["Error"] != null)
-                {
-                    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
-                        <i class="fas fa-exclamation-triangle me-2"></i>@TempData["Error"]
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                }
+        <main class="admin-main">
+            <div class="d-flex d-lg-none mb-3">
+                <button class="btn btn-sm btn-light border" type="button" onclick="document.getElementById('adminSidebar').classList.toggle('open')">
+                    <i class="fas fa-bars"></i> Menu
+                </button>
+            </div>
 
-                @RenderBody()
-            </main>
-        </div>
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>@TempData["Error"]
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+            }
+
+            @await Html.PartialAsync("_ValidationSummary")
+
+            @RenderBody()
+        </main>
     </div>
 
-    <script src="~/js/jquery-2.2.3.min.js"></script>
-    <script src="~/js/bootstrap.js"></script>
+    <script src="~/js/jquery-2.2.3.min.js" asp-append-version="true"></script>
+    <script src="~/js/bootstrap.js" asp-append-version="true"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
-        // Connect to SignalR EmergencyHub
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/emergencyHub")
-            .withAutomaticReconnect()
-            .build();
+        const connection = new signalR.HubConnectionBuilder().withUrl("/emergencyHub").withAutomaticReconnect().build();
+
+        // Escape untrusted request data before it is inserted as HTML
+        function escapeHtml(value) {
+            return String(value == null ? "" : value)
+                .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
 
         connection.on("ReceiveAmbulanceAlert", function (data) {
             showAlertToast("🚑 EMERGENCY AMBULANCE BOOKING",
-                `Patient: <strong>${data.patientName}</strong><br/>Pickup: ${data.pickupLocation}<br/>Contact: <strong>${data.contactNumber}</strong><br/><small class="text-muted">${data.timestamp}</small>`,
-                "danger");
+                `Patient: <strong>${escapeHtml(data.patientName)}</strong><br/>Pickup: ${escapeHtml(data.pickupLocation)}<br/>Contact: <strong>${escapeHtml(data.contactNumber)}</strong>` +
+                (data.trackingToken ? `<br/><a href="/Emergency/TrackAmbulance?token=${encodeURIComponent(data.trackingToken)}" target="_blank" class="btn btn-sm btn-outline-danger mt-2">Open live timeline</a>` : ""), "danger");
         });
-
-        connection.on("ReceiveBloodRequestAlert", function (data) {
+        // Dispatcher-only events: these carry patient identity, so they are delivered
+        // to signed-in admin sessions and to nobody else.
+        connection.on("ReceiveBloodRequestAlertFull", function (data) {
             showAlertToast("🩸 CRITICAL BLOOD REQUEST",
-                `Patient: <strong>${data.patientName}</strong> needs <strong>${data.bloodGroup}</strong> (${data.units} units)<br/>Hospital: ${data.hospital}<br/><small class="text-muted">${data.timestamp}</small>`,
-                "warning");
+                `Patient: <strong>${escapeHtml(data.patientName)}</strong> needs <strong>${escapeHtml(data.bloodGroup)}</strong> (${escapeHtml(data.units)} units)<br/>Hospital: ${escapeHtml(data.hospital)}<br/>Contact: <strong>${escapeHtml(data.contactNumber)}</strong>`, "warning");
         });
 
         function showAlertToast(title, bodyHtml, alertClass) {
+            if (typeof playEmergencyChime === 'function') { playEmergencyChime(); }
             const container = document.getElementById("liveAlertContainer");
             const alertDiv = document.createElement("div");
             alertDiv.className = `alert alert-${alertClass} shadow-lg alert-dismissible fade show mb-2 border border-${alertClass}`;
             alertDiv.innerHTML = `
                 <div class="d-flex justify-content-between align-items-center mb-1">
-                    <strong class="font-weight-bold">${title}</strong>
-                    <button type="button" class="btn-close p-1" data-bs-dismiss="alert"></button>
+                    <strong class="fw-bold">${title}</strong>
+                    <button type="button" class="close p-1" data-dismiss="alert">&times;</button>
                 </div>
-                <div>${bodyHtml}</div>
-            `;
+                <div>${bodyHtml}</div>`;
             container.appendChild(alertDiv);
-            setTimeout(() => { 
-                if (alertDiv.parentNode) alertDiv.remove();
-            }, 12000);
+            setTimeout(function () { if (alertDiv.parentNode) alertDiv.remove(); }, 12000);
         }
 
-        connection.start().catch(err => console.log("SignalR Connection Error: ", err));
+        connection.start().catch(function (err) { console.log("SignalR Connection Error: ", err); });
 
-        // Highlight active sidebar link
         document.addEventListener("DOMContentLoaded", function () {
-            const currentPath = window.location.pathname.toLowerCase();
-            document.querySelectorAll(".admin-sidebar a").forEach(link => {
-                if (link.getAttribute("href") && currentPath.endsWith(link.getAttribute("href").toLowerCase())) {
-                    link.classList.add("active");
-                }
+            var currentPath = window.location.pathname.toLowerCase();
+            document.querySelectorAll(".admin-sidebar a").forEach(function (link) {
+                var href = link.getAttribute("href");
+                if (href && href !== "/" && currentPath.endsWith(href.toLowerCase())) { link.classList.add("active"); }
             });
         });
     </script>
-    @RenderSection("Scripts", required: false)
+    <script src="~/js/bbdms-theme.js" asp-append-version="true"></script>
+    <script src="~/js/bbdms-motion.js" asp-append-version="true"></script>
+    <script src="~/js/bbdms-notifications.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

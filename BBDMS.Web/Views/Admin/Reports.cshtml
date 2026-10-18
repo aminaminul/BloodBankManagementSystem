@@ -1,0 +1,456 @@
+@model BBDMS.Model.Models.ViewModels.AdminReportsViewModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Reports & Analytics";
+
+    var groupOrder = new[] { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" };
+    var donorsByGroup = groupOrder
+        .Select(g => new { Group = g, Count = Model.Donors.Count(d => d.BloodGroup == g) })
+        .ToList();
+
+    var donationGroups = groupOrder
+        .Select(g => new { Group = g, Count = Model.Donations.Count(d => d.BloodGroup == g) })
+        .ToList();
+    var hasDonations = Model.Donations.Any();
+
+    var totalStatus = Math.Max(1, Model.PendingRequests + Model.FulfilledRequests + Model.RejectedRequests);
+    var hasStatusData = Model.TotalRequests > 0;
+
+    var donorNames = Model.Donors.ToDictionary(d => d.Id, d => d.FullName);
+    var recentDonations = Model.Donations.OrderByDescending(d => d.DonationDate).Take(6).ToList();
+
+    var seriesFrom = Model.SeriesStart == default ? DateTime.Today.AddMonths(-11) : Model.SeriesStart;
+    var unitsThisYear = Model.UnitsPerMonth.Sum();
+    var peakMonthIndex = Model.UnitsPerMonth.Count == 0 ? -1 : Model.UnitsPerMonth.ToList().IndexOf(Model.UnitsPerMonth.Max());
+    var peakMonth = peakMonthIndex >= 0 && peakMonthIndex < Model.SeriesLabels.Count ? Model.SeriesLabels[peakMonthIndex] : "—";
+    var datasetLabel = "units collected, blood requests and new donor registrations";
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4" data-motion>
+    <div>
+        <h4 class="fw-bold mb-1">Reports &amp; Analytics</h4>
+        <p class="text-muted mb-0">Overview of system-wide activity and performance.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-action="ExportDonationsCsv" class="btn btn-sm btn-outline-success font-weight-bold">
+            <i class="fas fa-file-csv me-1"></i> Export Donations (CSV)
+        </a>
+        <a asp-action="ExportRequestsCsv" class="btn btn-sm btn-outline-primary font-weight-bold">
+            <i class="fas fa-download me-1"></i> Export Requests (CSV)
+        </a>
+        <span class="chip-outline">
+            <i class="fas fa-calendar-alt text-danger"></i>
+            @seriesFrom.ToString("dd MMM yyyy") &ndash; @DateTime.Today.ToString("dd MMM yyyy")
+        </span>
+    </div>
+</div>
+
+<!-- Headline stats -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-ico red"><i class="fas fa-users"></i></div>
+            <div><div class="stat-val">@Model.TotalDonors.ToString("N0")</div><div class="stat-cap">Registered Donors</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-ico blue"><i class="fas fa-tint"></i></div>
+            <div><div class="stat-val">@Model.TotalRequests.ToString("N0")</div><div class="stat-cap">Blood Requests</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-ico green"><i class="fas fa-check-circle"></i></div>
+            <div><div class="stat-val">@Model.FulfilledRequests</div><div class="stat-cap">Fulfilled Requests</div></div>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat-card">
+            <div class="stat-ico violet"><i class="fas fa-heartbeat"></i></div>
+            <div><div class="stat-val">@Model.EmergencyRequests</div><div class="stat-cap">Emergency Requests</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Recent donations (real data) -->
+    <div class="col-lg-6">
+        <div class="card-modern h-100" data-motion>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0">Recent Donations</h6>
+                <span class="chip-outline"><i class="fas fa-tint text-danger"></i> @Model.TotalDonations total</span>
+            </div>
+            @if (recentDonations.Any())
+            {
+                foreach (var d in recentDonations)
+                {
+                    var name = donorNames.ContainsKey(d.DonorId) ? donorNames[d.DonorId] : "Donor #" + d.DonorId;
+                    <div class="donor-row mb-2">
+                        <div class="stat-ico red" style="width:40px;height:40px;border-radius:12px;font-size:.9rem;"><i class="fas fa-tint"></i></div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-dark text-truncate">@name</span>
+                                <span class="badge-soft-danger ms-2">@(d.BloodGroup ?? "—")</span>
+                            </div>
+                            <div class="small text-muted text-truncate">
+                                <i class="fas fa-hospital me-1"></i>@(d.CenterName ?? "—")
+                                <span class="mx-1">•</span>@d.DonationDate.ToString("dd MMM yyyy")
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-hand-holding-heart fa-2x mb-2 d-block text-muted"></i>
+                    No donations recorded yet.
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Request status doughnut (Chart.js) -->
+    <div class="col-lg-6">
+        <div class="card-modern h-100" data-motion>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0">Request Status</h6>
+                <span class="chip-outline"><i class="fas fa-clipboard-check text-danger"></i> @Model.TotalRequests tracked</span>
+            </div>
+            <div class="row g-3 align-items-center">
+                <div class="col-sm-7">
+                    <div class="chart-frame" style="height:210px; position:relative;">
+                        <canvas id="requestStatusChart" aria-label="Blood request status breakdown" role="img"></canvas>
+                        @if (!hasStatusData)
+                        {
+                            <div class="chart-empty"><i class="fas fa-chart-pie"></i><span>No requests recorded yet</span></div>
+                        }
+                    </div>
+                </div>
+                <div class="col-sm-5">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fas fa-circle" style="color:var(--amber);font-size:.6rem;"></i> Pending</span>
+                        <span class="fw-bold">@Model.PendingRequests</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span><i class="fas fa-circle" style="color:var(--green);font-size:.6rem;"></i> Fulfilled</span>
+                        <span class="fw-bold">@Model.FulfilledRequests</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <span><i class="fas fa-circle" style="color:var(--brand);font-size:.6rem;"></i> Rejected</span>
+                        <span class="fw-bold">@Model.RejectedRequests</span>
+                    </div>
+                    <div class="small text-muted border-top pt-2">
+                        <i class="fas fa-bolt text-warning me-1"></i>@Model.RequestsLast30Days request(s) in the last 30 days
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 12 month activity trend (Chart.js, straight from the database) -->
+<div class="card-modern mb-4" data-motion>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h6 class="fw-bold mb-0">Donation &amp; Request Activity</h6>
+            <span class="small text-muted">Rolling 12 months · @datasetLabel</span>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="chip-outline"><i class="fas fa-layer-group text-danger"></i> @unitsThisYear unit(s) in 12 months</span>
+            <span class="chip-outline"><i class="fas fa-arrow-trend-up text-success"></i> Peak @peakMonth</span>
+            <span class="chip-outline"><i class="fas fa-hand-holding-heart text-warning"></i> @Model.DonationsLast30Days donation(s) / 30 days</span>
+        </div>
+    </div>
+    <div class="chart-frame" style="height:320px; position:relative;">
+        <canvas id="activityTrendChart" aria-label="Monthly units collected, blood requests and new donors" role="img"></canvas>
+    </div>
+</div>
+
+<!-- Donations by blood group (Chart.js) -->
+<div class="card-modern mb-4" data-motion>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h6 class="fw-bold mb-0">Donations by Blood Group</h6>
+        <span class="chip-outline"><i class="fas fa-layer-group text-danger"></i> @Model.TotalUnitsDonated unit(s) collected</span>
+    </div>
+    @if (hasDonations)
+    {
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="chart-frame" style="height:280px; position:relative;">
+                    <canvas id="donationsByGroupChart" aria-label="Units collected per blood group" role="img"></canvas>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <h6 class="fw-bold small text-uppercase text-muted mb-2">Registered donors by group</h6>
+                @foreach (var g in donorsByGroup)
+                {
+                    var width = Math.Max(2, (int)Math.Round(g.Count * 100.0 / Math.Max(1, donorsByGroup.Max(x => x.Count))));
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="badge-soft-danger" style="min-width:46px; justify-content:center;">@g.Group</span>
+                        <div class="progress flex-grow-1" style="height:6px;">
+                            <div class="progress-bar" style="width:@width%;"></div>
+                        </div>
+                        <span class="small fw-bold text-dark" style="min-width:28px; text-align:right;">@g.Count</span>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-4 text-muted">
+            <i class="fas fa-chart-bar fa-2x mb-2 d-block text-muted"></i>
+            No donation data available yet.
+        </div>
+    }
+</div>
+
+<!-- Resource summary -->
+<div class="row g-3">
+    <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-ico red"><i class="fas fa-hand-holding-heart"></i></div><div><div class="stat-val">@Model.TotalDonations</div><div class="stat-cap">Donations</div></div></div></div>
+    <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-ico amber"><i class="fas fa-layer-group"></i></div><div><div class="stat-val">@Model.TotalUnitsDonated</div><div class="stat-cap">Units Collected</div></div></div></div>
+    <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-ico blue"><i class="fas fa-hospital"></i></div><div><div class="stat-val">@Model.TotalHospitals</div><div class="stat-cap">Hospitals</div></div></div></div>
+    <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-ico violet"><i class="fas fa-landmark"></i></div><div><div class="stat-val">@Model.TotalBloodBanks</div><div class="stat-cap">Blood Banks</div></div></div></div>
+    <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-ico orange"><i class="fas fa-ambulance"></i></div><div><div class="stat-val">@Model.TotalAmbulances</div><div class="stat-cap">Ambulances</div></div></div></div>
+    <div class="col-6 col-lg-2"><div class="stat-card"><div class="stat-ico teal"><i class="fas fa-lungs"></i></div><div><div class="stat-val">@Model.TotalOxygen</div><div class="stat-cap">Oxygen Providers</div></div></div></div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script>
+        (function () {
+            if (typeof Chart === 'undefined') {
+                document.querySelectorAll('.chart-frame').forEach(function (frame) {
+                    frame.innerHTML = '<div class="chart-empty"><i class="fas fa-triangle-exclamation"></i><span>Chart library unavailable</span></div>';
+                });
+                return;
+            }
+
+            var MONTHS = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.SeriesLabels));
+            var UNITS = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.UnitsPerMonth));
+            var REQUESTS = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RequestsPerMonth));
+            var NEW_DONORS = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.NewDonorsPerMonth));
+            var GROUP_LABELS = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(groupOrder));
+            var GROUP_UNITS = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(donationGroups.Select(g => g.Count).ToList()));
+            var STATUS_DATA = [@Model.PendingRequests, @Model.FulfilledRequests, @Model.RejectedRequests];
+
+            var HAD_STATUS_DATA = @(hasStatusData ? "true" : "false");
+
+            Chart.defaults.font.family = "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif";
+            Chart.defaults.font.size = 12;
+            Chart.defaults.plugins.tooltip.padding = 10;
+            Chart.defaults.plugins.tooltip.cornerRadius = 8;
+
+            function palette() {
+                var css = getComputedStyle(document.documentElement);
+                var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+                var read = function (name) { return css.getPropertyValue(name).trim(); };
+
+                return {
+                    dark: dark,
+                    brand: read('--brand') || '#e63946',
+                    amber: read('--amber') || '#d97706',
+                    green: read('--green') || '#16a34a',
+                    blue: read('--blue') || '#2563eb',
+                    violet: read('--violet') || '#7c3aed',
+                    text: dark ? '#c3cfdf' : '#334155',
+                    tick: dark ? '#9aa9bf' : '#6b7280',
+                    grid: dark ? 'rgba(148,163,184,0.14)' : 'rgba(16,24,40,0.07)',
+                    surface: dark ? '#16203a' : '#ffffff',
+                    border: dark ? '#223047' : '#eaeef4'
+                };
+            }
+
+            var charts = {};
+
+            function baseOptions(p, extra) {
+                return Object.assign({
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            labels: { color: p.text, usePointStyle: true, boxWidth: 8, padding: 16 }
+                        },
+                        tooltip: {
+                            backgroundColor: p.surface,
+                            titleColor: p.text,
+                            bodyColor: p.text,
+                            borderColor: p.border,
+                            borderWidth: 1,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: p.grid, drawBorder: false },
+                            ticks: { color: p.tick }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: p.grid, drawBorder: false },
+                            ticks: { color: p.tick, precision: 0 }
+                        }
+                    }
+                }, extra || {});
+            }
+
+            function buildStatusChart() {
+                var canvas = document.getElementById('requestStatusChart');
+                if (!canvas || !HAD_STATUS_DATA) return;
+                var p = palette();
+
+                charts.status = new Chart(canvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending', 'Fulfilled', 'Rejected'],
+                        datasets: [{
+                            data: STATUS_DATA,
+                            backgroundColor: [p.amber, p.green, p.brand],
+                            borderColor: p.surface,
+                            borderWidth: 3,
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '68%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: p.surface,
+                                titleColor: p.text,
+                                bodyColor: p.text,
+                                borderColor: p.border,
+                                borderWidth: 1,
+                                callbacks: {
+                                    label: function (ctx) {
+                                        var total = ctx.dataset.data.reduce(function (a, b) { return a + b; }, 0) || 1;
+                                        return ' ' + ctx.label + ': ' + ctx.parsed + ' (' + Math.round(ctx.parsed * 100 / total) + '%)';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function buildTrendChart() {
+                var canvas = document.getElementById('activityTrendChart');
+                if (!canvas) return;
+                var p = palette();
+
+                charts.trend = new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: MONTHS,
+                        datasets: [
+                            {
+                                type: 'bar',
+                                label: 'Units collected',
+                                data: UNITS,
+                                backgroundColor: p.brand,
+                                borderRadius: 6,
+                                maxBarThickness: 34,
+                                borderSkipped: false
+                            },
+                            {
+                                type: 'line',
+                                label: 'Blood requests',
+                                data: REQUESTS,
+                                borderColor: p.blue,
+                                backgroundColor: p.blue,
+                                tension: 0.36,
+                                borderWidth: 2.5,
+                                pointRadius: 3,
+                                pointHoverRadius: 5
+                            },
+                            {
+                                type: 'line',
+                                label: 'New donors',
+                                data: NEW_DONORS,
+                                borderColor: p.violet,
+                                backgroundColor: p.violet,
+                                tension: 0.36,
+                                borderWidth: 2,
+                                borderDash: [6, 4],
+                                pointRadius: 2.5,
+                                pointHoverRadius: 4
+                            }
+                        ]
+                    },
+                    options: baseOptions(p)
+                });
+            }
+
+            function buildGroupChart() {
+                var canvas = document.getElementById('donationsByGroupChart');
+                if (!canvas) return;
+                var p = palette();
+
+                charts.group = new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels: GROUP_LABELS,
+                        datasets: [{
+                            label: 'Units collected',
+                            data: GROUP_UNITS,
+                            backgroundColor: GROUP_LABELS.map(function (_, index) {
+                                var ramp = [p.brand, p.brand, p.amber, p.amber, p.violet, p.violet, p.blue, p.blue];
+                                return ramp[index % ramp.length];
+                            }),
+                            borderRadius: 8,
+                            maxBarThickness: 46,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: baseOptions(p, { plugins: { legend: { display: false } } })
+                });
+            }
+
+            function restyleAll() {
+                var p = palette();
+
+                if (charts.status) {
+                    charts.status.data.datasets[0].backgroundColor = [p.amber, p.green, p.brand];
+                    charts.status.data.datasets[0].borderColor = p.surface;
+                    charts.status.options.plugins.tooltip.backgroundColor = p.surface;
+                    charts.status.update();
+                }
+
+                if (charts.trend) {
+                    charts.trend.data.datasets[0].backgroundColor = p.brand;
+                    charts.trend.data.datasets[1].borderColor = p.blue;
+                    charts.trend.data.datasets[1].backgroundColor = p.blue;
+                    charts.trend.data.datasets[2].borderColor = p.violet;
+                    charts.trend.data.datasets[2].backgroundColor = p.violet;
+                    charts.trend.options = baseOptions(p);
+                    charts.trend.update();
+                }
+
+                if (charts.group) {
+                    var ramp = [p.brand, p.brand, p.amber, p.amber, p.violet, p.violet, p.blue, p.blue];
+                    charts.group.data.datasets[0].backgroundColor = GROUP_LABELS.map(function (_, i) { return ramp[i % ramp.length]; });
+                    charts.group.options = baseOptions(p, { plugins: { legend: { display: false } } });
+                    charts.group.update();
+                }
+            }
+
+            function init() {
+                buildStatusChart();
+                buildTrendChart();
+                buildGroupChart();
+                window.addEventListener('bbdms:themechange', function () { window.requestAnimationFrame(restyleAll); });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        })();
+    </script>
+}

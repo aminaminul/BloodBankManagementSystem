@@ -5,11 +5,11 @@ namespace BBDMS.Model.Models.ViewModels
 {
     public class EmergencySearchViewModel
     {
-        public string Location { get; set; }
-        public string BloodGroup { get; set; }
+        public string Location { get; set; } = string.Empty;
+        public string BloodGroup { get; set; } = string.Empty;
         public string ServiceType { get; set; } = "All"; // "All", "Donors", "Hospitals", "BloodBanks", "Ambulance", "Oxygen"
 
-        public IEnumerable<BloodDonor> Donors { get; set; } = new List<BloodDonor>();
+        public IEnumerable<DonorListItemViewModel> Donors { get; set; } = new List<DonorListItemViewModel>();
         public IEnumerable<Hospital> Hospitals { get; set; } = new List<Hospital>();
         public IEnumerable<BloodBank> BloodBanks { get; set; } = new List<BloodBank>();
         public IEnumerable<AmbulanceService> Ambulances { get; set; } = new List<AmbulanceService>();

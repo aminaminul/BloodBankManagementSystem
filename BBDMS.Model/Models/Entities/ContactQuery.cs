@@ -8,12 +8,12 @@ namespace BBDMS.Model.Models.Entities
         [Key]
         public int Id { get; set; }
         [StringLength(100)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
         [StringLength(120)]
-        public string EmailId { get; set; }
+        public string EmailId { get; set; } = string.Empty;
         [StringLength(11)]
-        public string ContactNumber { get; set; }
-        public string Message { get; set; }
+        public string ContactNumber { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
         public DateTime PostingDate { get; set; } = DateTime.Now;
         public int? Status { get; set; }
     }

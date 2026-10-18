@@ -16,6 +16,8 @@ namespace BBDMS.Service.Interfaces
         Task SubmitAmbulanceRequestAsync(AmbulanceRequest request);
         Task<IEnumerable<AmbulanceRequest>> GetAllAmbulanceRequestsAsync();
         Task<AmbulanceRequest> GetAmbulanceRequestByIdAsync(int id);
+        Task<AmbulanceRequest?> GetAmbulanceRequestByTokenAsync(string token);
+        Task<AmbulanceRequest?> GetLatestAmbulanceRequestByContactAsync(string contact);
         Task UpdateAmbulanceRequestStatusAsync(int id, string status);
     }
 }

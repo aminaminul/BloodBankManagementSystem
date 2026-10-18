@@ -1,0 +1,22 @@
+<div class="dropdown notification-dropdown d-inline-block">
+    <button class="btn btn-link nav-link position-relative text-dark p-2" type="button" id="notificationBellBtn" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Notifications">
+        <i class="fas fa-bell fa-lg text-muted"></i>
+        <span class="badge badge-danger position-absolute" id="notificationBadge" style="top: 2px; right: 2px; font-size: 0.65rem; border-radius: 10px; display: none;">0</span>
+    </button>
+    <div class="dropdown-menu dropdown-menu-right shadow-lg border-0 p-0" aria-labelledby="notificationBellBtn" style="width: 320px; max-width: 90vw; border-radius: 12px; overflow: hidden; z-index: 1060;">
+        <div class="bg-light p-3 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="font-weight-bold mb-0 text-dark">
+                <i class="fas fa-bell text-danger mr-1"></i> Notifications
+            </h6>
+            <button type="button" class="btn btn-sm btn-link text-muted p-0 small" onclick="markAllNotificationsRead()">
+                Mark all read
+            </button>
+        </div>
+        <div id="notificationList" style="max-height: 340px; overflow-y: auto;">
+            <div class="text-center py-4 text-muted small" id="notificationEmptyState">
+                <i class="far fa-bell-slash fa-2x mb-2 d-block text-black-50"></i>
+                No notifications yet
+            </div>
+        </div>
+    </div>
+</div>

@@ -14,5 +14,8 @@ namespace BBDMS.Service.Interfaces
         Task<BloodRequest> GetRequestByIdAsync(int id);
         Task UpdateRequestStatusAsync(int id, string status);
         Task<IEnumerable<BloodRequest>> SearchEmergencyRequestsAsync(string? bloodGroup, string? location);
+        Task<IEnumerable<BloodRequest>> GetOpenCommunityRequestsAsync(string? bloodGroup, int take = 50);
+        Task<BloodRequest?> GetLatestRequestByContactAsync(string contact);
+        Task<BloodRequest?> GetRequestByTokenAsync(string token);
     }
 }

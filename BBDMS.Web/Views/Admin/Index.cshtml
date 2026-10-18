@@ -4,7 +4,7 @@
 }
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="@ThemePreference.Read(Context)">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,15 +13,30 @@
     <link rel="stylesheet" href="~/css/modern-theme.css" />
     <link rel="stylesheet" href="~/css/fontawesome-all.css">
     <link href="//fonts.googleapis.com/css?family=Open+Sans:400,600,700,800" rel="stylesheet">
+    <script>
+        (function () {
+            try {
+                var m = document.cookie.match(/(?:^|;\s*)bbdms\.theme=([^;]+)/);
+                var t = m ? decodeURIComponent(m[1]) : localStorage.getItem('bbdms-theme');
+                if (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t = 'dark';
+                t = t === 'dark' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', t);
+                document.documentElement.style.colorScheme = t;
+            } catch (e) { /* keep the server rendered theme */ }
+        })();
+    </script>
 </head>
 <body style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); min-height: 100vh; display: flex; align-items: center;">
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-5 col-lg-4">
                 <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
-                    <div class="card-header bg-white text-center py-4 border-bottom-0">
+                    <div class="card-header bg-white text-center py-4 border-bottom-0 position-relative">
+                        <div class="position-absolute" style="top: 14px; right: 14px;">
+                            @await Html.PartialAsync("_ThemeToggle")
+                        </div>
                         <img src="~/images/Logo.png" alt="Logo" style="height: 52px; width: auto;" class="mb-2" />
-                        <h4 class="font-weight-bold text-dark mb-0">Admin <span style="color: var(--brand-red);">Portal</span></h4>
+                        <h4 class="font-weight-bold text-dark mb-0">Admin <span style="color: var(--brand);">Portal</span></h4>
                         <small class="text-muted">Blood Bank & Emergency Help System</small>
                     </div>
                     <div class="card-body p-4 pt-0">
@@ -72,5 +87,7 @@
             </div>
         </div>
     </div>
+
+    <script src="~/js/bbdms-theme.js"></script>
 </body>
 </html>

@@ -10,9 +10,15 @@
             <h2 class="font-weight-bold mb-1">Need an Ambulance?</h2>
             <p class="text-muted mb-0">Find available ambulance services and 24/7 ICU transport near your location.</p>
         </div>
-        <div class="mt-3 mt-md-0">
+        <div class="mt-3 mt-md-0 d-flex flex-wrap gap-2">
             <a asp-action="RequestAmbulance" class="btn btn-brand-red font-weight-bold px-4 shadow">
                 <i class="fas fa-paper-plane mr-1"></i> Quick Dispatch Booking
+            </a>
+            <a asp-action="TrackAmbulance" class="btn btn-brand-outline font-weight-bold px-4">
+                <i class="fas fa-satellite-dish mr-1"></i> Track Your Dispatch
+            </a>
+            <a asp-action="AmbulanceContact" class="btn btn-outline-danger font-weight-bold px-4">
+                <i class="fas fa-phone-volume mr-1"></i> Emergency Contacts
             </a>
         </div>
     </div>
@@ -95,9 +101,14 @@
                                 <small class="text-muted d-block">Helpline:</small>
                                 <strong class="text-dark small"><i class="fas fa-phone mr-1 text-danger"></i>@amb.ContactNumber</strong>
                             </div>
-                            <a href="tel:@amb.ContactNumber" class="btn btn-sm btn-brand-red font-weight-bold">
-                                Call Ambulance
-                            </a>
+                            <div class="d-flex gap-2">
+                                <a asp-action="AmbulanceContact" asp-route-location="@amb.Location" class="btn btn-sm btn-brand-outline font-weight-bold" title="Emergency contacts for this area">
+                                    <i class="fas fa-address-book"></i>
+                                </a>
+                                <a href="tel:@amb.ContactNumber" class="btn btn-sm btn-brand-red font-weight-bold">
+                                    Call Ambulance
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

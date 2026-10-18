@@ -1,4 +1,7 @@
-@model IEnumerable<BBDMS.Model.Models.Entities.BloodDonor>
+@model BBDMS.Model.Models.ViewModels.PagedResult<BBDMS.Model.Models.ViewModels.DonorListItemViewModel>
+@{
+    ViewData["PagerAction"] = "Index";
+}
 @{
     ViewData["Title"] = "Blood Donor Directory";
 }
@@ -18,10 +21,10 @@
 
 <section class="py-5" style="background:#f8fafc;">
     <div class="container py-2">
-        @if (Model != null && Model.Any())
+        @if (Model != null && Model.TotalItems > 0)
         {
             <div class="row g-4">
-                @foreach (var donor in Model)
+                @foreach (var donor in Model.Items)
                 {
                     <div class="col-md-6 col-lg-4">
                         <div class="card-modern h-100 d-flex flex-column">
@@ -47,7 +50,16 @@
                                     </tr>
                                     <tr>
                                         <td class="text-muted fw-semibold border-0 py-1">Phone</td>
-                                        <td class="border-0 py-1">@donor.MobileNumber</td>
+                                        <td class="border-0 py-1">
+                                            @if (donor.ContactVisible)
+                                            {
+                                                <a href="tel:@donor.MobileNumber" class="text-dark">@donor.MobileNumber</a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small"><i class="fas fa-lock me-1"></i>Sign in</span>
+                                            }
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td class="text-muted fw-semibold border-0 py-1">Address</td>
@@ -94,3 +106,5 @@
         }
     </div>
 </section>
+
+@await Html.PartialAsync("_DonorPager", Model)

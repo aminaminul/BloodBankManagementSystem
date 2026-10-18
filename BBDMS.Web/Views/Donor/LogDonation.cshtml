@@ -1,0 +1,72 @@
+@model BBDMS.Model.Models.Entities.Donation
+@{
+    Layout = "_DonorLayout";
+    ViewData["Title"] = "Log a Donation";
+    var bloodGroups = ViewBag.BloodGroups as IEnumerable<BBDMS.Model.Models.Entities.BloodGroup>;
+    var donor = ViewBag.Donor as BBDMS.Model.Models.Entities.BloodDonor;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card-modern">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="stat-ico red" style="width:48px;height:48px;border-radius:14px;"><i class="fas fa-hand-holding-heart"></i></div>
+                <div>
+                    <h5 class="fw-bold mb-0">Record a Past Donation</h5>
+                    <p class="text-muted small mb-0">Logging a donation updates your eligibility countdown automatically.</p>
+                </div>
+            </div>
+
+            <form asp-action="LogDonation" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="DonorId" value="@Model.DonorId" />
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Donation Date <span class="text-danger">*</span></label>
+                        <input type="date" name="DonationDate" class="form-control form-control-modern"
+                               value="@Model.DonationDate.ToString("yyyy-MM-dd")" max="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Blood Group</label>
+                        <select name="BloodGroup" class="form-select form-control-modern">
+                            <option value="">Use my profile group (@donor?.BloodGroup)</option>
+                            @if (bloodGroups != null)
+                            {
+                                foreach (var bg in bloodGroups)
+                                {
+                                    <option value="@bg.GroupName" selected="@(Model.BloodGroup == bg.GroupName)">@bg.GroupName</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">Hospital / Blood Bank / Camp</label>
+                        <input type="text" name="CenterName" value="@Model.CenterName" class="form-control form-control-modern"
+                               placeholder="e.g. City Central General Hospital" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Units Donated</label>
+                        <input type="number" name="UnitsDonated" value="@(Model.UnitsDonated < 1 ? 1 : Model.UnitsDonated)"
+                               min="1" max="5" class="form-control form-control-modern" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Location / City</label>
+                        <input type="text" name="Location" value="@Model.Location" class="form-control form-control-modern" placeholder="e.g. Dhaka" />
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Notes</label>
+                        <textarea name="Notes" rows="3" class="form-control form-control-modern"
+                                  placeholder="Any details about this donation (optional)...">@Model.Notes</textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top flex-wrap gap-2">
+                    <a asp-action="DonationHistory" class="text-muted small"><i class="fas fa-arrow-left me-1"></i>Back to history</a>
+                    <button type="submit" class="btn btn-brand-red"><i class="fas fa-save me-1"></i>Save Donation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

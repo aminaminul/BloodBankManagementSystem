@@ -6,6 +6,8 @@ namespace BBDMS.Service.Interfaces
     public interface IAdminService
     {
         Task<Admin> LoginAsync(string username, string password);
+        Task<Admin> GetAdminByIdAsync(int id);
+        Task<bool> UpdateAdminAsync(Admin admin);
         Task<int> GetTotalDonorsCountAsync();
         Task<int> GetTotalRequestsCountAsync();
         Task<int> GetTotalHospitalsCountAsync();

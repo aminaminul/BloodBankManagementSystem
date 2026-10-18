@@ -1,0 +1,324 @@
+@{
+    ViewData["Title"] = "Emergency Healthcare Map";
+    var hospitals = ViewBag.Hospitals as IEnumerable<BBDMS.Model.Models.Entities.Hospital> ?? Enumerable.Empty<BBDMS.Model.Models.Entities.Hospital>();
+    var ambulances = ViewBag.Ambulances as IEnumerable<BBDMS.Model.Models.Entities.AmbulanceService> ?? Enumerable.Empty<BBDMS.Model.Models.Entities.AmbulanceService>();
+    var bloodBanks = ViewBag.BloodBanks as IEnumerable<BBDMS.Model.Models.Entities.BloodBank> ?? Enumerable.Empty<BBDMS.Model.Models.Entities.BloodBank>();
+}
+
+@section Styles {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .map-container-wrapper {
+            position: relative;
+            height: calc(100vh - 200px);
+            min-height: 550px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            border: 1px solid var(--border);
+        }
+        #emergencyMap {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        .map-floating-panel {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            border: 1px solid rgba(0,0,0,0.08);
+            max-width: 320px;
+        }
+        [data-theme="dark"] .map-floating-panel {
+            background: rgba(30, 41, 59, 0.94);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+        }
+        .map-filter-btn {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            font-family: inherit;
+        }
+        .popup-facility-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .popup-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+    </style>
+}
+
+<div class="container-fluid px-3 px-md-4 py-3">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h3 class="fw-bold mb-0">Emergency Healthcare Live Map</h3>
+            <small class="text-muted">Locate live ICU beds, emergency blood banks, and 24/7 ambulances near you.</small>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill" onclick="locateUser()">
+                <i class="fas fa-crosshairs me-1"></i> Near Me
+            </button>
+            <a asp-controller="Emergency" asp-action="RequestAmbulance" class="btn btn-danger btn-sm rounded-pill">
+                <i class="fas fa-ambulance me-1"></i> Request Ambulance
+            </a>
+            <a asp-controller="Emergency" asp-action="CreateBloodRequest" class="btn btn-dark btn-sm rounded-pill">
+                <i class="fas fa-plus-circle me-1"></i> Post Blood Request
+            </a>
+        </div>
+    </div>
+
+    <div class="map-container-wrapper">
+        <!-- Floating filter panel -->
+        <div class="map-floating-panel">
+            <div class="fw-bold small mb-2 text-uppercase text-muted">Service Filter</div>
+            <div class="d-flex flex-wrap gap-1 mb-2">
+                <button type="button" class="btn btn-primary btn-sm map-filter-btn active" onclick="filterMarkers('all', this)">All</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm map-filter-btn" onclick="filterMarkers('hospital', this)">🏥 Hospitals</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm map-filter-btn" onclick="filterMarkers('ambulance', this)">🚑 Ambulances</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm map-filter-btn" onclick="filterMarkers('bloodbank', this)">🩸 Blood Banks</button>
+            </div>
+            <div class="small text-muted d-flex justify-content-between pt-1 border-top">
+                <span>Total Facilities: <strong id="markerCount">0</strong></span>
+                <span class="text-success"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Live feed</span>
+            </div>
+        </div>
+
+        <div id="emergencyMap"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        let map;
+        let markers = [];
+        let userMarker = null;
+
+        // Default coordinate: Dhaka Central
+        const DEFAULT_LAT = 23.8103;
+        const DEFAULT_LNG = 90.4125;
+
+        // City coordinate fallback registry
+        const cityCoordinates = {
+            "dhaka": [23.8103, 90.4125],
+            "chittagong": [22.3569, 91.7832],
+            "chattogram": [22.3569, 91.7832],
+            "sylhet": [24.8949, 91.8687],
+            "rajshahi": [24.3745, 88.6042],
+            "khulna": [22.8456, 89.5403],
+            "barisal": [22.7010, 90.3535],
+            "rangpur": [25.7439, 89.2752],
+            "mymensingh": [24.7471, 90.4203],
+            "comilla": [23.4682, 91.1788]
+        };
+
+        function getCoordinatesForAddress(address, city, index) {
+            let base = [DEFAULT_LAT, DEFAULT_LNG];
+            const lowerCity = (city || "").toLowerCase().trim();
+            for (const [k, v] of Object.entries(cityCoordinates)) {
+                if (lowerCity.includes(k) || (address || "").toLowerCase().includes(k)) {
+                    base = v;
+                    break;
+                }
+            }
+            // Add subtle deterministic jitter so co-located city facilities don't overlap directly
+            const jitterLat = (Math.sin(index * 2.5) * 0.035);
+            const jitterLng = (Math.cos(index * 2.5) * 0.035);
+            return [base[0] + jitterLat, base[1] + jitterLng];
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            initMap();
+            loadEmergencyData();
+        });
+
+        function initMap() {
+            map = L.map('emergencyMap').setView([DEFAULT_LAT, DEFAULT_LNG], 11);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+        }
+
+        async function loadEmergencyData() {
+            try {
+                const res = await fetch('/Emergency/MapData');
+                if (!res.ok) throw new Error('Failed to load map data');
+                const data = await res.json();
+
+                let index = 1;
+
+                // Add Hospitals
+                if (data.hospitals) {
+                    data.hospitals.forEach(h => {
+                        const coords = getCoordinatesForAddress(h.address, h.city, index++);
+                        const icon = createCustomIcon('hospital', h.icuBeds > 0 ? '#10b981' : '#f59e0b');
+                        
+                        const popup = `
+                            <div class="p-1">
+                                <span class="badge bg-primary-subtle text-primary popup-badge mb-1">HOSPITAL</span>
+                                <div class="popup-facility-title">${escapeHtml(h.name)}</div>
+                                <div class="small text-muted mb-2"><i class="fas fa-map-marker-alt text-danger me-1"></i>${escapeHtml(h.address || h.city || '')}</div>
+                                <div class="d-flex gap-2 mb-2">
+                                    <span class="badge bg-success text-white">ICU Beds: ${h.icuBeds ?? 0}</span>
+                                    <span class="badge bg-info text-white">Emergency: ${h.emergencyBeds ?? 0}</span>
+                                </div>
+                                <div class="d-flex gap-2 mt-2">
+                                    <a href="tel:${escapeHtml(h.phone || '')}" class="btn btn-sm btn-outline-success w-100"><i class="fas fa-phone me-1"></i>Call</a>
+                                </div>
+                            </div>
+                        `;
+                        const marker = L.marker(coords, { icon: icon }).bindPopup(popup);
+                        marker.category = 'hospital';
+                        marker.addTo(map);
+                        markers.push(marker);
+                    });
+                }
+
+                // Add Ambulances
+                if (data.ambulances) {
+                    data.ambulances.forEach(a => {
+                        const coords = getCoordinatesForAddress(a.address, a.city, index++);
+                        const icon = createCustomIcon('ambulance', '#ef4444');
+                        const popup = `
+                            <div class="p-1">
+                                <span class="badge bg-danger-subtle text-danger popup-badge mb-1">AMBULANCE</span>
+                                <div class="popup-facility-title">${escapeHtml(a.name)}</div>
+                                <div class="small text-muted mb-1"><i class="fas fa-ambulance me-1"></i>Type: ${escapeHtml(a.ambulanceType || 'ALS')}</div>
+                                <div class="small text-muted mb-2"><i class="fas fa-map-marker-alt text-danger me-1"></i>${escapeHtml(a.address || '')}</div>
+                                <div class="d-flex gap-2 mt-2">
+                                    <a href="tel:${escapeHtml(a.phone || '')}" class="btn btn-sm btn-outline-danger w-50"><i class="fas fa-phone me-1"></i>Call</a>
+                                    <a href="/Emergency/RequestAmbulance?serviceId=${a.id}" class="btn btn-sm btn-danger w-50">Book</a>
+                                </div>
+                            </div>
+                        `;
+                        const marker = L.marker(coords, { icon: icon }).bindPopup(popup);
+                        marker.category = 'ambulance';
+                        marker.addTo(map);
+                        markers.push(marker);
+                    });
+                }
+
+                // Add Blood Banks
+                if (data.bloodBanks) {
+                    data.bloodBanks.forEach(b => {
+                        const coords = getCoordinatesForAddress(b.address, b.city, index++);
+                        const icon = createCustomIcon('bloodbank', '#8b5cf6');
+                        const popup = `
+                            <div class="p-1">
+                                <span class="badge bg-purple-subtle text-purple popup-badge mb-1" style="background:#f3e8ff; color:#7e22ce;">BLOOD BANK</span>
+                                <div class="popup-facility-title">${escapeHtml(b.name)}</div>
+                                <div class="small text-muted mb-2"><i class="fas fa-map-marker-alt text-danger me-1"></i>${escapeHtml(b.address || b.city || '')}</div>
+                                <div class="small text-muted mb-2"><strong>Stock:</strong> ${escapeHtml(b.bloodStock || 'All Groups')}</div>
+                                <div class="d-flex gap-2 mt-2">
+                                    <a href="tel:${escapeHtml(b.phone || '')}" class="btn btn-sm btn-outline-primary w-100"><i class="fas fa-phone me-1"></i>Call Helpline</a>
+                                </div>
+                            </div>
+                        `;
+                        const marker = L.marker(coords, { icon: icon }).bindPopup(popup);
+                        marker.category = 'bloodbank';
+                        marker.addTo(map);
+                        markers.push(marker);
+                    });
+                }
+
+                document.getElementById('markerCount').innerText = markers.length;
+
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+            } catch (err) {
+                console.error("Map loading error: ", err);
+            }
+        }
+
+        function createCustomIcon(type, color) {
+            let iconClass = 'fa-hospital';
+            if (type === 'ambulance') iconClass = 'fa-ambulance';
+            if (type === 'bloodbank') iconClass = 'fa-tint';
+
+            return L.divIcon({
+                className: 'custom-map-marker',
+                html: `<div style="background:${color}; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#fff; border:3px solid #fff; box-shadow:0 3px 10px rgba(0,0,0,0.3);"><i class="fas ${iconClass}" style="font-size:14px;"></i></div>`,
+                iconSize: [34, 34],
+                iconAnchor: [17, 17],
+                popupAnchor: [0, -17]
+            });
+        }
+
+        function filterMarkers(category, btn) {
+            document.querySelectorAll('.map-filter-btn').forEach(b => {
+                b.classList.remove('active', 'btn-primary');
+                b.classList.add('btn-outline-secondary');
+            });
+            btn.classList.add('active', 'btn-primary');
+            btn.classList.remove('btn-outline-secondary');
+
+            let visibleCount = 0;
+            markers.forEach(m => {
+                if (category === 'all' || m.category === category) {
+                    map.addLayer(m);
+                    visibleCount++;
+                } else {
+                    map.removeLayer(m);
+                }
+            });
+            document.getElementById('markerCount').innerText = visibleCount;
+        }
+
+        function locateUser() {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by your browser.");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(function (position) {
+                const userLat = position.coords.latitude;
+                const userLng = position.coords.longitude;
+
+                if (userMarker) {
+                    map.removeLayer(userMarker);
+                }
+
+                userMarker = L.marker([userLat, userLng], {
+                    icon: L.divIcon({
+                        className: 'user-location-marker',
+                        html: `<div style="background:#0284c7; width:22px; height:22px; border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 6px rgba(2, 132, 199, 0.35);"></div>`,
+                        iconSize: [22, 22],
+                        iconAnchor: [11, 11]
+                    })
+                }).bindPopup("<strong>You are here</strong>").addTo(map);
+
+                map.setView([userLat, userLng], 14);
+            }, function (error) {
+                alert("Unable to retrieve your location: " + error.message);
+            });
+        }
+
+        function escapeHtml(string) {
+            if (!string) return '';
+            return String(string).replace(/[&<>"']/g, function(s) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s];
+            });
+        }
+    </script>
+}

@@ -10,24 +10,18 @@ namespace BBDMS.Model.Models.Entities
 
         [Required]
         [StringLength(250)]
-        public string Name { get; set; }
-
+        public string Name { get; set; } = string.Empty;
         [StringLength(500)]
-        public string Address { get; set; }
-
+        public string Address { get; set; } = string.Empty;
         [Required]
         [StringLength(100)]
-        public string City { get; set; }
-
+        public string City { get; set; } = string.Empty;
         [StringLength(50)]
-        public string ContactNumber { get; set; }
-
+        public string ContactNumber { get; set; } = string.Empty;
         [StringLength(50)]
-        public string EmergencyHelpline { get; set; }
-
+        public string EmergencyHelpline { get; set; } = string.Empty;
         [StringLength(500)]
-        public string EmergencyServices { get; set; }
-
+        public string EmergencyServices { get; set; } = string.Empty;
         [Display(Name = "Total Emergency Beds")]
         public int TotalEmergencyBeds { get; set; }
 

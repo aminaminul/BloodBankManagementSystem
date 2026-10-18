@@ -7,24 +7,41 @@ namespace BBDMS.Repository.Data
 {
     public static class DbInitializer
     {
-        public static async Task SeedAsync(ApplicationDbContext context)
+        // Database Seeding
+        public static async Task SeedAsync(
+            ApplicationDbContext context,
+            bool includeDemoData = false,
+            string? adminUserName = null,
+            string? adminPassword = null)
         {
-            // Seed Admin if not exists
+            // Seed Admin
             if (!context.Admins.Any())
             {
-                await context.Admins.AddAsync(new Admin
+                var userName = adminUserName;
+                var password = adminPassword;
+
+                if (string.IsNullOrWhiteSpace(password) && includeDemoData)
                 {
-                    AdminName = "System Administrator",
-                    UserName = "admin",
-                    MobileNumber = 1234567890,
-                    Email = "admin@emergencyhelp.com",
-                    Password = BCrypt.Net.BCrypt.HashPassword("admin", 11),
-                    AdminRegdate = DateTime.Now
-                });
+                    userName ??= "admin";
+                    password = "admin";
+                }
+
+                if (!string.IsNullOrWhiteSpace(password))
+                {
+                    await context.Admins.AddAsync(new Admin
+                    {
+                        AdminName = "System Administrator",
+                        UserName = userName ?? "admin",
+                        MobileNumber = "01712345678",
+                        Email = "admin@emergencyhelp.com",
+                        Password = BCrypt.Net.BCrypt.HashPassword(password, 11),
+                        AdminRegdate = DateTime.Now
+                    });
+                }
             }
             else
             {
-                // Auto-upgrade existing admin password if in plain text
+                // Password Migration
                 var admin = context.Admins.FirstOrDefault();
                 if (admin != null && !string.IsNullOrEmpty(admin.Password) && !admin.Password.StartsWith("$2"))
                 {
@@ -73,6 +90,27 @@ namespace BBDMS.Repository.Data
                     Type = "donor",
                     Detail = "Blood donation is one of the most noble acts of kindness. A single donation can save up to three lives. Check your eligibility and register as a lifesaver today."
                 });
+            }
+
+            // Donor Password Hash Migration
+            var legacyDonors = context.BloodDonors
+                .Where(d => d.Password == null || !d.Password.StartsWith("$2"))
+                .ToList();
+
+            foreach (var legacyDonor in legacyDonors)
+            {
+                var pwdToHash = string.IsNullOrEmpty(legacyDonor.Password)
+                    ? Guid.NewGuid().ToString("N")
+                    : legacyDonor.Password;
+                legacyDonor.Password = BCrypt.Net.BCrypt.HashPassword(pwdToHash, 11);
+                context.BloodDonors.Update(legacyDonor);
+            }
+
+            // Demo Data Seeding
+            if (!includeDemoData)
+            {
+                await context.SaveChangesAsync();
+                return;
             }
 
             // Seed Hospitals if not exists
@@ -338,19 +376,6 @@ namespace BBDMS.Repository.Data
                     }
                 );
             }
-            else
-            {
-                // Auto-upgrade existing plain-text donor passwords
-                var donors = context.BloodDonors.ToList();
-                foreach (var d in donors)
-                {
-                    if (!string.IsNullOrEmpty(d.Password) && !d.Password.StartsWith("$2"))
-                    {
-                        d.Password = BCrypt.Net.BCrypt.HashPassword(d.Password, 11);
-                        context.BloodDonors.Update(d);
-                    }
-                }
-            }
 
             // Seed Sample Emergency Requests if none exist
             if (!context.BloodRequests.Any())
@@ -360,7 +385,7 @@ namespace BBDMS.Repository.Data
                     {
                         Name = "Farhan Rahman",
                         EmailId = "farhan@example.com",
-                        ContactNumber = 1711223344,
+                        ContactNumber = "01711223344",
                         BloodGroup = "O+",
                         BloodRequireFor = "Major Heart Surgery",
                         UnitsRequired = 3,
@@ -375,7 +400,7 @@ namespace BBDMS.Repository.Data
                     {
                         Name = "Shamim Hossain",
                         EmailId = "shamim@example.com",
-                        ContactNumber = 1822334455,
+                        ContactNumber = "01822334455",
                         BloodGroup = "A-",
                         BloodRequireFor = "Accident Emergency",
                         UnitsRequired = 2,
@@ -387,6 +412,64 @@ namespace BBDMS.Repository.Data
                         ApplyDate = DateTime.Now
                     }
                 );
+            }
+
+            // Seed Donation History if none exists, and keep eligibility in sync
+            if (!context.Donations.Any())
+            {
+                // Ensure donors (which may have just been added above) have generated Ids
+                await context.SaveChangesAsync();
+
+                var seedDonors = context.BloodDonors.ToList();
+                var now = DateTime.Now;
+                var donations = new List<Donation>();
+
+                void AddDonation(string email, int daysAgo, int units, string center, string city, string note)
+                {
+                    var donor = seedDonors.FirstOrDefault(d => d.EmailId == email);
+                    if (donor == null || donor.Id == 0) return;
+
+                    donations.Add(new Donation
+                    {
+                        DonorId = donor.Id,
+                        DonationDate = now.AddDays(-daysAgo),
+                        BloodGroup = donor.BloodGroup,
+                        CenterName = center,
+                        Location = city,
+                        UnitsDonated = units,
+                        Notes = note,
+                        CreatedAt = now.AddDays(-daysAgo)
+                    });
+                }
+
+                AddDonation("tanvir@example.com", 40, 1, "City Central General Hospital", "Dhaka", "Routine voluntary donation");
+                AddDonation("tanvir@example.com", 145, 1, "Red Crescent Central Blood Bank", "Dhaka", "Emergency O+ requirement");
+                AddDonation("tanvir@example.com", 260, 1, "National Blood Transfusion Center", "Dhaka", "Community donation camp");
+                AddDonation("nusrat@example.com", 120, 1, "Metropolitan Medical College & Hospital", "Dhaka", "Replacement donation");
+                AddDonation("nusrat@example.com", 240, 1, "LifeLine Blood Center & Bank", "Dhaka", "Voluntary donation");
+                AddDonation("rahim@example.com", 200, 2, "LifeLine Blood Center & Bank", "Chittagong", "Two units donated for a thalassemia patient");
+                AddDonation("sadia@example.com", 95, 1, "Green Life Emergency Hospital", "Sylhet", "Rare AB- donation");
+                AddDonation("sadia@example.com", 300, 1, "Zindabazar Donation Camp", "Sylhet", "Voluntary donation");
+
+                if (donations.Count > 0)
+                {
+                    await context.Donations.AddRangeAsync(donations);
+
+                    // Sync each donor's last donation date with their most recent record
+                    foreach (var donor in seedDonors)
+                    {
+                        var latest = donations
+                            .Where(x => x.DonorId == donor.Id)
+                            .OrderByDescending(x => x.DonationDate)
+                            .FirstOrDefault();
+
+                        if (latest != null)
+                        {
+                            donor.LastDonatedDate = latest.DonationDate;
+                            context.BloodDonors.Update(donor);
+                        }
+                    }
+                }
             }
 
             await context.SaveChangesAsync();

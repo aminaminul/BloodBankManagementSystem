@@ -38,8 +38,7 @@ namespace BBDMS.Service.Services
 
         public async Task<Admin> LoginAsync(string username, string password)
         {
-            var admins = await _adminRepository.GetAllAsync();
-            var admin = admins.FirstOrDefault(a => a.UserName == username);
+            var admin = (await _adminRepository.FindAsync(a => a.UserName == username)).FirstOrDefault();
             if (admin == null) return null!;
 
             if (PasswordHasher.VerifyPassword(password, admin.Password, out bool needsRehash))
@@ -54,6 +53,18 @@ namespace BBDMS.Service.Services
             }
 
             return null!;
+        }
+
+        public async Task<Admin> GetAdminByIdAsync(int id)
+        {
+            return await _adminRepository.GetByIdAsync(id);
+        }
+
+        public async Task<bool> UpdateAdminAsync(Admin admin)
+        {
+            _adminRepository.Update(admin);
+            await _adminRepository.SaveChangesAsync();
+            return true;
         }
 
         public async Task<int> GetTotalDonorsCountAsync()

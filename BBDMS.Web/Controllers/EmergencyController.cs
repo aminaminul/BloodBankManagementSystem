@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -18,7 +20,9 @@ namespace BBDMS.Web.Controllers
         private readonly IDonorService _donorService;
         private readonly IBloodRequestService _bloodRequestService;
         private readonly IBloodGroupService _bloodGroupService;
+        private readonly IPageService _pageService;
         private readonly IHubContext<EmergencyHub> _hubContext;
+        private readonly INotificationService _notificationService;
 
         public EmergencyController(
             IHospitalService hospitalService,
@@ -28,7 +32,9 @@ namespace BBDMS.Web.Controllers
             IDonorService donorService,
             IBloodRequestService bloodRequestService,
             IBloodGroupService bloodGroupService,
-            IHubContext<EmergencyHub> hubContext)
+            IPageService pageService,
+            IHubContext<EmergencyHub> hubContext,
+            INotificationService notificationService)
         {
             _hospitalService = hospitalService;
             _bloodBankService = bloodBankService;
@@ -37,10 +43,12 @@ namespace BBDMS.Web.Controllers
             _donorService = donorService;
             _bloodRequestService = bloodRequestService;
             _bloodGroupService = bloodGroupService;
+            _pageService = pageService;
             _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
-        // 7.8 Nearby Emergency Services Hub
+        // Emergency Services Hub
         public async Task<IActionResult> Index(string location, string serviceType = "All")
         {
             var viewModel = new EmergencySearchViewModel
@@ -71,7 +79,8 @@ namespace BBDMS.Web.Controllers
 
             if (serviceType == "All" || serviceType == "Donors")
             {
-                viewModel.Donors = await _donorService.SearchDonorsAsync(null, location);
+                viewModel.Donors = (await _donorService.SearchDonorsAsync(
+                    null, location, 1, 12, User.Identity?.IsAuthenticated == true)).Items;
             }
 
             if (serviceType == "All" || serviceType == "BloodRequests")
@@ -83,7 +92,64 @@ namespace BBDMS.Web.Controllers
             return View(viewModel);
         }
 
-        // 7.3 & 7.5 Hospitals, Emergency Beds and ICU
+        // Healthcare Facility Map
+        public async Task<IActionResult> Map()
+        {
+            ViewBag.Hospitals = await _hospitalService.GetAllHospitalsAsync();
+            ViewBag.Ambulances = await _ambulanceService.GetAllAmbulancesAsync();
+            ViewBag.BloodBanks = await _bloodBankService.GetAllBloodBanksAsync();
+            return View();
+        }
+
+        // Map Data Feed
+        [HttpGet]
+        public async Task<IActionResult> MapData()
+        {
+            var hospitals = (await _hospitalService.GetAllHospitalsAsync())?.Select(h => new
+            {
+                type = "hospital",
+                id = h.Id,
+                name = h.Name,
+                address = h.Address,
+                city = h.City,
+                phone = h.EmergencyHelpline ?? h.ContactNumber,
+                emergencyBeds = h.AvailableEmergencyBeds,
+                icuBeds = h.AvailableIcuBeds,
+                services = h.EmergencyServices
+            });
+
+            var ambulances = (await _ambulanceService.GetAllAmbulancesAsync())?.Select(a => new
+            {
+                type = "ambulance",
+                id = a.Id,
+                name = a.ProviderName,
+                address = a.Location,
+                city = a.Location,
+                phone = a.ContactNumber,
+                ambulanceType = a.AmbulanceType,
+                isAvailable = a.IsAvailable
+            });
+
+            var bloodBanks = (await _bloodBankService.GetAllBloodBanksAsync())?.Select(b => new
+            {
+                type = "bloodbank",
+                id = b.Id,
+                name = b.Name,
+                address = b.Address,
+                city = b.City,
+                phone = b.ContactNumber,
+                bloodStock = b.AvailableBloodGroups
+            });
+
+            return Json(new
+            {
+                hospitals,
+                ambulances,
+                bloodBanks
+            });
+        }
+
+        // Hospitals & Bed Availability
         public async Task<IActionResult> Hospitals(string location, bool? icuOnly, bool? emergencyBedOnly)
         {
             ViewBag.Location = location;
@@ -94,7 +160,7 @@ namespace BBDMS.Web.Controllers
             return View(hospitals);
         }
 
-        // 7.4 Blood Bank Information
+        // Blood Banks
         public async Task<IActionResult> BloodBanks(string location, string bloodGroup)
         {
             ViewBag.Location = location;
@@ -105,7 +171,7 @@ namespace BBDMS.Web.Controllers
             return View(bloodBanks);
         }
 
-        // 7.6 Ambulance Service Directory
+        // Ambulance Directory
         public async Task<IActionResult> Ambulances(string location, string ambulanceType, bool? onlyAvailable)
         {
             ViewBag.Location = location;
@@ -116,7 +182,7 @@ namespace BBDMS.Web.Controllers
             return View(ambulances);
         }
 
-        // 7.6 Submit Emergency Ambulance Request (GET)
+        // Ambulance Dispatch Booking
         public async Task<IActionResult> RequestAmbulance(int? serviceId)
         {
             if (serviceId.HasValue)
@@ -136,7 +202,6 @@ namespace BBDMS.Web.Controllers
             });
         }
 
-        // 7.6 Submit Emergency Ambulance Request (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         [EnableRateLimiting("emergencyLimiter")]
@@ -146,9 +211,10 @@ namespace BBDMS.Web.Controllers
             {
                 await _ambulanceService.SubmitAmbulanceRequestAsync(request);
 
-                // Broadcast live SignalR alert to dispatchers
-                await _hubContext.Clients.All.SendAsync("ReceiveAmbulanceAlert", new
+                await _hubContext.Clients.Group(EmergencyHub.DispatcherGroup).SendAsync("ReceiveAmbulanceAlert", new
                 {
+                    id = request.Id,
+                    trackingToken = request.TrackingToken,
                     patientName = request.PatientName,
                     pickupLocation = request.PickupAddress,
                     contactNumber = request.ContactNumber,
@@ -156,14 +222,24 @@ namespace BBDMS.Web.Controllers
                     timestamp = System.DateTime.Now.ToString("hh:mm tt")
                 });
 
+                await _notificationService.CreateNotificationAsync(new Notification
+                {
+                    Title = "🚑 Emergency Ambulance Booked",
+                    Message = $"Pickup at {request.PickupAddress}. Patient: {request.PatientName}. Urgency: {request.Urgency}.",
+                    Category = "Ambulance",
+                    Urgency = "P0_Critical",
+                    TargetRole = "Admin",
+                    TargetUrl = $"/Emergency/TrackAmbulance?token={request.TrackingToken}"
+                });
+
                 TempData["Success"] = "Ambulance request submitted successfully! An emergency dispatcher will call you immediately.";
-                return RedirectToAction(nameof(Ambulances));
+                return RedirectToAction(nameof(TrackAmbulance), new { token = request.TrackingToken });
             }
 
             return View(request);
         }
 
-        // 7.7 Oxygen Services Directory
+        // Oxygen Services
         public async Task<IActionResult> Oxygen(string location, bool? homeDeliveryOnly)
         {
             ViewBag.Location = location;
@@ -173,7 +249,7 @@ namespace BBDMS.Web.Controllers
             return View(services);
         }
 
-        // 7.2 Emergency Blood Requests Board
+        // Blood Requests Board
         public async Task<IActionResult> BloodRequests(string bloodGroup, string location)
         {
             ViewBag.Location = location;
@@ -184,7 +260,7 @@ namespace BBDMS.Web.Controllers
             return View(requests);
         }
 
-        // 7.2 Create Emergency Blood Request (GET)
+        // Create Blood Request
         public async Task<IActionResult> CreateBloodRequest(int? donorId)
         {
             ViewBag.BloodGroups = await _bloodGroupService.GetAllGroupsAsync();
@@ -205,7 +281,6 @@ namespace BBDMS.Web.Controllers
             });
         }
 
-        // 7.2 Create Emergency Blood Request (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
         [EnableRateLimiting("emergencyLimiter")]
@@ -217,23 +292,174 @@ namespace BBDMS.Web.Controllers
                 request.ApplyDate = System.DateTime.Now;
                 await _bloodRequestService.SaveRequestAsync(request);
 
-                // Broadcast live SignalR alert to connected users and admin dispatchers
                 await _hubContext.Clients.All.SendAsync("ReceiveBloodRequestAlert", new
                 {
-                    patientName = request.Name,
-                    bloodGroup = request.BloodGroup ?? request.BloodRequireFor,
+                    id = request.ID,
+                    token = request.TrackingToken,
+                    bloodGroup = request.BloodGroup ?? "Unspecified",
                     hospital = request.HospitalName ?? "Emergency Facility",
                     urgency = request.Urgency ?? "Critical",
                     units = request.UnitsRequired,
                     timestamp = System.DateTime.Now.ToString("hh:mm tt")
                 });
 
+                await _hubContext.Clients.Group(EmergencyHub.DispatcherGroup).SendAsync("ReceiveBloodRequestAlertFull", new
+                {
+                    id = request.ID,
+                    token = request.TrackingToken,
+                    patientName = request.Name,
+                    bloodGroup = request.BloodGroup ?? "Unspecified",
+                    hospital = request.HospitalName ?? "Emergency Facility",
+                    contactNumber = request.ContactNumber,
+                    urgency = request.Urgency ?? "Critical",
+                    units = request.UnitsRequired,
+                    timestamp = System.DateTime.Now.ToString("hh:mm tt")
+                });
+
+                await _notificationService.CreateNotificationAsync(new Notification
+                {
+                    Title = $"🚨 Urgent: {request.UnitsRequired} Unit(s) of {request.BloodGroup} Needed",
+                    Message = $"Required at {request.HospitalName ?? "Emergency Facility"}. Urgency: {request.Urgency ?? "Critical"}.",
+                    Category = "Emergency",
+                    Urgency = "P0_Critical",
+                    TargetRole = "All",
+                    TargetUrl = $"/Emergency/TrackRequest?token={request.TrackingToken}"
+                });
+
                 TempData["Success"] = "Emergency Blood Request posted successfully! Registered donors and community lifesavers have been notified.";
-                return RedirectToAction(nameof(BloodRequests));
+                return RedirectToAction(nameof(TrackRequest), new { token = request.TrackingToken });
             }
 
             ViewBag.BloodGroups = await _bloodGroupService.GetAllGroupsAsync();
             return View(request);
+        }
+
+        // Blood Request Details
+        public async Task<IActionResult> RequestDetails(int? id, string? token)
+        {
+            BloodRequest? request = null;
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                request = await _bloodRequestService.GetRequestByTokenAsync(token);
+            }
+            else if (id.HasValue)
+            {
+                request = await _bloodRequestService.GetRequestByIdAsync(id.Value);
+            }
+
+            if (request == null) return NotFound();
+
+            if (!string.IsNullOrEmpty(request.HospitalName))
+            {
+                var hospitals = await _hospitalService.GetAllHospitalsAsync();
+                ViewBag.Hospital = hospitals.FirstOrDefault(h =>
+                    !string.IsNullOrEmpty(h.Name) &&
+                    h.Name.Contains(request.HospitalName, System.StringComparison.OrdinalIgnoreCase));
+            }
+
+            return View(request);
+        }
+
+        // Blood Request Tracking
+        public async Task<IActionResult> TrackRequest(string? token, int? id, string? contact)
+        {
+            BloodRequest? request = null;
+
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                request = await _bloodRequestService.GetRequestByTokenAsync(token);
+            }
+            else if (id.HasValue)
+            {
+                request = await _bloodRequestService.GetRequestByIdAsync(id.Value);
+            }
+            else if (!string.IsNullOrWhiteSpace(contact))
+            {
+                request = await _bloodRequestService.GetLatestRequestByContactAsync(contact);
+            }
+
+            ViewBag.Contact = contact;
+            ViewBag.Token = token;
+            return View(request);
+        }
+
+        // Ambulance Dispatch Tracking
+        public async Task<IActionResult> TrackAmbulance(string? token, string? contact)
+        {
+            var request = await FindAmbulanceRequestAsync(token, contact);
+
+            if (request?.AmbulanceServiceId != null)
+            {
+                ViewBag.Provider = await _ambulanceService.GetAmbulanceByIdAsync(request.AmbulanceServiceId.Value);
+            }
+
+            ViewBag.Contact = string.IsNullOrWhiteSpace(contact) ? request?.ContactNumber : contact;
+    
+            return View(request);
+        }
+
+        // Ambulance Status Feed
+        [HttpGet]
+        public async Task<IActionResult> AmbulanceStatus(string? token)
+        {
+            var request = await _ambulanceService.GetAmbulanceRequestByTokenAsync(token ?? string.Empty);
+            if (request == null) return NotFound();
+
+            var status = AmbulanceTracking.NormalizeStatus(request.Status);
+            return Json(new
+            {
+                id = request.Id,
+                status,
+                statusLabel = AmbulanceTracking.StatusLabel(status),
+                badge = AmbulanceTracking.StatusBadge(status),
+                icon = AmbulanceTracking.StatusIcon(status),
+                eta = AmbulanceTracking.EtaText(status),
+                progress = AmbulanceTracking.ProgressPercent(status),
+                isActive = AmbulanceTracking.IsActive(status),
+                patientName = request.PatientName,
+                updatedAt = DateTime.Now.ToString("hh:mm:ss tt"),
+                steps = AmbulanceTracking.BuildSteps(request)
+            });
+        }
+
+        // Emergency Contact & Dispatch Helpline
+        public async Task<IActionResult> AmbulanceContact(string? token, string? contact, string? location)
+        {
+            var request = await FindAmbulanceRequestAsync(token, contact);
+            AmbulanceService? provider = null;
+
+            if (request?.AmbulanceServiceId != null)
+            {
+                provider = await _ambulanceService.GetAmbulanceByIdAsync(request.AmbulanceServiceId.Value);
+            }
+
+            var searchLocation = !string.IsNullOrWhiteSpace(location) ? location : provider?.Location;
+
+            ViewBag.Request = request;
+            ViewBag.Provider = provider;
+            ViewBag.ContactInfo = await _pageService.GetContactInfoAsync();
+            ViewBag.NearbyAmbulances = (await _ambulanceService.SearchAmbulancesAsync(searchLocation, null, null)
+                                        ?? Enumerable.Empty<AmbulanceService>()).Take(6).ToList();
+            ViewBag.Location = searchLocation;
+
+            return View();
+        }
+
+        // Helper: Ambulance Request Lookup
+        private async Task<AmbulanceRequest?> FindAmbulanceRequestAsync(string? token, string? contact)
+        {
+            if (!string.IsNullOrWhiteSpace(token))
+            {
+                var byToken = await _ambulanceService.GetAmbulanceRequestByTokenAsync(token);
+                if (byToken != null) return byToken;
+            }
+
+            if (!string.IsNullOrWhiteSpace(contact))
+            {
+                return await _ambulanceService.GetLatestAmbulanceRequestByContactAsync(contact);
+            }
+
+            return null;
         }
     }
 }

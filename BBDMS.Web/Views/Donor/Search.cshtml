@@ -1,7 +1,10 @@
-@model IEnumerable<BBDMS.Model.Models.Entities.BloodDonor>
+@model BBDMS.Model.Models.ViewModels.PagedResult<BBDMS.Model.Models.ViewModels.DonorListItemViewModel>
 @{
     ViewData["Title"] = "Search Blood Donor";
     var bloodGroups = ViewBag.BloodGroups as IEnumerable<BBDMS.Model.Models.Entities.BloodGroup>;
+    ViewData["PagerAction"] = "Search";
+    ViewData["PagerBloodGroup"] = ViewBag.BloodGroup;
+    ViewData["PagerLocation"] = ViewBag.Location;
 }
 
 <section class="page-hero-sm" style="background:linear-gradient(135deg,#e63946 0%,#9b1a26 100%); color:#fff; padding:56px 0 40px;">
@@ -54,10 +57,10 @@
         @* Results *@
         @if (Model != null)
         {
-            @if (Model.Any())
+            @if (Model.TotalItems > 0)
             {
                 <div class="row g-4">
-                    @foreach (var donor in Model)
+                    @foreach (var donor in Model.Items)
                     {
                         <div class="col-md-6 col-lg-4">
                             <div class="card-modern h-100 d-flex flex-column">
@@ -83,11 +86,29 @@
                                         </tr>
                                         <tr>
                                             <td class="text-muted fw-semibold border-0 py-1">Phone</td>
-                                            <td class="border-0 py-1">@donor.MobileNumber</td>
+                                            <td class="border-0 py-1">
+                                                @if (donor.ContactVisible)
+                                                {
+                                                    <a href="tel:@donor.MobileNumber" class="text-dark">@donor.MobileNumber</a>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted small"><i class="fas fa-lock me-1"></i>Sign in to view</span>
+                                                }
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="text-muted fw-semibold border-0 py-1">Email</td>
-                                            <td class="border-0 py-1 small">@donor.EmailId</td>
+                                            <td class="border-0 py-1 small">
+                                                @if (donor.ContactVisible)
+                                                {
+                                                    @donor.EmailId
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted"><i class="fas fa-lock me-1"></i>Hidden</span>
+                                                }
+                                            </td>
                                         </tr>
                                         <tr>
                                             <td class="text-muted fw-semibold border-0 py-1">Address</td>
@@ -137,3 +158,5 @@
         }
     </div>
 </section>
+
+@await Html.PartialAsync("_DonorPager", Model)

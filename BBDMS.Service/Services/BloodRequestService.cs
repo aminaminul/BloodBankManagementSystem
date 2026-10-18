@@ -20,6 +20,10 @@ namespace BBDMS.Service.Services
 
         public async Task SaveRequestAsync(BloodRequest request)
         {
+            if (string.IsNullOrWhiteSpace(request.TrackingToken))
+            {
+                request.TrackingToken = System.Guid.NewGuid().ToString("N");
+            }
             await _requestRepository.AddAsync(request);
             await _requestRepository.SaveChangesAsync();
         }
@@ -71,13 +75,14 @@ namespace BBDMS.Service.Services
             }
         }
 
+        // Search Emergency Requests
         public async Task<IEnumerable<BloodRequest>> SearchEmergencyRequestsAsync(string? bloodGroup, string? location)
         {
             var query = _requestRepository.Query();
 
             if (!string.IsNullOrWhiteSpace(bloodGroup) && bloodGroup != "All")
             {
-                query = query.Where(r => r.BloodGroup == bloodGroup || r.BloodRequireFor == bloodGroup);
+                query = query.Where(r => r.BloodGroup == bloodGroup);
             }
 
             if (!string.IsNullOrWhiteSpace(location))
@@ -88,7 +93,53 @@ namespace BBDMS.Service.Services
                     (r.HospitalName != null && r.HospitalName.Contains(loc)));
             }
 
+            query = query.Where(r => r.Status != "Fulfilled" && r.Status != "Completed"
+                                  && r.Status != "Cancelled" && r.Status != "Rejected");
+
             return await query.OrderByDescending(r => r.ApplyDate).ToListAsync();
+        }
+
+        // Open Community Requests
+        public async Task<IEnumerable<BloodRequest>> GetOpenCommunityRequestsAsync(string? bloodGroup, int take = 50)
+        {
+            if (take < 1) take = 50;
+
+            var query = _requestRepository.Query().Where(r => r.BloodDonorID == null);
+
+            if (!string.IsNullOrWhiteSpace(bloodGroup))
+            {
+                var group = bloodGroup.Trim();
+                query = query.Where(r => r.BloodGroup == group);
+            }
+
+            return await query
+                .Where(r => r.Status != "Fulfilled" && r.Status != "Cancelled" && r.Status != "Rejected")
+                .OrderByDescending(r => r.ApplyDate)
+                .Take(take)
+                .ToListAsync();
+        }
+
+        public async Task<BloodRequest?> GetLatestRequestByContactAsync(string contact)
+        {
+            if (string.IsNullOrWhiteSpace(contact)) return null;
+
+            var digits = new string(contact.Where(char.IsDigit).ToArray());
+            if (digits.Length == 0) return null;
+
+            return await _requestRepository.Query()
+                .Where(r => r.ContactNumber != null && r.ContactNumber.Contains(digits))
+                .OrderByDescending(r => r.ID)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<BloodRequest?> GetRequestByTokenAsync(string token)
+        {
+            if (string.IsNullOrWhiteSpace(token)) return null;
+
+            var normalized = token.Trim();
+            return await _requestRepository.Query()
+                .Where(r => r.TrackingToken == normalized)
+                .FirstOrDefaultAsync();
         }
     }
 }

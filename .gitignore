@@ -7,4 +7,5 @@
 *.userosscache
 *.sln.docstates
 appsettings.Development.json
+.freebuff/
 

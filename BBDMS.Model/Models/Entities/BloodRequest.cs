@@ -19,8 +19,14 @@ namespace BBDMS.Model.Models.Entities
         [StringLength(250)]
         public string EmailId { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Stored as text on purpose: phone numbers keep their leading zero (017…)
+        /// and may contain +, spaces or dashes. A numeric column silently dropped them.
+        /// </summary>
         [Required(ErrorMessage = "Contact number is required.")]
-        public long? ContactNumber { get; set; }
+        [StringLength(20)]
+        [RegularExpression(@"^[0-9+\-\s()]{7,20}$", ErrorMessage = "Please enter a valid phone number.")]
+        public string ContactNumber { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Please specify whom the blood is required for.")]
         [StringLength(250)]
@@ -48,5 +54,11 @@ namespace BBDMS.Model.Models.Entities
         public string Message { get; set; } = string.Empty;
 
         public DateTime? ApplyDate { get; set; } = DateTime.Now;
+
+        /// <summary>
+        /// Unguessable 128-bit public tracking reference: stops sequential ID enumeration.
+        /// </summary>
+        [StringLength(64)]
+        public string? TrackingToken { get; set; }
     }
 }

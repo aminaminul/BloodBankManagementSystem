@@ -17,7 +17,7 @@ namespace BBDMS.Repository.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.7")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -43,13 +43,18 @@ namespace BBDMS.Repository.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<long?>("MobileNumber")
-                        .HasColumnType("bigint");
+                    b.Property<string>("MobileNumber")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ThemePreference")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -57,6 +62,9 @@ namespace BBDMS.Repository.Migrations
                         .HasColumnType("nvarchar(120)");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
 
                     b.ToTable("tbladmin", (string)null);
                 });
@@ -83,13 +91,12 @@ namespace BBDMS.Repository.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("DestinationHospital")
-                        .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("Notes")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("PatientName")
                         .IsRequired()
@@ -109,12 +116,22 @@ namespace BBDMS.Repository.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("TrackingToken")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<string>("Urgency")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("AmbulanceServiceId");
+
+                    b.HasIndex("TrackingToken")
+                        .IsUnique()
+                        .HasFilter("[TrackingToken] IS NOT NULL");
 
                     b.ToTable("tblambulancerequests", (string)null);
                 });
@@ -166,6 +183,56 @@ namespace BBDMS.Repository.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("tblambulances", (string)null);
+                });
+
+            modelBuilder.Entity("BBDMS.Model.Models.Entities.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<int?>("ActorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ActorName")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("ActorRole")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("EntityId")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("tblauditlog", (string)null);
                 });
 
             modelBuilder.Entity("BBDMS.Model.Models.Entities.BloodBank", b =>
@@ -280,7 +347,14 @@ namespace BBDMS.Repository.Migrations
                     b.Property<int?>("Status")
                         .HasColumnType("int");
 
+                    b.Property<string>("ThemePreference")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EmailId")
+                        .IsUnique();
 
                     b.ToTable("tblblooddonars", (string)null);
                 });
@@ -329,8 +403,10 @@ namespace BBDMS.Repository.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<long>("ContactNumber")
-                        .HasColumnType("bigint");
+                    b.Property<string>("ContactNumber")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("EmailId")
                         .IsRequired()
@@ -358,6 +434,10 @@ namespace BBDMS.Repository.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("TrackingToken")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<int>("UnitsRequired")
                         .HasColumnType("int");
 
@@ -366,6 +446,12 @@ namespace BBDMS.Repository.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("BloodDonorID");
+
+                    b.HasIndex("TrackingToken")
+                        .IsUnique()
+                        .HasFilter("[TrackingToken] IS NOT NULL");
 
                     b.ToTable("tblbloodrequirer", (string)null);
                 });
@@ -435,6 +521,49 @@ namespace BBDMS.Repository.Migrations
                     b.ToTable("tblcontactusquery", (string)null);
                 });
 
+            modelBuilder.Entity("BBDMS.Model.Models.Entities.Donation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BloodGroup")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("CenterName")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DonationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DonorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("UnitsDonated")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DonorId");
+
+                    b.ToTable("tbldonationhistory", (string)null);
+                });
+
             modelBuilder.Entity("BBDMS.Model.Models.Entities.Hospital", b =>
                 {
                     b.Property<int>("Id")
@@ -491,6 +620,57 @@ namespace BBDMS.Repository.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("tblhospitals", (string)null);
+                });
+
+            modelBuilder.Entity("BBDMS.Model.Models.Entities.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("TargetRole")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("TargetUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Urgency")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("tblnotifications", (string)null);
                 });
 
             modelBuilder.Entity("BBDMS.Model.Models.Entities.OxygenService", b =>
@@ -572,6 +752,63 @@ namespace BBDMS.Repository.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("tblpages", (string)null);
+                });
+
+            modelBuilder.Entity("BBDMS.Model.Models.Entities.PasswordResetToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("ExpirationDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("tblpasswordresettokens", (string)null);
+                });
+
+            modelBuilder.Entity("BBDMS.Model.Models.Entities.AmbulanceRequest", b =>
+                {
+                    b.HasOne("BBDMS.Model.Models.Entities.AmbulanceService", null)
+                        .WithMany()
+                        .HasForeignKey("AmbulanceServiceId")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("BBDMS.Model.Models.Entities.BloodRequest", b =>
+                {
+                    b.HasOne("BBDMS.Model.Models.Entities.BloodDonor", null)
+                        .WithMany()
+                        .HasForeignKey("BloodDonorID")
+                        .OnDelete(DeleteBehavior.SetNull);
+                });
+
+            modelBuilder.Entity("BBDMS.Model.Models.Entities.Donation", b =>
+                {
+                    b.HasOne("BBDMS.Model.Models.Entities.BloodDonor", null)
+                        .WithMany()
+                        .HasForeignKey("DonorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

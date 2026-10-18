@@ -1,0 +1,239 @@
+@{
+    ViewData["Title"] = "Emergency Ambulance Contacts";
+    var request = ViewBag.Request as BBDMS.Model.Models.Entities.AmbulanceRequest;
+    var provider = ViewBag.Provider as BBDMS.Model.Models.Entities.AmbulanceService;
+    var contactInfo = ViewBag.ContactInfo as BBDMS.Model.Models.Entities.ContactInfo;
+    var nearby = ViewBag.NearbyAmbulances as IEnumerable<BBDMS.Model.Models.Entities.AmbulanceService>
+                 ?? Enumerable.Empty<BBDMS.Model.Models.Entities.AmbulanceService>();
+    var searchLocation = ViewBag.Location as string;
+
+    var hotlines = new List<(string Label, string Number, string Note, string Icon)>
+    {
+        ("National Emergency Service", "999", "Police, fire and ambulance dispatch in Bangladesh", "fa-triangle-exclamation"),
+        ("Health Emergency Hotline", "16263", "24/7 government health & medical advice line", "fa-briefcase-medical"),
+        ("Blood Bank Helpline", "01700000000", "Our own emergency blood and dispatch desk", "fa-tint"),
+        ("Poison Information Centre", "01777777777", "Suspected poisoning and overdose support", "fa-flask")
+    };
+}
+
+<section class="page-hero-sm">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-controller="Emergency" asp-action="Ambulances">Ambulances</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Emergency Contacts</li>
+            </ol>
+        </nav>
+        <h1 class="fw-bold mb-1">Emergency Contact Desk</h1>
+        <p class="mb-0">One tap to reach the dispatch control room, national hotlines and nearby ambulance fleets.</p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+
+        @if (request != null)
+        {
+            <div class="card-modern mb-4 amb-contact-hero" data-motion>
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                    <div>
+                        <span class="eyebrow"><i class="fas fa-satellite-dish"></i> Active dispatch #@request.Id</span>
+                        <h4 class="fw-bold mb-1">@request.PatientName</h4>
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-location-dot me-1 text-danger"></i>@request.PickupAddress
+                            @if (!string.IsNullOrEmpty(request.DestinationHospital))
+                            {
+                                <span class="mx-1">→</span>@request.DestinationHospital
+                            }
+                        </p>
+                        <span class="badge-soft-danger @BBDMS.Model.Models.ViewModels.AmbulanceTracking.StatusBadge(request.Status)">
+                            <i class="fas @BBDMS.Model.Models.ViewModels.AmbulanceTracking.StatusIcon(request.Status) me-1"></i>
+                            @BBDMS.Model.Models.ViewModels.AmbulanceTracking.StatusLabel(request.Status)
+                        </span>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a asp-action="TrackAmbulance" asp-route-token="@request.TrackingToken" class="btn btn-brand-outline">
+                            <i class="fas fa-stream me-1"></i>Live Timeline
+                        </a>
+                        @if (provider != null)
+                        {
+                            <a href="tel:@provider.ContactNumber" class="btn btn-brand-red">
+                                <i class="fas fa-phone me-1"></i>Call Fleet
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-light border d-flex align-items-center flex-wrap gap-3" role="alert" data-motion>
+                <i class="fas fa-circle-info fa-lg text-danger"></i>
+                <div class="flex-grow-1">
+                    <strong>No dispatch selected.</strong>
+                    <span class="text-muted small d-block">Enter a booking contact number to link this desk to a live dispatch, or call a hotline below right away.</span>
+                </div>
+                <a asp-action="TrackAmbulance" class="btn btn-sm btn-brand-outline"><i class="fas fa-magnifying-glass me-1"></i>Find my dispatch</a>
+            </div>
+        }
+
+        <!-- Primary actions -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-4" data-motion>
+                <div class="card-modern h-100 amb-action-card">
+                    <div class="stat-ico red"><i class="fas fa-bell"></i></div>
+                    <h6 class="fw-bold mt-3 mb-1">Book an ambulance</h6>
+                    <p class="small text-muted mb-3">Submit a dispatch request with pickup details; a dispatcher calls you immediately.</p>
+                    <a asp-action="RequestAmbulance" class="btn btn-sm btn-brand-red mt-auto"><i class="fas fa-ambulance me-1"></i>Request Now</a>
+                </div>
+            </div>
+            <div class="col-md-4" data-motion>
+                <div class="card-modern h-100 amb-action-card">
+                    <div class="stat-ico blue"><i class="fas fa-hospital"></i></div>
+                    <h6 class="fw-bold mt-3 mb-1">Nearest hospital &amp; ICU</h6>
+                    <p class="small text-muted mb-3">Check live emergency bed and ICU availability before transport.</p>
+                    <a asp-action="Hospitals" class="btn btn-sm btn-brand-outline mt-auto"><i class="fas fa-bed-pulse me-1"></i>Check Beds</a>
+                </div>
+            </div>
+            <div class="col-md-4" data-motion>
+                <div class="card-modern h-100 amb-action-card">
+                    <div class="stat-ico green"><i class="fas fa-tint"></i></div>
+                    <h6 class="fw-bold mt-3 mb-1">Emergency blood</h6>
+                    <p class="small text-muted mb-3">Post or track an urgent blood requirement alongside the ambulance trip.</p>
+                    <a asp-action="BloodRequests" class="btn btn-sm btn-brand-outline mt-auto"><i class="fas fa-droplet me-1"></i>Blood Requests</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Hotlines -->
+            <div class="col-lg-6">
+                <div class="card-modern h-100" data-motion>
+                    <h5 class="fw-bold mb-3"><i class="fas fa-phone-volume text-danger me-2"></i>Emergency Hotlines</h5>
+                    <div class="hotline-list">
+                        @foreach (var line in hotlines)
+                        {
+                            <a class="hotline-item" href="tel:@line.Number">
+                                <span class="hotline-ico"><i class="fas @line.Icon"></i></span>
+                                <span class="flex-grow-1">
+                                    <span class="d-block fw-bold text-dark">@line.Label</span>
+                                    <span class="d-block small text-muted">@line.Note</span>
+                                </span>
+                                <span class="hotline-number">@line.Number</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control room / platform contact -->
+            <div class="col-lg-6">
+                <div class="card-modern h-100" data-motion>
+                    <h5 class="fw-bold mb-3"><i class="fas fa-headset text-danger me-2"></i>Dispatch Control Room</h5>
+                    @if (contactInfo != null)
+                    {
+                        <ul class="list-unstyled amb-contact-list mb-4">
+                            <li>
+                                <span class="amb-contact-ico"><i class="fas fa-phone-alt"></i></span>
+                                <div>
+                                    <span class="small text-muted d-block">Helpline</span>
+                                    <a href="tel:@contactInfo.ContactNo" class="fw-bold text-dark">@contactInfo.ContactNo</a>
+                                </div>
+                            </li>
+                            <li>
+                                <span class="amb-contact-ico"><i class="fas fa-envelope"></i></span>
+                                <div>
+                                    <span class="small text-muted d-block">Email</span>
+                                    <a href="mailto:@contactInfo.EmailId" class="fw-bold text-dark">@contactInfo.EmailId</a>
+                                </div>
+                            </li>
+                            <li>
+                                <span class="amb-contact-ico"><i class="fas fa-map-marker-alt"></i></span>
+                                <div>
+                                    <span class="small text-muted d-block">Address</span>
+                                    <span class="fw-semibold text-dark">@contactInfo.Address</span>
+                                </div>
+                            </li>
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Contact details are not configured yet. Please call the national hotline 999.</p>
+                    }
+                    <div class="d-flex flex-wrap gap-2">
+                        @if (contactInfo != null)
+                        {
+                            <a href="tel:@contactInfo.ContactNo" class="btn btn-sm btn-brand-red"><i class="fas fa-phone me-1"></i>Call Helpline</a>
+                        }
+                        <a asp-controller="Home" asp-action="Contact" class="btn btn-sm btn-brand-outline"><i class="fas fa-envelope me-1"></i>Message Support</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nearby fleets -->
+        <div class="card-modern mt-4" data-motion>
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <h5 class="fw-bold mb-0">
+                    <i class="fas fa-ambulance text-danger me-2"></i>Nearby Ambulance Providers
+                    @if (!string.IsNullOrWhiteSpace(searchLocation))
+                    {
+                        <span class="badge-soft-primary ms-1">@searchLocation</span>
+                    }
+                </h5>
+                <form method="get" asp-action="AmbulanceContact" class="d-flex gap-2">
+                    @if (request != null)
+                    {
+                        <input type="hidden" name="id" value="@request.Id" />
+                    }
+                    <input type="text" name="location" value="@searchLocation" class="form-control form-control-modern form-control-sm" placeholder="Filter by city" />
+                    <button type="submit" class="btn btn-sm btn-brand-outline"><i class="fas fa-filter"></i></button>
+                </form>
+            </div>
+
+            @if (nearby.Any())
+            {
+                <div class="row g-3">
+                    @foreach (var amb in nearby)
+                    {
+                        <div class="col-md-6 col-xl-4">
+                            <div class="donor-row h-100 flex-column align-items-stretch">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="stat-ico amber" style="width:40px;height:40px;border-radius:12px;font-size:.9rem;"><i class="fas fa-ambulance"></i></span>
+                                    <div class="overflow-hidden">
+                                        <div class="fw-bold text-dark text-truncate">@amb.ProviderName</div>
+                                        <div class="small text-muted text-truncate"><i class="fas fa-location-dot me-1 text-danger"></i>@amb.Location</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 mb-2">
+                                    <span class="badge-soft-primary">@amb.AmbulanceType</span>
+                                    @if (amb.IsAvailable)
+                                    {
+                                        <span class="badge-soft-success"><i class="fas fa-check-circle me-1"></i>Available</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge-soft-secondary">On mission</span>
+                                    }
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
+                                    <span class="small fw-semibold text-dark"><i class="fas fa-phone me-1 text-success"></i>@amb.ContactNumber</span>
+                                    <a href="tel:@amb.ContactNumber" class="btn btn-sm btn-brand-red"><i class="fas fa-phone"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4 text-muted">
+                    <i class="fas fa-ambulance fa-2x mb-2 d-block"></i>
+                    No providers listed for this area yet — call the helpline and we will arrange the nearest fleet.
+                </div>
+            }
+        </div>
+
+    </div>
+</section>

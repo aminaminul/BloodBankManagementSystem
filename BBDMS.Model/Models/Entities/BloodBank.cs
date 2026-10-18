@@ -10,21 +10,16 @@ namespace BBDMS.Model.Models.Entities
 
         [Required]
         [StringLength(250)]
-        public string Name { get; set; }
-
+        public string Name { get; set; } = string.Empty;
         [StringLength(250)]
-        public string HospitalAffiliation { get; set; }
-
+        public string HospitalAffiliation { get; set; } = string.Empty;
         [StringLength(500)]
-        public string Address { get; set; }
-
+        public string Address { get; set; } = string.Empty;
         [Required]
         [StringLength(100)]
-        public string City { get; set; }
-
+        public string City { get; set; } = string.Empty;
         [StringLength(50)]
-        public string ContactNumber { get; set; }
-
+        public string ContactNumber { get; set; } = string.Empty;
         [StringLength(100)]
         public string OperatingHours { get; set; } = "24/7";
 

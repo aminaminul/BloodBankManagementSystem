@@ -1,0 +1,83 @@
+@model BBDMS.Model.Models.ViewModels.PagedResult<BBDMS.Model.Models.Entities.AuditLog>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Audit Trail";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold text-dark mb-0">Audit Trail</h3>
+        <p class="text-muted mb-0">
+            Privileged actions recorded against the signed-in account &mdash;
+            <strong>@Model.TotalItems</strong> entries
+        </p>
+    </div>
+</div>
+
+<div class="card-modern p-0 mb-4">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead style="background:#f8fafc;">
+                <tr style="font-size:.78rem; text-transform:uppercase; color:#64748b; letter-spacing:.05em;">
+                    <th class="ps-4">When</th>
+                    <th>Actor</th>
+                    <th>Action</th>
+                    <th>Entity</th>
+                    <th>Details</th>
+                    <th class="pe-4">IP</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.TotalItems == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="fas fa-clipboard-list fa-2x d-block mb-3 text-muted"></i>
+                            No audited actions yet.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var log in Model.Items)
+                    {
+                        <tr>
+                            <td class="ps-4 small text-muted">@log.CreatedAt.ToString("dd MMM yyyy, HH:mm:ss")</td>
+                            <td>
+                                <div class="fw-semibold text-dark small">@(string.IsNullOrWhiteSpace(log.ActorName) ? "Unknown" : log.ActorName)</div>
+                                <span class="badge bg-light text-dark small">@log.ActorRole @(log.ActorId.HasValue ? "#" + log.ActorId : "")</span>
+                            </td>
+                            <td><span class="badge-soft-danger">@log.Action</span></td>
+                            <td class="small">
+                                <strong>@log.EntityType</strong>
+                                @if (!string.IsNullOrEmpty(log.EntityId))
+                                {
+                                    <span class="text-muted">#@log.EntityId</span>
+                                }
+                            </td>
+                            <td class="small text-muted">@log.Details</td>
+                            <td class="pe-4 small text-muted">@log.IpAddress</td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Audit pages">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
+                <a class="page-link" asp-action="AuditTrail" asp-route-page="@(Model.PageIndex - 1)">Previous</a>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">Page @Model.PageIndex of @Model.TotalPages</span>
+            </li>
+            <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
+                <a class="page-link" asp-action="AuditTrail" asp-route-page="@(Model.PageIndex + 1)">Next</a>
+            </li>
+        </ul>
+    </nav>
+}

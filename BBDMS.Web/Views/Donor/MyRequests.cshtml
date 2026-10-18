@@ -1,0 +1,104 @@
+@model IEnumerable<BBDMS.Model.Models.Entities.BloodRequest>
+@{
+    Layout = "_DonorLayout";
+    ViewData["Title"] = "My Requests";
+    var community = ViewBag.CommunityRequests as IEnumerable<BBDMS.Model.Models.Entities.BloodRequest>
+                    ?? Enumerable.Empty<BBDMS.Model.Models.Entities.BloodRequest>();
+    var combined = (Model ?? Enumerable.Empty<BBDMS.Model.Models.Entities.BloodRequest>())
+                    .Concat(community)
+                    .OrderByDescending(r => r.ID)
+                    .ToList();
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1">Track Your Blood Requests</h4>
+        <p class="text-muted mb-0">Monitor the status of blood and emergency requests.</p>
+    </div>
+    <a asp-controller="Emergency" asp-action="CreateBloodRequest" class="btn btn-brand-red">
+        <i class="fas fa-plus"></i> New Request
+    </a>
+</div>
+
+<!-- Status filter tabs -->
+<div class="seg-tabs mb-3" id="reqTabs">
+    <button type="button" class="active" data-filter="all">All</button>
+    <button type="button" data-filter="Pending">Pending</button>
+    <button type="button" data-filter="Accepted">Accepted</button>
+    <button type="button" data-filter="Fulfilled">Completed</button>
+    <button type="button" data-filter="Rejected">Rejected</button>
+</div>
+
+<div class="card-modern p-0">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0" id="reqTable">
+            <thead>
+                <tr>
+                    <th class="ps-4">#</th>
+                    <th>Blood Group</th>
+                    <th class="d-none d-md-table-cell">Hospital / Location</th>
+                    <th class="d-none d-sm-table-cell">Units</th>
+                    <th>Status</th>
+                    <th class="d-none d-lg-table-cell">Date</th>
+                    <th class="text-end pe-4">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (combined.Any())
+                {
+                    var i = 1;
+                    foreach (var req in combined)
+                    {
+                        var status = string.IsNullOrEmpty(req.Status) ? "Pending" : req.Status;
+                        <tr data-status="@status">
+                            <td class="ps-4 fw-semibold text-muted">@i</td>
+                            <td><span class="badge-soft-danger">@(req.BloodGroup ?? req.BloodRequireFor)</span></td>
+                            <td class="d-none d-md-table-cell">
+                                <div class="fw-semibold text-dark">@(req.HospitalName ?? "Emergency Facility")</div>
+                                <div class="small text-muted"><i class="fas fa-map-marker-alt text-danger me-1"></i>@(req.Location ?? "—")</div>
+                            </td>
+                            <td class="d-none d-sm-table-cell">@req.UnitsRequired Unit@(req.UnitsRequired > 1 ? "s" : "")</td>
+                            <td>
+                                @{
+                                    var cls = status == "Fulfilled" || status == "Completed" ? "badge-soft-success"
+                                            : status == "Rejected" ? "badge-soft-danger"
+                                            : status == "Accepted" ? "badge-soft-primary"
+                                            : "badge-soft-warning";
+                                }
+                                <span class="@cls">@status</span>
+                            </td>
+                            <td class="d-none d-lg-table-cell small text-muted">@(req.ApplyDate?.ToString("MMM dd, yyyy") ?? "—")</td>
+                            <td class="text-end pe-4">
+                                <a asp-controller="Emergency" asp-action="RequestDetails" asp-route-id="@req.ID" class="btn btn-sm btn-brand-outline">View</a>
+                            </td>
+                        </tr>
+                        i++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block text-muted"></i>No requests yet.
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('reqTabs').addEventListener('click', function (e) {
+            var btn = e.target.closest('button[data-filter]');
+            if (!btn) return;
+            this.querySelectorAll('button').forEach(function (b) { b.classList.remove('active'); });
+            btn.classList.add('active');
+            var filter = btn.getAttribute('data-filter');
+            document.querySelectorAll('#reqTable tbody tr[data-status]').forEach(function (row) {
+                row.style.display = (filter === 'all' || row.getAttribute('data-status') === filter) ? '' : 'none';
+            });
+        });
+    </script>
+}
