@@ -3,114 +3,148 @@
     ViewData["Title"] = "Emergency Ambulance Request";
 }
 
-<section class="page-hero-sm" style="background:linear-gradient(135deg,#e63946 0%,#9b1a26 100%); color:#fff; padding:56px 0 40px;">
+<section class="page-head">
     <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2" style="background:transparent; padding:0;">
-                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white-50">Home</a></li>
-                <li class="breadcrumb-item"><a asp-controller="Emergency" asp-action="Ambulances" class="text-white-50">Ambulances</a></li>
-                <li class="breadcrumb-item active text-white" aria-current="page">Request Dispatch</li>
+        <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-action="Ambulances">Ambulances</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Request dispatch</li>
             </ol>
         </nav>
-        <h1 class="fw-bold mb-1" style="font-size:2rem;">Emergency Ambulance Dispatch</h1>
-        <p class="mb-0 text-white-50">Submit an urgent dispatch request &mdash; our ambulance team will call you immediately.</p>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Dispatch request</p>
+                <h1>Book an ambulance dispatch.</h1>
+                <p>Give us the pickup point and the patient's condition. The dispatch team calls you back immediately to confirm the nearest vehicle.</p>
+            </div>
+            <div class="page-head-actions">
+                <a asp-action="TrackAmbulance" class="btn btn-ghost">
+                    <i class="fas fa-location-crosshairs" aria-hidden="true"></i> Track a dispatch
+                </a>
+                <a asp-action="Ambulances" class="btn btn-ghost">
+                    <i class="fas fa-truck-medical" aria-hidden="true"></i> Browse fleet
+                </a>
+            </div>
+        </div>
     </div>
 </section>
 
-<section class="py-5" style="background:#f8fafc;">
-    <div class="container py-2">
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="card-modern p-4 p-md-5">
+<section class="section-tight">
+    <div class="container">
+        <div class="form-layout">
+            <div class="form-main">
+                <form method="post" asp-action="RequestAmbulance" class="panel">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="AmbulanceServiceId" />
+
                     @if (ViewBag.SelectedProvider != null)
                     {
-                        <div class="alert alert-info d-flex align-items-center mb-4" role="alert">
-                            <i class="fas fa-info-circle fa-lg me-3"></i>
+                        <div class="alert alert-info" role="status">
+                            <i class="fas fa-circle-info" aria-hidden="true"></i>
                             <div>
-                                Requesting dispatch from: <strong>@ViewBag.SelectedProvider</strong>
+                                Requesting dispatch from <strong>@ViewBag.SelectedProvider</strong>
                                 @if (ViewBag.AmbulanceType != null)
                                 {
-                                    <span class="badge-soft-primary ms-2">@ViewBag.AmbulanceType</span>
+                                    <span class="badge-soft" style="margin-left:8px;">@ViewBag.AmbulanceType</span>
                                 }
                             </div>
                         </div>
                     }
 
-                    <div class="mb-4 pb-3 border-bottom">
-                        <h4 class="fw-bold text-dark mb-1">
-                            <i class="fas fa-ambulance me-2 text-danger"></i>Patient &amp; Pickup Information
-                        </h4>
-                        <p class="text-muted small mb-0">Fill out the pickup location so the driver can navigate to you promptly.</p>
+                    <div class="form-section is-first">
+                        <h3 class="form-section-title">Patient &amp; contact</h3>
+                        <div class="field-grid">
+                            <div>
+                                <label asp-for="PatientName">Patient name <span class="req">*</span></label>
+                                <input asp-for="PatientName" class="form-control" placeholder="Patient's full name" required autocomplete="name" />
+                                <span asp-validation-for="PatientName" class="field-validation-error"></span>
+                            </div>
+                            <div>
+                                <label asp-for="ContactNumber">Emergency contact phone <span class="req">*</span></label>
+                                <input asp-for="ContactNumber" type="tel" class="form-control" placeholder="e.g. 01712345678" required autocomplete="tel" />
+                                <span asp-validation-for="ContactNumber" class="field-validation-error"></span>
+                            </div>
+                        </div>
                     </div>
 
-                    <form method="post" asp-action="RequestAmbulance">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" asp-for="AmbulanceServiceId" />
-
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="PatientName" class="form-label fw-semibold">Patient Name <span class="text-danger">*</span></label>
-                                <input asp-for="PatientName" class="form-control form-control-modern" placeholder="Patient's full name" required />
-                                <span asp-validation-for="PatientName" class="text-danger small"></span>
+                    <div class="form-section">
+                        <h3 class="form-section-title">Pickup &amp; destination</h3>
+                        <div class="field-grid">
+                            <div class="span-2">
+                                <label asp-for="PickupAddress">Pickup address &amp; landmarks <span class="req">*</span></label>
+                                <textarea asp-for="PickupAddress" class="form-control" rows="3" placeholder="House / road number, area and a recognisable landmark…" required></textarea>
+                                <span asp-validation-for="PickupAddress" class="field-validation-error"></span>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="ContactNumber" class="form-label fw-semibold">Emergency Contact Phone <span class="text-danger">*</span></label>
-                                <input asp-for="ContactNumber" class="form-control form-control-modern" placeholder="e.g. 01712345678" required />
-                                <span asp-validation-for="ContactNumber" class="text-danger small"></span>
+                            <div>
+                                <label asp-for="DestinationHospital">Destination hospital</label>
+                                <input asp-for="DestinationHospital" class="form-control" placeholder="e.g. City Central Hospital" />
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="PickupAddress" class="form-label fw-semibold">Pickup Address &amp; Landmarks <span class="text-danger">*</span></label>
-                            <textarea asp-for="PickupAddress" class="form-control form-control-modern" rows="3" placeholder="Provide complete pickup address, house/road number, area and recognizable landmarks..." required></textarea>
-                            <span asp-validation-for="PickupAddress" class="text-danger small"></span>
-                        </div>
-
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label asp-for="DestinationHospital" class="form-label fw-semibold">Destination Hospital (if decided)</label>
-                                <input asp-for="DestinationHospital" class="form-control form-control-modern" placeholder="e.g. City Central Hospital" />
+                            <div>
+                                <label asp-for="AmbulanceType">Required ambulance type</label>
+                                <select asp-for="AmbulanceType" class="form-select">
+                                    <option value="Advanced Life Support (ALS) / ICU">Advanced life support (ICU)</option>
+                                    <option value="Basic Life Support (BLS)">Basic life support</option>
+                                    <option value="AC Ambulance">AC ambulance</option>
+                                    <option value="Non-AC Ambulance">Non-AC ambulance</option>
+                                    <option value="Neonatal ICU Ambulance">Neonatal ICU ambulance</option>
+                                </select>
                             </div>
-                            <div class="col-md-6">
-                                <label asp-for="AmbulanceType" class="form-label fw-semibold">Required Ambulance Type</label>
-                                <select asp-for="AmbulanceType" class="form-select form-control-modern">
-                                    <option value="Advanced Life Support (ALS) / ICU">Advanced Life Support (ALS) / ICU</option>
-                                    <option value="Basic Life Support (BLS)">Basic Life Support (BLS)</option>
-                                    <option value="AC Ambulance">AC Ambulance</option>
-                                    <option value="Non-AC Ambulance">Non-AC Ambulance</option>
-                                    <option value="Neonatal ICU Ambulance">Neonatal ICU Ambulance</option>
+                            <div class="span-2">
+                                <label asp-for="Urgency">Urgency</label>
+                                <select asp-for="Urgency" class="form-select">
+                                    <option value="Emergency (Immediate Dispatch)">Emergency — dispatch immediately</option>
+                                    <option value="Urgent (Within 1 Hour)">Urgent — within an hour</option>
+                                    <option value="Scheduled Patient Transfer">Scheduled patient transfer</option>
                                 </select>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="mb-3">
-                            <label asp-for="Urgency" class="form-label fw-semibold">Urgency Level</label>
-                            <select asp-for="Urgency" class="form-select form-control-modern">
-                                <option value="Emergency (Immediate Dispatch)">Emergency (Immediate Dispatch)</option>
-                                <option value="Urgent (Within 1 Hour)">Urgent (Within 1 Hour)</option>
-                                <option value="Scheduled Patient Transfer">Scheduled Patient Transfer</option>
-                            </select>
-                        </div>
+                    <div class="form-section">
+                        <h3 class="form-section-title">Medical notes <span class="optional">optional</span></h3>
+                        <label asp-for="Notes" class="sr-only">Medical condition or special instructions</label>
+                        <textarea asp-for="Notes" class="form-control" rows="3" placeholder="Oxygen needed, stretcher required, cardiac condition…"></textarea>
+                    </div>
 
-                        <div class="mb-4">
-                            <label asp-for="Notes" class="form-label fw-semibold">Medical Condition / Special Instructions</label>
-                            <textarea asp-for="Notes" class="form-control form-control-modern" rows="2" placeholder="Briefly describe patient's condition (e.g. Oxygen needed, stretcher needed, cardiac issue)..."></textarea>
-                        </div>
-
-                        <div class="text-center pt-3 border-top">
-                            <button type="submit" class="btn btn-brand-red px-5 py-2 fs-6">
-                                <i class="fas fa-bell me-2"></i>Submit Emergency Dispatch Request
-                            </button>
-                            <p class="small text-muted mt-3 mb-2">You will be taken to a live status timeline for this dispatch as soon as you submit.</p>
-                            <div class="d-flex flex-wrap justify-content-center gap-3">
-                                <a asp-action="TrackAmbulance" class="small"><i class="fas fa-satellite-dish me-1"></i>Already booked? Track it</a>
-                                <a asp-action="AmbulanceContact" class="small"><i class="fas fa-phone-volume me-1"></i>Emergency contacts</a>
-                                <a asp-action="Ambulances" class="text-muted small">Back to ambulance fleets</a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-blood">
+                            <i class="fas fa-bell" aria-hidden="true"></i> Request dispatch
+                        </button>
+                        <p class="form-note">You will be taken to a live status timeline as soon as the request is submitted.</p>
+                    </div>
+                </form>
             </div>
+
+            <aside class="form-aside">
+                <div class="panel panel-ink">
+                    <p class="eyebrow" style="color:rgba(255,246,238,.55)">Dispatch line</p>
+                    <h2 class="hotline">
+                        <i class="fas fa-truck-medical" aria-hidden="true"></i>
+                        <a href="tel:999">999</a>
+                    </h2>
+                    <p class="panel-note">Life-threatening emergency? Call 999 now, then submit this form so the nearest vehicle is reserved.</p>
+
+                    <div style="margin-top: var(--s5);">
+                        <span class="meta-label">What happens next</span>
+                        <ol class="rail-list">
+                            <li><strong>Dispatch calls you</strong> to confirm the pickup and patient condition.</li>
+                            <li><strong>A vehicle is assigned</strong> and appears on your tracking timeline.</li>
+                            <li><strong>You track arrival</strong> with the token generated for this request.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="panel panel-quiet">
+                    <span class="meta-label">Area contacts</span>
+                    <p class="panel-note" style="margin-bottom:14px">Local ambulance and hospital emergency numbers, no form required.</p>
+                    <a asp-action="AmbulanceContact" class="link-arrow">Emergency contacts <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </aside>
         </div>
     </div>
 </section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

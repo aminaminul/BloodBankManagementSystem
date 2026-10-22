@@ -1,310 +1,299 @@
 @model BBDMS.Model.Models.ViewModels.HomeIndexViewModel
+@using System.Linq
 @{
-    ViewData["Title"] = "Find Blood & Emergency Help";
+    ViewData["Title"] = "Find blood and emergency help";
     var helpline = Model.ContactInfo != null && !string.IsNullOrEmpty(Model.ContactInfo.ContactNo)
         ? Model.ContactInfo.ContactNo : "999";
+
+    var donors = (Model.ActiveDonors ?? Enumerable.Empty<BBDMS.Model.Models.Entities.BloodDonor>()).Take(8).ToList();
+    var urgent = (Model.UrgentRequests ?? Enumerable.Empty<BBDMS.Model.Models.Entities.BloodRequest>()).Take(3).ToList();
+    var hospitals = (Model.FeaturedHospitals ?? Enumerable.Empty<BBDMS.Model.Models.Entities.Hospital>()).Take(3).ToList();
+
+    var services = new[]
+    {
+        new { Ctrl = "Donor", Act = "Search", Icon = "fa-droplet", Name = "Blood donors", Note = "Find a compatible donor by group and city", Count = Model.TotalDonors, Unit = "registered" },
+        new { Ctrl = "Emergency", Act = "Hospitals", Icon = "fa-hospital", Name = "Hospitals & ICU", Note = "Live emergency and critical-care capacity", Count = Model.TotalHospitals, Unit = "facilities" },
+        new { Ctrl = "Emergency", Act = "BloodBanks", Icon = "fa-building", Name = "Blood banks", Note = "Check stock across registered centres", Count = Model.TotalBloodBanks, Unit = "centres" },
+        new { Ctrl = "Emergency", Act = "Ambulances", Icon = "fa-ambulance", Name = "Ambulance", Note = "Request rapid patient transport", Count = Model.TotalAmbulances, Unit = "vehicles" },
+        new { Ctrl = "Emergency", Act = "Oxygen", Icon = "fa-lungs", Name = "Medical oxygen", Note = "Cylinder supply, refills and delivery", Count = Model.TotalOxygenSuppliers, Unit = "providers" }
+    };
 }
 
-@* ══════════════════════════════════════════════════
-   HERO — light, headline + CTA + hero media
-   ══════════════════════════════════════════════════ *@
-<section class="hero-modern section-full">
+@* ═══════════════════════════ HERO ═══════════════════════════ *@
+<section class="hero">
     <div class="container">
-        <div class="row align-items-center g-5">
+        <div class="hero-grid">
+            <div class="hero-copy">
+                <p class="eyebrow"><span class="live-dot" aria-hidden="true" style="margin-right:2px"></span> National blood &amp; emergency network</p>
 
-            @* ── Left: Headline + CTA ── *@
-            <div class="col-lg-7">
-                <div class="hero-badge">
-                    <i class="fas fa-heartbeat"></i> Together We Donate
-                </div>
                 <h1 class="hero-title">
-                    Find Blood.<br />
-                    <span>Save a Life.</span>
+                    <span class="hero-line"><span style="--mo-delay:60ms">Find blood.</span></span>
+                    <span class="hero-line"><span style="--mo-delay:180ms"><em>Save a life.</em></span></span>
                 </h1>
-                <p class="hero-subtitle">
-                    Access blood donors, hospitals, blood banks, ambulances and medical
-                    oxygen services — all from one trusted emergency healthcare platform.
+
+                <p class="hero-lede">
+                    Donors, hospitals, blood banks, ambulances and medical oxygen — one trusted
+                    platform for the moments when every minute matters.
                 </p>
 
-                <div class="d-flex flex-wrap gap-3 mb-4">
-                    <a asp-controller="Donor" asp-action="Search" class="btn btn-brand-red">
-                        <i class="fas fa-tint"></i> Find Blood
+                <div class="hero-actions">
+                    <a asp-controller="Donor" asp-action="Search" class="btn btn-blood btn-lg" data-magnetic>
+                        <i class="fas fa-droplet" aria-hidden="true"></i> Find blood
+                        <span class="sheen" aria-hidden="true"></span>
                     </a>
-                    <a asp-controller="Emergency" asp-action="Index" class="btn btn-brand-outline">
-                        Emergency Help <i class="fas fa-arrow-right ms-1"></i>
+                    <a asp-controller="Emergency" asp-action="Index" class="btn btn-ghost btn-lg">
+                        Emergency help <i class="fas fa-arrow-right" aria-hidden="true"></i>
                     </a>
                 </div>
 
-                @* Instant donor search *@
-                <div class="hero-search-card">
-                    <form asp-controller="Donor" asp-action="Search" method="get">
-                        <div class="row g-2 align-items-end">
-                            <div class="col-sm-5">
-                                <label class="form-label mb-1"><i class="fas fa-tint text-danger me-1"></i>Blood Group</label>
-                                <select name="bloodGroup" class="form-select form-control-modern">
-                                    <option value="">Select Group</option>
-                                    @if (Model.BloodGroups != null)
-                                    {
-                                        foreach (var bg in Model.BloodGroups)
-                                        {
-                                            <option value="@bg.GroupName">@bg.GroupName</option>
-                                        }
-                                    }
-                                </select>
-                            </div>
-                            <div class="col-sm-4">
-                                <label class="form-label mb-1"><i class="fas fa-map-marker-alt text-danger me-1"></i>Location</label>
-                                <input type="text" name="location" class="form-control form-control-modern" placeholder="e.g. Dhaka" />
-                            </div>
-                            <div class="col-sm-3">
-                                <button type="submit" class="btn btn-brand-red w-100">
-                                    <i class="fas fa-search"></i> Find
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            @* ── Right: Hero Media ── *@
-            <div class="col-lg-5">
-                <div class="hero-media">
-                    <img src="~/images/banner1.jpg" alt="Emergency Hospital" />
-                    <div class="hero-media-badge">
+                <form asp-controller="Donor" asp-action="Search" method="get" class="intake" role="search" aria-label="Donor search">
+                    <div class="intake-grid">
                         <div>
-                            <div class="num">24/7</div>
-                            <div class="lbl">Emergency Service</div>
+                            <label for="heroGroup">Blood group</label>
+                            <select id="heroGroup" name="bloodGroup" class="form-select">
+                                <option value="">Any group</option>
+                                @if (Model.BloodGroups != null)
+                                {
+                                    foreach (var bg in Model.BloodGroups)
+                                    {
+                                        <option value="@bg.GroupName">@bg.GroupName</option>
+                                    }
+                                }
+                            </select>
                         </div>
-                        <a href="tel:@helpline" class="btn btn-brand-red btn-sm">
-                            <i class="fas fa-phone"></i> Call Now
-                        </a>
+                        <div>
+                            <label for="heroLocation">City or area</label>
+                            <input id="heroLocation" type="text" name="location" class="form-control" placeholder="e.g. Dhaka, Chattogram" autocomplete="address-level2" />
+                        </div>
+                        <button type="submit" class="btn btn-ink">
+                            Search <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </button>
                     </div>
+                    <div class="intake-foot">
+                        <span><i class="fas fa-shield-halved" aria-hidden="true" style="color:var(--signal);margin-right:4px"></i> Contact details are shared only with signed-in donors.</span>
+                        <a class="link-arrow" asp-controller="Home" asp-action="Compatibility" style="font-size:.8rem">Compatibility guide</a>
+                    </div>
+                </form>
+            </div>
+
+            @* ── Live emergency board ── *@
+            <aside class="board" aria-label="Active emergency blood requests">
+                <div class="board-head">
+                    <h2 class="board-title">Active emergency requests</h2>
+                    @if (urgent.Any())
+                    {
+                        <span class="live-pill"><span class="live-dot" aria-hidden="true"></span> Live</span>
+                    }
+                    else
+                    {
+                        <span class="live-pill is-idle"><span class="live-dot" aria-hidden="true"></span> Clear</span>
+                    }
                 </div>
-            </div>
 
-        </div>
-    </div>
-</section>
+                <div class="board-body">
+                    @if (urgent.Any())
+                    {
+                        foreach (var req in urgent)
+                        {
+                            var group = req.BloodGroup ?? req.BloodRequireFor;
+                            var critical = req.Urgency != null && req.Urgency.Contains("Critical", StringComparison.OrdinalIgnoreCase);
+                            <a class="board-row" asp-controller="Emergency" asp-action="RequestDetails" asp-route-id="@req.ID">
+                                <span class="board-group">@group</span>
+                                <span style="min-width:0">
+                                    <span class="board-name">@(string.IsNullOrEmpty(req.HospitalName) ? "Emergency ward" : req.HospitalName)</span>
+                                    <span class="board-meta">
+                                        @(string.IsNullOrEmpty(req.Location) ? "Location on request" : req.Location)
+                                        · @req.UnitsRequired unit@(req.UnitsRequired > 1 ? "s" : "")
+                                        · @(req.ApplyDate.HasValue ? req.ApplyDate.Value.ToString("dd MMM") : "today")
+                                    </span>
+                                </span>
+                                <span class="board-go" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+                            </a>
+                        }
+                    }
+                    else
+                    {
+                        <div class="board-empty">
+                            <i class="fas fa-circle-check" aria-hidden="true"></i>
+                            <p>No open emergency requests right now.</p>
+                            <span class="meta" style="color:rgba(255,246,238,.45)">New requests appear here in real time.</span>
+                        </div>
+                    }
+                </div>
 
-@* ══════════════════════════════════════════════════
-   SERVICE ROW — five core emergency services
-   ══════════════════════════════════════════════════ *@
-<section class="services-section section-full">
-    <div class="container">
-        <div class="row g-3">
-            <div class="col-6 col-lg">
-                <a asp-controller="Donor" asp-action="Search" class="service-cat-card">
-                    <div class="service-icon-box"><i class="fas fa-users"></i></div>
-                    <h6 class="fw-bold mb-1">Blood Donors</h6>
-                    <small class="text-muted d-block">Find ready donors by group &amp; area</small>
-                </a>
-            </div>
-            <div class="col-6 col-lg">
-                <a asp-controller="Emergency" asp-action="Hospitals" class="service-cat-card">
-                    <div class="service-icon-box"><i class="fas fa-hospital"></i></div>
-                    <h6 class="fw-bold mb-1">Hospitals</h6>
-                    <small class="text-muted d-block">Live emergency &amp; ICU beds</small>
-                </a>
-            </div>
-            <div class="col-6 col-lg">
-                <a asp-controller="Emergency" asp-action="BloodBanks" class="service-cat-card">
-                    <div class="service-icon-box"><i class="fas fa-landmark"></i></div>
-                    <h6 class="fw-bold mb-1">Blood Banks</h6>
-                    <small class="text-muted d-block">Check stock across centers</small>
-                </a>
-            </div>
-            <div class="col-6 col-lg">
-                <a asp-controller="Emergency" asp-action="Ambulances" class="service-cat-card">
-                    <div class="service-icon-box"><i class="fas fa-ambulance"></i></div>
-                    <h6 class="fw-bold mb-1">Ambulance</h6>
-                    <small class="text-muted d-block">Request rapid transport</small>
-                </a>
-            </div>
-            <div class="col-6 col-lg">
-                <a asp-controller="Emergency" asp-action="Oxygen" class="service-cat-card">
-                    <div class="service-icon-box"><i class="fas fa-lungs"></i></div>
-                    <h6 class="fw-bold mb-1">Oxygen Services</h6>
-                    <small class="text-muted d-block">Find oxygen providers nearby</small>
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
+                <div class="board-stats">
+                    <div class="board-stat"><b data-count-to="@Model.TotalDonors">@Model.TotalDonors</b><span>Donors</span></div>
+                    <div class="board-stat"><b data-count-to="@Model.TotalAvailableIcuBeds">@Model.TotalAvailableIcuBeds</b><span>ICU beds free</span></div>
+                    <div class="board-stat"><b data-count-to="@Model.TotalAmbulances">@Model.TotalAmbulances</b><span>Ambulances</span></div>
+                </div>
 
-<!-- Interactive Compatibility & Quiz Banner -->
-<div class="container my-4">
-    <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px;">
-        <div class="card-body p-4 text-white d-flex flex-column flex-md-row justify-content-between align-items-center">
-            <div class="mb-3 mb-md-0">
-                <span class="badge badge-danger text-uppercase px-2 py-1 mb-2 font-weight-bold">
-                    <i class="fas fa-heartbeat mr-1"></i> Interactive Compatibility Guide
-                </span>
-                <h4 class="font-weight-bold mb-1 text-white">Can you donate blood today? Check compatibility!</h4>
-                <p class="text-white-50 mb-0 small">
-                    Explore our visual blood matching matrix and take the quick 60-second eligibility self-screening.
-                </p>
-            </div>
-            <div>
-                <a asp-controller="Home" asp-action="Compatibility" class="btn btn-brand-red font-weight-bold px-4 py-2 shadow text-nowrap">
-                    <i class="fas fa-play-circle mr-1"></i> Check Eligibility Now
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-@* ══════════════════════════════════════════════════
-   STATS STRIP
-   ══════════════════════════════════════════════════ *@
-<div class="stats-strip section-full">
-    <div class="stats-strip-inner">
-        <div class="stat-item">
-            <div class="stat-number text-danger"><i class="fas fa-tint"></i>@Model.TotalDonors</div>
-            <div class="stat-label">Registered Donors</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number text-primary"><i class="fas fa-hospital"></i>@Model.TotalHospitals</div>
-            <div class="stat-label">Hospitals</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number" style="color:var(--violet);"><i class="fas fa-landmark"></i>@Model.TotalBloodBanks</div>
-            <div class="stat-label">Blood Banks</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number text-warning"><i class="fas fa-ambulance"></i>@Model.TotalAmbulances</div>
-            <div class="stat-label">Ambulances</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number text-info"><i class="fas fa-lungs"></i>@Model.TotalOxygenSuppliers</div>
-            <div class="stat-label">Oxygen Providers</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number text-success"><i class="fas fa-bed"></i>@Model.TotalAvailableIcuBeds</div>
-            <div class="stat-label">ICU Beds Available</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number text-danger"><i class="fas fa-heartbeat"></i>@Model.TotalActiveRequests</div>
-            <div class="stat-label">Active Requests</div>
-        </div>
-    </div>
-</div>
-
-@* ══════════════════════════════════════════════════
-   BLOOD GROUP DIRECTORY
-   ══════════════════════════════════════════════════ *@
-@if (Model.BloodGroups != null && Model.BloodGroups.Any())
-{
-    <section class="bloodgroup-strip section-full">
-        <div class="container">
-            <div class="text-center mb-4">
-                <h2 class="section-title">Blood Groups Directory</h2>
-                <p class="section-sub">Select a blood group to instantly find available registered donors</p>
-            </div>
-            <div class="d-flex flex-wrap justify-content-center gap-3">
-                @foreach (var bg in Model.BloodGroups)
-                {
-                    <a asp-controller="Donor" asp-action="Search" asp-route-bloodGroup="@bg.GroupName" class="blood-group-chip">
-                        <i class="fas fa-tint" style="font-size:.8rem;"></i>@bg.GroupName
+                <div class="board-foot">
+                    <a class="link-arrow" asp-controller="Emergency" asp-action="BloodRequests" style="font-size:.8rem">
+                        All requests <i class="fas fa-arrow-right" aria-hidden="true"></i>
                     </a>
-                }
-            </div>
-        </div>
-    </section>
-}
-
-@* ══════════════════════════════════════════════════
-   URGENT BLOOD REQUESTS
-   ══════════════════════════════════════════════════ *@
-@if (Model.UrgentRequests != null && Model.UrgentRequests.Any())
-{
-    <section class="urgent-section section-full">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-                <div>
-                    <h2 class="section-title text-danger"><i class="fas fa-exclamation-circle me-2"></i>Active Urgent Blood Needs</h2>
-                    <p class="section-sub">Patients currently awaiting blood transfusions</p>
+                    <span class="meta">@Model.TotalActiveRequests open</span>
                 </div>
-                <a asp-controller="Emergency" asp-action="BloodRequests" class="btn btn-brand-outline">
-                    View All <i class="fas fa-arrow-right ms-1"></i>
-                </a>
-            </div>
 
-            <div class="row g-4">
-                @foreach (var req in Model.UrgentRequests)
-                {
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card-modern h-100 d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-3 gap-2">
-                                <span class="badge-soft-danger" style="font-size:.95rem;">
-                                    <i class="fas fa-tint"></i>@(req.BloodGroup ?? req.BloodRequireFor)
-                                </span>
-                                <span class="@(req.Urgency == "Critical" || req.Urgency?.Contains("Critical") == true ? "badge-soft-danger" : "badge-soft-warning")">
-                                    @req.Urgency
-                                </span>
-                            </div>
-                            <h5 class="fw-bold mb-1 text-dark">@req.Name</h5>
-                            <p class="section-sub mb-2"><i class="fas fa-hospital me-1 text-danger"></i>@req.HospitalName, @req.Location</p>
-                            <p class="text-dark small mb-3">
-                                <strong>Reason:</strong> @req.BloodRequireFor
-                                (@req.UnitsRequired Unit@(req.UnitsRequired > 1 ? "s" : ""))
-                            </p>
-                            <div class="pt-3 border-top d-flex justify-content-between align-items-center mt-auto">
-                                <span class="small text-muted">
-                                    <i class="far fa-clock me-1"></i>
-                                    @(req.ApplyDate.HasValue ? req.ApplyDate.Value.ToString("MMM dd") : "Recent")
-                                </span>
-                                <a asp-controller="Emergency" asp-action="RequestDetails" asp-route-id="@req.ID" class="btn btn-sm btn-brand-red fw-bold">Respond</a>
-                            </div>
-                        </div>
-                    </div>
-                }
+                <a class="board-helpline" href="tel:@helpline">
+                    <i class="fas fa-phone-volume" aria-hidden="true"></i>
+                    <span class="lbl">24/7 helpline</span>
+                    <span class="tel">@helpline</span>
+                </a>
+            </aside>
+        </div>
+    </div>
+</section>
+
+@* ═══════════════════════════ NETWORK AT A GLANCE ═══════════════════════════ *@
+<section class="section-tight band-surface rule-bottom" id="network" aria-label="Network at a glance" style="padding-top:0;padding-bottom:0">
+    <div class="container">
+        <div class="stat-strip" data-motion-stagger>
+            <div class="stat-cell">
+                <span class="stat-val" data-count-to="@Model.TotalDonors">@Model.TotalDonors</span>
+                <span class="stat-cap">Registered donors</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-val" data-count-to="@Model.TotalHospitals">@Model.TotalHospitals</span>
+                <span class="stat-cap">Hospitals</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-val" data-count-to="@Model.TotalAvailableIcuBeds">@Model.TotalAvailableIcuBeds</span>
+                <span class="stat-cap">ICU beds free</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-val" data-count-to="@Model.TotalAvailableEmergencyBeds">@Model.TotalAvailableEmergencyBeds</span>
+                <span class="stat-cap">Emergency beds</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-val" data-count-to="@Model.TotalBloodBanks">@Model.TotalBloodBanks</span>
+                <span class="stat-cap">Blood banks</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-val" data-count-to="@Model.TotalAmbulances">@Model.TotalAmbulances</span>
+                <span class="stat-cap">Ambulances</span>
+            </div>
+            <div class="stat-cell">
+                <span class="stat-val" data-count-to="@Model.TotalActiveRequests">@Model.TotalActiveRequests</span>
+                <span class="stat-cap">Active requests</span>
             </div>
         </div>
-    </section>
-}
+    </div>
+</section>
 
-@* ══════════════════════════════════════════════════
-   AVAILABLE DONORS
-   ══════════════════════════════════════════════════ *@
-<section class="donors-section section-full">
+@* ═══════════════════════════ SERVICE INDEX ═══════════════════════════ *@
+<section class="section" id="services" aria-labelledby="servicesHeading">
     <div class="container">
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-            <div>
-                <h2 class="section-title">Available Lifesaver Donors</h2>
-                <p class="section-sub">Voluntary community donors registered in our system</p>
+        <div class="section-head">
+            <div class="section-head-copy">
+                <p class="eyebrow">What you need, when you need it</p>
+                <h2 id="servicesHeading" class="section-title">Five services. One emergency network.</h2>
             </div>
-            <a asp-controller="Donor" asp-action="Search" class="btn btn-brand-outline">
-                Search All Donors <i class="fas fa-search ms-1"></i>
+            <a class="link-arrow" asp-controller="Emergency" asp-action="Index">
+                Open the emergency hub <i class="fas fa-arrow-right" aria-hidden="true"></i>
             </a>
         </div>
 
-        @if (Model.ActiveDonors != null && Model.ActiveDonors.Any())
-        {
-            <div class="row g-4">
-                @foreach (var donor in Model.ActiveDonors)
+        <div class="service-index" data-motion-stagger>
+            @foreach (var s in services)
+            {
+                <a class="service-cell" asp-controller="@s.Ctrl" asp-action="@s.Act">
+                    <span class="ico"><i class="fas @s.Icon" aria-hidden="true"></i></span>
+                    <span>
+                        <span class="svc-name d-block">@s.Name</span>
+                        <span class="svc-note d-block">@s.Note</span>
+                    </span>
+                    <span class="svc-count">
+                        <span><span class="num">@s.Count</span> @s.Unit</span>
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    </span>
+                </a>
+            }
+        </div>
+    </div>
+</section>
+
+@* ═══════════════════════════ BLOOD GROUP INDEX ═══════════════════════════ *@
+@if (Model.BloodGroups != null && Model.BloodGroups.Any())
+{
+    <section class="group-band" id="groups" aria-labelledby="groupsHeading">
+        <div class="container">
+            <div class="section-head" style="margin-bottom:32px">
+                <div class="section-head-copy">
+                    <p class="eyebrow">Blood group index</p>
+                    <h2 id="groupsHeading" class="section-title">Start with your group.</h2>
+                </div>
+                <p class="section-sub" style="max-width:34ch">
+                    Pick a blood group to see every registered donor who can help, then filter by city.
+                </p>
+            </div>
+
+            <div class="group-grid" data-motion-stagger>
+                @foreach (var bg in Model.BloodGroups)
                 {
-                    var initials = string.Concat((donor.FullName ?? "D").Split(' ').Take(2).Select(s => s.Length > 0 ? s[0] : ' ')).ToUpper();
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card-modern h-100 d-flex flex-column">
-                            <div class="d-flex align-items-center gap-3 mb-3">
-                                <div class="avatar-circle">@initials</div>
-                                <div class="flex-grow-1 overflow-hidden">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="fw-bold mb-0 text-truncate">@donor.FullName</h6>
-                                        <span class="badge-soft-danger ms-2 flex-shrink-0">@donor.BloodGroup</span>
+                    <a class="group-cell" asp-controller="Donor" asp-action="Search" asp-route-bloodGroup="@bg.GroupName"
+                       aria-label="Find @bg.GroupName donors">
+                        <span class="g">@bg.GroupName</span>
+                        <span class="lbl">Find donors <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+@* ═══════════════════════════ DONOR LEDGER ═══════════════════════════ *@
+<section class="section" id="donors" aria-labelledby="donorsHeading">
+    <div class="container">
+        <div class="section-head">
+            <div class="section-head-copy">
+                <p class="eyebrow">Available now</p>
+                <h2 id="donorsHeading" class="section-title">Lifesavers in the network.</h2>
+                <p class="section-sub">Voluntary donors registered with us. Contact details are visible to signed-in donors only.</p>
+            </div>
+            <a class="link-arrow" asp-controller="Donor" asp-action="Search">
+                Search all donors <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+
+        @if (donors.Any())
+        {
+            var perColumn = (int)Math.Ceiling(donors.Count / 2.0);
+            <div class="row g-4">
+                @for (var col = 0; col < 2; col++)
+                {
+                    <div class="col-lg-6">
+                        <div class="ledger">
+                            @foreach (var donor in donors.Skip(col * perColumn).Take(perColumn))
+                            {
+                                var initials = string.Concat((donor.FullName ?? "D").Split(' ').Where(p => p.Length > 0).Take(2).Select(p => p[0])).ToUpper();
+                                <div class="ledger-row" data-motion>
+                                    <span class="ledger-group">@donor.BloodGroup</span>
+                                    <div class="ledger-main" style="min-width:0">
+                                        <p class="ledger-name text-truncate">@donor.FullName</p>
+                                        <p class="ledger-sub">
+                                            <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                            <span class="text-truncate">@(string.IsNullOrEmpty(donor.Address) ? "Location on request" : donor.Address)</span>
+                                            <span aria-hidden="true">·</span>
+                                            <span>@donor.Gender@(donor.Age.HasValue ? ", " + donor.Age + " yrs" : "")</span>
+                                        </p>
                                     </div>
-                                    <p class="text-muted small mb-0 text-truncate"><i class="fas fa-map-marker-alt me-1"></i>@donor.Address</p>
+                                    <div class="ledger-right">
+                                        <span class="tag @(donor.IsAvailable ? "tag-ok" : "tag-muted")">@(donor.IsAvailable ? "Available" : "Registered")</span>
+                                        @if (!string.IsNullOrEmpty(donor.MobileNumber))
+                                        {
+                                            <a class="ledger-call" href="tel:@donor.MobileNumber" aria-label="Call @donor.FullName">
+                                                <i class="fas fa-phone" aria-hidden="true"></i>
+                                            </a>
+                                        }
+                                        else
+                                        {
+                                            <span class="ledger-call is-locked" title="Sign in to view contact details" aria-label="Contact hidden">
+                                                <i class="fas fa-lock" aria-hidden="true"></i>
+                                            </span>
+                                        }
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center small text-muted mb-3">
-                                <span>@donor.Gender &bull; @(donor.Age.HasValue ? donor.Age + " yrs" : "—")</span>
-                                <span class="badge-soft-success"><i class="fas fa-check-circle"></i>@(donor.IsAvailable ? "Available" : "Registered")</span>
-                            </div>
-                            <div class="pt-3 border-top mt-auto">
-                                <a href="tel:@donor.MobileNumber" class="btn btn-brand-outline w-100 btn-sm">
-                                    <i class="fas fa-phone"></i> Contact Donor
-                                </a>
-                            </div>
+                            }
                         </div>
                     </div>
                 }
@@ -312,82 +301,199 @@
         }
         else
         {
-            <div class="text-center py-5">
-                <i class="fas fa-users fa-3x text-muted mb-3 d-block"></i>
-                <h5 class="text-muted">No donors listed yet.</h5>
-                <a asp-controller="Account" asp-action="Register" class="btn btn-brand-red mt-3"><i class="fas fa-heart me-1"></i> Become a Donor</a>
+            <div class="empty-state">
+                <i class="fas fa-user-plus" aria-hidden="true"></i>
+                <h4>No donors listed yet</h4>
+                <p>Be the first in your area to join the network and receive emergency match notifications.</p>
+                <a class="btn btn-blood" asp-controller="Account" asp-action="Register">
+                    <i class="fas fa-droplet" aria-hidden="true"></i> Become a donor
+                </a>
             </div>
         }
     </div>
 </section>
 
-@* ══════════════════════════════════════════════════
-   HOSPITALS
-   ══════════════════════════════════════════════════ *@
-@if (Model.FeaturedHospitals != null && Model.FeaturedHospitals.Any())
+@* ═══════════════════════════ HOSPITAL CAPACITY ═══════════════════════════ *@
+@if (hospitals.Any())
 {
-    <section class="hospitals-section section-full">
+    <section class="section band-surface rule-top rule-bottom" id="capacity" aria-labelledby="capacityHeading">
         <div class="container">
-            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
-                <div>
-                    <h2 class="section-title">Registered Hospitals &amp; ICU</h2>
-                    <p class="section-sub">Emergency facilities with live bed availability</p>
+            <div class="section-head">
+                <div class="section-head-copy">
+                    <p class="eyebrow">Live capacity</p>
+                    <h2 id="capacityHeading" class="section-title">Beds you can count on.</h2>
+                    <p class="section-sub">Emergency and intensive-care availability reported by registered hospitals.</p>
                 </div>
-                <a asp-controller="Emergency" asp-action="Hospitals" class="btn btn-brand-outline">
-                    View All Hospitals <i class="fas fa-arrow-right ms-1"></i>
+                <a class="link-arrow" asp-controller="Emergency" asp-action="Hospitals">
+                    All hospitals <i class="fas fa-arrow-right" aria-hidden="true"></i>
                 </a>
             </div>
 
-            <div class="row g-4">
-                @foreach (var hosp in Model.FeaturedHospitals)
+            <div class="capacity-grid" data-motion-stagger>
+                @foreach (var hosp in hospitals)
                 {
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card-modern h-100 d-flex flex-column">
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <h5 class="fw-bold text-dark mb-0" style="font-size:1rem;">@hosp.Name</h5>
-                                <span class="badge-soft-primary flex-shrink-0 ms-2">@hosp.City</span>
-                            </div>
-                            <p class="text-muted small mb-3"><i class="fas fa-map-marker-alt text-danger me-1"></i>@hosp.Address</p>
+                    var icuTotal = hosp.TotalIcuBeds <= 0 ? 1 : hosp.TotalIcuBeds;
+                    var erTotal = hosp.TotalEmergencyBeds <= 0 ? 1 : hosp.TotalEmergencyBeds;
+                    var icuPct = Math.Round(Math.Clamp((double)hosp.AvailableIcuBeds / icuTotal * 100, 0, 100));
+                    var erPct = Math.Round(Math.Clamp((double)hosp.AvailableEmergencyBeds / erTotal * 100, 0, 100));
+                    var icuClass = icuPct < 25 ? "is-low" : icuPct < 60 ? "is-mid" : "";
+                    var erClass = erPct < 25 ? "is-low" : erPct < 60 ? "is-mid" : "";
 
-                            <div class="row g-0 text-center mb-3 rounded overflow-hidden" style="border:1px solid var(--border); background:#f8fafc;">
-                                <div class="col-6 py-3 border-end">
-                                    <small class="text-muted d-block fw-semibold">Emergency Beds</small>
-                                    <span class="fw-bold text-success" style="font-size:1.4rem;">@hosp.AvailableEmergencyBeds</span>
-                                    <small class="text-muted"> / @hosp.TotalEmergencyBeds</small>
+                    <article class="capacity-card">
+                        <div>
+                            <h3 class="capacity-name">@hosp.Name</h3>
+                            <p class="capacity-loc">
+                                <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                <span>@hosp.City@(string.IsNullOrEmpty(hosp.Address) ? "" : " · " + hosp.Address)</span>
+                            </p>
+                        </div>
+
+                        <div>
+                            <div class="meter">
+                                <div class="meter-head">
+                                    <span class="meter-label">ICU beds</span>
+                                    <span class="meter-value"><b>@hosp.AvailableIcuBeds</b> / @hosp.TotalIcuBeds</span>
                                 </div>
-                                <div class="col-6 py-3">
-                                    <small class="text-muted d-block fw-semibold">ICU Beds</small>
-                                    <span class="fw-bold text-danger" style="font-size:1.4rem;">@hosp.AvailableIcuBeds</span>
-                                    <small class="text-muted"> / @hosp.TotalIcuBeds</small>
+                                <div class="meter-track" role="img" aria-label="@hosp.AvailableIcuBeds of @hosp.TotalIcuBeds ICU beds available">
+                                    <span class="meter-fill @icuClass" style="width:@icuPct%"></span>
                                 </div>
                             </div>
-
-                            <div class="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
-                                <span class="small fw-semibold text-danger"><i class="fas fa-phone me-1"></i>@hosp.EmergencyHelpline</span>
-                                <a href="tel:@hosp.EmergencyHelpline" class="btn btn-sm btn-brand-red">Call Helpline</a>
+                            <div class="meter">
+                                <div class="meter-head">
+                                    <span class="meter-label">Emergency beds</span>
+                                    <span class="meter-value"><b>@hosp.AvailableEmergencyBeds</b> / @hosp.TotalEmergencyBeds</span>
+                                </div>
+                                <div class="meter-track" role="img" aria-label="@hosp.AvailableEmergencyBeds of @hosp.TotalEmergencyBeds emergency beds available">
+                                    <span class="meter-fill @erClass" style="width:@erPct%"></span>
+                                </div>
                             </div>
                         </div>
-                    </div>
+
+                        <div class="capacity-foot">
+                            @if (!string.IsNullOrEmpty(hosp.EmergencyHelpline))
+                            {
+                                <a class="capacity-tel" href="tel:@hosp.EmergencyHelpline">
+                                    <i class="fas fa-phone" aria-hidden="true"></i> @hosp.EmergencyHelpline
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="capacity-tel" style="color:var(--muted)">Helpline on profile</span>
+                            }
+                            <a class="btn btn-ghost btn-sm" asp-controller="Emergency" asp-action="Hospitals">Details</a>
+                        </div>
+                    </article>
                 }
             </div>
         </div>
     </section>
 }
 
-@* ══════════════════════════════════════════════════
-   CTA BANNER
-   ══════════════════════════════════════════════════ *@
-<section class="cta-section section-full">
-    <div class="container" style="position:relative; z-index:1;">
-        <h2>Be a Donor, Be a Hero.</h2>
-        <p>Your small act can save a life. Every blood donation can save up to 3 precious lives — join our voluntary network today.</p>
-        <div class="d-flex justify-content-center flex-wrap gap-3">
-            <a asp-controller="Account" asp-action="Register" class="btn btn-light rounded-pill fw-bold px-4 shadow" style="color:var(--brand);">
-                <i class="fas fa-heart me-1"></i> Register as a Donor
-            </a>
-            <a asp-controller="Home" asp-action="About" class="btn btn-outline-light rounded-pill px-4 fw-semibold">
-                Learn How It Works
-            </a>
+@* ═══════════════════════════ ELIGIBILITY ═══════════════════════════ *@
+<section class="section" id="eligibility" aria-labelledby="eligibilityHeading">
+    <div class="container">
+        <div class="eligibility" data-motion>
+            <div class="eligibility-copy">
+                <p class="eyebrow">Before you donate</p>
+                <h2 id="eligibilityHeading">Can you give blood today?</h2>
+                <p class="section-sub" style="margin-bottom:24px">
+                    A quick self-check against the criteria our donor network uses. If something does not
+                    match, the compatibility guide explains what to do next — and when you can donate.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a class="btn btn-blood" asp-controller="Home" asp-action="Compatibility">
+                        <i class="fas fa-droplet" aria-hidden="true"></i> Open compatibility guide
+                    </a>
+                    <a class="btn btn-ghost" asp-controller="Donor" asp-action="Search">
+                        See who can help now
+                    </a>
+                </div>
+            </div>
+
+            <div class="eligibility-side">
+                <div>
+                    <h6>Standard criteria</h6>
+                    <ul class="check-list">
+                        <li><i class="fas fa-check" aria-hidden="true"></i><span>Aged between 18 and 65 years</span></li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i><span>Weighing 50&nbsp;kg or more</span></li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i><span>At least 90 days since your last donation</span></li>
+                        <li><i class="fas fa-check" aria-hidden="true"></i><span>Feeling well — no fever or active infection</span></li>
+                    </ul>
+                </div>
+                <p class="meta" style="margin:0">Final eligibility is confirmed at the donation centre.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ═══════════════════════════ HOW IT WORKS ═══════════════════════════ *@
+<section class="section band-sand rule-top rule-bottom" id="how" aria-labelledby="howHeading">
+    <div class="container">
+        <div class="section-head">
+            <div class="section-head-copy">
+                <p class="eyebrow">How the network works</p>
+                <h2 id="howHeading" class="section-title">Three steps from search to care.</h2>
+            </div>
+        </div>
+
+        <div class="steps" data-motion-stagger>
+            <div class="step">
+                <span class="step-num">01 <i class="fas fa-magnifying-glass ico ms-auto" aria-hidden="true"></i></span>
+                <h3>Search by group and city</h3>
+                <p>Filter verified donors by blood group and location, or open the emergency hub for facilities near you.</p>
+            </div>
+            <div class="step">
+                <span class="step-num">02 <i class="fas fa-phone ico ms-auto" aria-hidden="true"></i></span>
+                <h3>Contact the donor or request blood</h3>
+                <p>Signed-in donors see contact details. Otherwise, publish a request and let compatible donors reach you.</p>
+            </div>
+            <div class="step">
+                <span class="step-num">03 <i class="fas fa-hospital ico ms-auto" aria-hidden="true"></i></span>
+                <h3>Coordinate with the hospital</h3>
+                <p>Match with a hospital or blood bank, and request an ambulance if transport is the missing piece.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@* ═══════════════════════════ CTA ═══════════════════════════ *@
+<section class="cta-band" id="join">
+    <span class="cta-mark" aria-hidden="true">Life.</span>
+    <div class="container">
+        <div class="row align-items-end g-4">
+            <div class="col-lg-7">
+                <p class="eyebrow">Join the network</p>
+                <h2>Your donation could be someone's <em>only option.</em></h2>
+                <p>
+                    Register once and we will only reach out when a patient with a compatible group
+                    needs you. One donation can support up to three people.
+                </p>
+                <div class="cta-row">
+                    <a class="btn btn-blood btn-lg" asp-controller="Account" asp-action="Register" data-magnetic>
+                        <i class="fas fa-heart" aria-hidden="true"></i> Register as a donor
+                        <span class="sheen" aria-hidden="true"></span>
+                    </a>
+                    <a class="btn btn-on-ink btn-lg" asp-controller="Home" asp-action="About">
+                        How we work
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div style="border-top:1px solid rgba(255,246,238,.16);padding-top:20px;display:grid;gap:14px">
+                    <div class="d-flex justify-content-between align-items-baseline gap-3">
+                        <span class="meta" style="color:rgba(255,246,238,.5)">Emergency helpline</span>
+                        <a href="tel:@helpline" class="num" style="color:#fff;font-size:1.1rem">@helpline</a>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-baseline gap-3">
+                        <span class="meta" style="color:rgba(255,246,238,.5)">Blood requests open</span>
+                        <span class="num" style="color:#ffb3bd;font-size:1.1rem">@Model.TotalActiveRequests</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-baseline gap-3">
+                        <span class="meta" style="color:rgba(255,246,238,.5)">Donors registered</span>
+                        <span class="num" style="color:#fff;font-size:1.1rem">@Model.TotalDonors</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>

@@ -1,78 +1,97 @@
 @model BBDMS.Model.Models.Entities.ContactInfo
 
-<footer class="footer-modern">
+<footer class="site-footer">
     <div class="container">
-        <div class="row">
-            <!-- Brand Column -->
-            <div class="col-lg-4 mb-4 mb-lg-0">
-                <div class="d-flex align-items-center mb-3">
-                    <img src="~/images/Logo.png" alt="Blood Bank Logo" style="height: 42px; width: auto;" class="mr-2" />
-                    <span class="text-white font-weight-bold h4 mb-0">Blood<span style="color: var(--brand);">Bank</span></span>
+        <div class="footer-top">
+            <div>
+                <div class="footer-brand-row">
+                    <img src="~/images/Logo.png" alt="" width="34" height="34" />
+                    <span class="word">BloodBank<em>.</em></span>
                 </div>
-                <p class="text-muted small pr-lg-4">
-                    Connecting voluntary blood donors, emergency patients, hospitals with ICU beds, ambulance fleets, and medical oxygen suppliers across the nation.
+                <p>
+                    A national network connecting voluntary blood donors, hospitals with critical-care
+                    capacity, blood banks, ambulance fleets and medical oxygen suppliers — so help is
+                    never more than a search away.
                 </p>
-                <div class="mt-3">
-                    <span class="badge badge-danger p-2 font-weight-bold">
-                        <i class="fas fa-headset mr-1"></i> 24/7 Emergency Helpline Active
-                    </span>
+                <div class="footer-helpline">
+                    <span class="lbl">Emergency helpline · 24/7</span>
+                    @if (Model != null && !string.IsNullOrEmpty(Model.ContactNo))
+                    {
+                        <span class="tel"><a href="tel:@Model.ContactNo">@Model.ContactNo</a></span>
+                    }
+                    else
+                    {
+                        <span class="tel"><a href="tel:999">999</a></span>
+                    }
                 </div>
-            </div>
-
-            <!-- Emergency Services -->
-            <div class="col-6 col-lg-3 mb-4 mb-lg-0">
-                <h5>Emergency Services</h5>
-                <ul class="list-unstyled small">
-                    <li class="mb-2"><a asp-controller="Emergency" asp-action="Hospitals"><i class="fas fa-hospital mr-2 text-danger"></i>Hospitals & ICU Beds</a></li>
-                    <li class="mb-2"><a asp-controller="Emergency" asp-action="BloodBanks"><i class="fas fa-landmark mr-2 text-danger"></i>Blood Banks Directory</a></li>
-                    <li class="mb-2"><a asp-controller="Emergency" asp-action="Ambulances"><i class="fas fa-ambulance mr-2 text-danger"></i>Ambulance Fleets</a></li>
-                    <li class="mb-2"><a asp-controller="Emergency" asp-action="Oxygen"><i class="fas fa-lungs mr-2 text-danger"></i>Oxygen Cylinder Refill</a></li>
-                    <li class="mb-2"><a asp-controller="Emergency" asp-action="BloodRequests"><i class="fas fa-heartbeat mr-2 text-danger"></i>Urgent Blood Requests</a></li>
-                    <li class="mb-2"><a asp-controller="Emergency" asp-action="TrackAmbulance"><i class="fas fa-satellite-dish mr-2 text-danger"></i>Track Ambulance Dispatch</a></li>
-                    <li class="mb-2"><a asp-controller="Emergency" asp-action="AmbulanceContact"><i class="fas fa-phone-volume mr-2 text-danger"></i>Emergency Contacts</a></li>
-                </ul>
-            </div>
-
-            <!-- Quick Links -->
-            <div class="col-6 col-lg-2 mb-4 mb-lg-0">
-                <h5>Quick Links</h5>
-                <ul class="list-unstyled small">
-                    <li class="mb-2"><a asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li class="mb-2"><a asp-controller="Donor" asp-action="Search">Find Donors</a></li>
-                    <li class="mb-2"><a asp-controller="Home" asp-action="About">About Us</a></li>
-                    <li class="mb-2"><a asp-controller="Home" asp-action="Contact">Contact Support</a></li>
-                    <li class="mb-2"><a asp-controller="Account" asp-action="Login">Donor Login</a></li>
-                    <li class="mb-2"><a asp-controller="Account" asp-action="Register">Join as Donor</a></li>
-                </ul>
-            </div>
-
-            <!-- Contact & Helpline -->
-            <div class="col-lg-3">
-                <h5>Contact & Helpline</h5>
-                <ul class="list-unstyled small text-muted">
+                <ul class="footer-contact">
                     @if (Model != null)
                     {
-                        <li class="mb-2 d-flex">
-                            <i class="fas fa-map-marker-alt text-danger mr-2 mt-1"></i>
-                            <span>@Model.Address</span>
-                        </li>
-                        <li class="mb-2 d-flex">
-                            <i class="fas fa-phone-alt text-danger mr-2 mt-1"></i>
-                            <a href="tel:@Model.ContactNo" class="text-white font-weight-bold">@Model.ContactNo</a>
-                        </li>
-                        <li class="mb-2 d-flex">
-                            <i class="fas fa-envelope text-danger mr-2 mt-1"></i>
-                            <a href="mailto:@Model.EmailId">@Model.EmailId</a>
-                        </li>
+                        @if (!string.IsNullOrEmpty(Model.Address))
+                        {
+                            <li><i class="fas fa-location-dot" aria-hidden="true"></i><span>@Model.Address</span></li>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.EmailId))
+                        {
+                            <li><i class="fas fa-envelope" aria-hidden="true"></i><a href="mailto:@Model.EmailId">@Model.EmailId</a></li>
+                        }
                     }
+                </ul>
+            </div>
+
+            <div>
+                <h5>Emergency services</h5>
+                <ul>
+                    <li><a asp-controller="Emergency" asp-action="Hospitals"><i class="fas fa-hospital" aria-hidden="true"></i>Hospitals &amp; ICU beds</a></li>
+                    <li><a asp-controller="Emergency" asp-action="BloodBanks"><i class="fas fa-building" aria-hidden="true"></i>Blood bank directory</a></li>
+                    <li><a asp-controller="Emergency" asp-action="Ambulances"><i class="fas fa-ambulance" aria-hidden="true"></i>Ambulance fleets</a></li>
+                    <li><a asp-controller="Emergency" asp-action="Oxygen"><i class="fas fa-lungs" aria-hidden="true"></i>Medical oxygen</a></li>
+                    <li><a asp-controller="Emergency" asp-action="BloodRequests"><i class="fas fa-heart-pulse" aria-hidden="true"></i>Urgent blood requests</a></li>
+                    <li><a asp-controller="Emergency" asp-action="TrackAmbulance"><i class="fas fa-satellite-dish" aria-hidden="true"></i>Track ambulance dispatch</a></li>
+                    <li><a asp-controller="Emergency" asp-action="AmbulanceContact"><i class="fas fa-phone-volume" aria-hidden="true"></i>Emergency contacts</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5>Quick links</h5>
+                <ul>
+                    <li><a asp-controller="Home" asp-action="Index">Home</a></li>
+                    <li><a asp-controller="Donor" asp-action="Search">Find donors</a></li>
+                    <li><a asp-controller="Home" asp-action="Compatibility">Compatibility guide</a></li>
+                    <li><a asp-controller="Home" asp-action="About">About us</a></li>
+                    <li><a asp-controller="Home" asp-action="Contact">Contact support</a></li>
+                    <li><a asp-controller="Home" asp-action="Privacy">Privacy policy</a></li>
+                    <li><a asp-controller="Account" asp-action="Register">Join as a donor</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h5>Donate &amp; save lives</h5>
+                <p class="mb-3" style="font-size:.875rem">
+                    One donation can support up to three patients. Register once, and we will only
+                    contact you when a compatible patient needs you.
+                </p>
+                <a class="btn btn-blood btn-sm mb-3" asp-controller="Account" asp-action="Register">
+                    <i class="fas fa-droplet" aria-hidden="true"></i> Become a donor
+                </a>
+                <h6 class="mt-4">Request help</h6>
+                <ul>
+                    <li><a asp-controller="Emergency" asp-action="CreateBloodRequest"><i class="fas fa-plus" aria-hidden="true"></i>Create a blood request</a></li>
+                    <li><a asp-controller="Emergency" asp-action="RequestAmbulance"><i class="fas fa-truck-medical" aria-hidden="true"></i>Request an ambulance</a></li>
+                    <li><a asp-controller="Emergency" asp-action="TrackRequest"><i class="fas fa-magnifying-glass-location" aria-hidden="true"></i>Track a blood request</a></li>
                 </ul>
             </div>
         </div>
 
-        <div class="footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-center">
-            <p class="mb-0 text-muted small">&copy; @DateTime.Now.Year Blood Bank & Emergency Help System. All rights reserved.</p>
-            <div class="mt-2 mt-md-0 small">
-                <a asp-controller="Admin" asp-action="Index" class="text-muted"><i class="fas fa-lock mr-1"></i>Admin Portal</a>
+        <div class="footer-mark" aria-hidden="true">BloodBank.</div>
+
+        <div class="footer-bottom">
+            <span>&copy; @DateTime.Now.Year Blood Bank &amp; Emergency Help System</span>
+            <div class="fb-group">
+                <span class="footer-status"><span class="dot" aria-hidden="true"></span> Network operational</span>
+                <a asp-controller="Home" asp-action="Status" asp-route-code="200">Status</a>
+                <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+                <a asp-controller="Admin" asp-action="Index"><i class="fas fa-lock" aria-hidden="true"></i> Admin portal</a>
             </div>
         </div>
     </div>

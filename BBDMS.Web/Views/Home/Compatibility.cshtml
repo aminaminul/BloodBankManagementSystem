@@ -1,424 +1,315 @@
 @{
-    ViewData["Title"] = "Blood Compatibility & Donor Eligibility Quiz - Blood Bank";
+    ViewData["Title"] = "Compatibility & eligibility";
+    var groups = new[] { "O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+" };
 }
 
-<div class="container py-5">
-    <!-- Hero Header -->
-    <div class="text-center mb-5">
-        <span class="badge badge-pill badge-danger px-3 py-2 text-uppercase font-weight-bold mb-2">
-            <i class="fas fa-heartbeat mr-1"></i> Interactive Health Tool
-        </span>
-        <h1 class="font-weight-bold display-4" style="font-size: 2.6rem;">Blood Compatibility & Eligibility</h1>
-        <p class="text-muted lead mx-auto" style="max-width: 720px;">
-            Discover who you can help with your blood type, check recipient compatibility, and take our 60-second quiz to see if you can donate today.
-        </p>
+<section class="page-head">
+    <div class="container">
+        <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Compatibility</li>
+            </ol>
+        </nav>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Know before you donate</p>
+                <h1>Blood compatibility</h1>
+                <p>Pick a blood group to see who it can help and where it can come from — then run the four-question self-check.</p>
+            </div>
+            <div class="page-head-actions">
+                <a class="btn btn-blood" asp-controller="Account" asp-action="Register">
+                    <i class="fas fa-droplet" aria-hidden="true"></i> Register as a donor
+                </a>
+            </div>
+        </div>
     </div>
+</section>
 
-    <div class="row">
-        <!-- Left Column: Interactive Compatibility Explorer -->
-        <div class="col-lg-7 mb-4">
-            <div class="card shadow-sm border-0 h-100" style="border-radius: 16px;">
-                <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-0 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h4 class="font-weight-bold mb-1 text-dark">
-                            <i class="fas fa-project-diagram text-danger mr-2"></i> Compatibility Matrix
-                        </h4>
-                        <p class="text-muted small mb-0">Select your blood group to see donation & receiving matches</p>
+<section class="section">
+    <div class="container">
+        <div class="row g-4">
+
+            @* ── Matrix ── *@
+            <div class="col-lg-7">
+                <div class="panel h-100">
+                    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-4">
+                        <div>
+                            <p class="eyebrow" style="margin-bottom:8px">Compatibility matrix</p>
+                            <h2 class="section-title" style="font-size:1.6rem">Red cell matching</h2>
+                        </div>
+                        <span class="tag tag-muted">Whole blood</span>
                     </div>
-                </div>
 
-                <div class="card-body px-4">
-                    <!-- Blood Group Buttons Selector -->
-                    <label class="font-weight-bold small text-muted text-uppercase mb-2">Choose Blood Group</label>
-                    <div class="row no-gutters mb-4" id="groupSelector">
-                        @foreach (var bg in new[] { "O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+" })
+                    <label id="groupSelectorLabel">Choose a blood group</label>
+                    <div class="group-picker mb-4" id="groupSelector" role="group" aria-labelledby="groupSelectorLabel">
+                        @foreach (var bg in groups)
                         {
-                            <div class="col-3 p-1">
-                                <button type="button" class="btn btn-outline-danger btn-block py-2 font-weight-bold group-btn @(bg == "O+" ? "active" : "")" data-group="@bg" style="border-radius: 10px; font-size: 1.1rem;">
-                                    @bg
-                                </button>
-                            </div>
+                            <button type="button" class="group-btn @(bg == "O+" ? "active" : "")"
+                                    data-group="@bg" aria-pressed="@(bg == "O+" ? "true" : "false")">@bg</button>
                         }
                     </div>
 
-                    <!-- Selected Group Highlight Banner -->
-                    <div class="p-3 mb-4 rounded d-flex align-items-center justify-content-between text-white" id="groupHighlightCard" style="background: linear-gradient(135deg, #e53935 0%, #c62828 100%); border-radius: 12px;">
+                    <div class="group-highlight mb-4" id="groupHighlightCard">
                         <div>
-                            <span class="text-white-50 text-uppercase small font-weight-bold">Selected Type</span>
-                            <h2 class="font-weight-bold mb-0 text-white" id="currentGroupTitle">O+ (O Positive)</h2>
-                            <small class="text-white-50" id="currentGroupSubtitle">One of the most frequently needed blood types</small>
+                            <span class="sel">Selected type</span>
+                            <h2 id="currentGroupTitle">O+ (O Positive)</h2>
+                            <p id="currentGroupSubtitle">One of the most frequently needed blood types</p>
                         </div>
-                        <div class="text-right">
-                            <span class="badge badge-light text-danger font-weight-bold px-3 py-2 shadow-sm" id="universalBadge" style="font-size: 0.9rem;">
-                                High Demand
-                            </span>
-                        </div>
+                        <span class="tag tag-blood" id="universalBadge">High demand</span>
                     </div>
 
-                    <!-- Can Donate To & Can Receive From Cards -->
-                    <div class="row">
-                        <!-- Can Donate To -->
-                        <div class="col-md-6 mb-3">
-                            <div class="p-3 bg-light rounded h-100 border">
-                                <div class="d-flex align-items-center mb-2">
-                                    <span class="badge badge-success rounded-circle p-2 mr-2">
-                                        <i class="fas fa-hand-holding-heart fa-fw"></i>
-                                    </span>
-                                    <h6 class="font-weight-bold mb-0 text-dark">Can Donate To</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="panel panel-quiet h-100" style="padding:18px">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="fas fa-arrow-up-right-from-square" aria-hidden="true" style="color:var(--signal);font-size:.85rem"></i>
+                                    <h3 style="font-size:.9rem;font-weight:600;margin:0">Can donate to</h3>
                                 </div>
-                                <p class="text-muted small mb-2">Red blood cells can safely be given to:</p>
-                                <div class="d-flex flex-wrap gap-2" id="donateToList">
-                                    <!-- Populated via JS -->
-                                </div>
+                                <p class="section-sub" style="font-size:.8rem;margin-bottom:10px">Red cells can safely be given to:</p>
+                                <div class="d-flex flex-wrap gap-2" id="donateToList"></div>
                             </div>
                         </div>
-
-                        <!-- Can Receive From -->
-                        <div class="col-md-6 mb-3">
-                            <div class="p-3 bg-light rounded h-100 border">
-                                <div class="d-flex align-items-center mb-2">
-                                    <span class="badge badge-primary rounded-circle p-2 mr-2">
-                                        <i class="fas fa-syringe fa-fw"></i>
-                                    </span>
-                                    <h6 class="font-weight-bold mb-0 text-dark">Can Receive From</h6>
+                        <div class="col-md-6">
+                            <div class="panel panel-quiet h-100" style="padding:18px">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="fas fa-arrow-down-left" aria-hidden="true" style="color:var(--blood);font-size:.85rem"></i>
+                                    <h3 style="font-size:.9rem;font-weight:600;margin:0">Can receive from</h3>
                                 </div>
-                                <p class="text-muted small mb-2">Can safely receive red blood cells from:</p>
-                                <div class="d-flex flex-wrap gap-2" id="receiveFromList">
-                                    <!-- Populated via JS -->
-                                </div>
+                                <p class="section-sub" style="font-size:.8rem;margin-bottom:10px">Can receive red cells from:</p>
+                                <div class="d-flex flex-wrap gap-2" id="receiveFromList"></div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Plasma Compatibility Note -->
-                    <div class="alert alert-info border-0 rounded-lg small mb-0 mt-2">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        <strong>Did you know?</strong> While <strong>O-</strong> is the universal red blood cell donor, <strong>AB+</strong> is the <em>universal plasma donor</em> because AB plasma contains no anti-A or anti-B antibodies.
+                    <div class="alert alert-info mt-4 mb-0">
+                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                        <strong>Did you know?</strong> While <strong>O−</strong> is the universal red cell donor,
+                        <strong>AB+</strong> is the universal plasma donor — AB plasma carries no anti-A or anti-B antibodies.
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Right Column: 60-Second Eligibility Quiz -->
-        <div class="col-lg-5 mb-4">
-            <div class="card shadow-sm border-0 h-100" style="border-radius: 16px;">
-                <div class="card-header bg-white border-bottom-0 pt-4 px-4 pb-0">
-                    <span class="badge badge-warning text-dark font-weight-bold px-2 py-1 mb-1">
-                        <i class="fas fa-clock mr-1"></i> 60-Second Self Check
-                    </span>
-                    <h4 class="font-weight-bold mb-1 text-dark">Can You Donate Today?</h4>
-                    <p class="text-muted small mb-0">Answer 4 quick questions to check your general whole-blood donation eligibility.</p>
-                </div>
+            @* ── Self check ── *@
+            <div class="col-lg-5">
+                <div class="panel h-100 d-flex flex-column">
+                    <p class="eyebrow" style="margin-bottom:8px">60-second self check</p>
+                    <h2 class="section-title" style="font-size:1.6rem">Can you donate today?</h2>
+                    <p class="section-sub mb-3">Four questions against the criteria our donor network uses.</p>
 
-                <div class="card-body px-4">
                     <form id="eligibilityQuizForm">
-                        <!-- Question 1: Age & Weight -->
-                        <div class="form-group mb-3 pb-2 border-bottom">
-                            <label class="font-weight-bold small text-dark d-block mb-1">
-                                1. Are you between 18 and 65 years old, and weigh at least 50 kg (110 lbs)?
-                            </label>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" id="q1_yes" name="q1" class="custom-control-input" value="yes" required checked>
-                                <label class="custom-control-label small" for="q1_yes">Yes</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" id="q1_no" name="q1" class="custom-control-input" value="no">
-                                <label class="custom-control-label small" for="q1_no">No</label>
+                        <div class="quiz-q">
+                            <span class="q-label"><span class="n">01</span>Are you between 18 and 65 years old, and weigh at least 50&nbsp;kg?</span>
+                            <div class="choice-row">
+                                <label class="choice"><input type="radio" id="q1_yes" name="q1" value="yes" required checked /><span>Yes</span></label>
+                                <label class="choice"><input type="radio" id="q1_no" name="q1" value="no" /><span>No</span></label>
                             </div>
                         </div>
 
-                        <!-- Question 2: Last Donation Date -->
-                        <div class="form-group mb-3 pb-2 border-bottom">
-                            <label class="font-weight-bold small text-dark d-block mb-1">
-                                2. Has it been at least 3 months (90 days) since your last blood donation?
-                            </label>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" id="q2_yes" name="q2" class="custom-control-input" value="yes" checked>
-                                <label class="custom-control-label small" for="q2_yes">Yes / Never Donated</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" id="q2_no" name="q2" class="custom-control-input" value="no">
-                                <label class="custom-control-label small" for="q2_no">No (Donated recently)</label>
+                        <div class="quiz-q">
+                            <span class="q-label"><span class="n">02</span>Has it been at least 90 days since your last whole-blood donation?</span>
+                            <div class="choice-row">
+                                <label class="choice"><input type="radio" id="q2_yes" name="q2" value="yes" checked /><span>Yes / never donated</span></label>
+                                <label class="choice"><input type="radio" id="q2_no" name="q2" value="no" /><span>No, recently</span></label>
                             </div>
                         </div>
 
-                        <!-- Question 3: Current Health -->
-                        <div class="form-group mb-3 pb-2 border-bottom">
-                            <label class="font-weight-bold small text-dark d-block mb-1">
-                                3. Do you feel healthy and well today, with no active fever, cold, or flu?
-                            </label>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" id="q3_yes" name="q3" class="custom-control-input" value="yes" checked>
-                                <label class="custom-control-label small" for="q3_yes">Yes, feeling great</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" id="q3_no" name="q3" class="custom-control-input" value="no">
-                                <label class="custom-control-label small" for="q3_no">No, currently unwell</label>
+                        <div class="quiz-q">
+                            <span class="q-label"><span class="n">03</span>Do you feel well today, with no fever, cold or flu?</span>
+                            <div class="choice-row">
+                                <label class="choice"><input type="radio" id="q3_yes" name="q3" value="yes" checked /><span>Yes, feeling well</span></label>
+                                <label class="choice"><input type="radio" id="q3_no" name="q3" value="no" /><span>No, unwell</span></label>
                             </div>
                         </div>
 
-                        <!-- Question 4: Surgery / Tattoos -->
-                        <div class="form-group mb-4">
-                            <label class="font-weight-bold small text-dark d-block mb-1">
-                                4. In the last 6 months, have you had major surgery, dental extractions, tattoos, or body piercings?
-                            </label>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" id="q4_no" name="q4" class="custom-control-input" value="no" checked>
-                                <label class="custom-control-label small" for="q4_no">No (None of these)</label>
-                            </div>
-                            <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" id="q4_yes" name="q4" class="custom-control-input" value="yes">
-                                <label class="custom-control-label small" for="q4_yes">Yes</label>
+                        <div class="quiz-q">
+                            <span class="q-label"><span class="n">04</span>In the last 6 months, have you had major surgery, a tattoo or a body piercing?</span>
+                            <div class="choice-row">
+                                <label class="choice"><input type="radio" id="q4_no" name="q4" value="no" checked /><span>No</span></label>
+                                <label class="choice"><input type="radio" id="q4_yes" name="q4" value="yes" /><span>Yes</span></label>
                             </div>
                         </div>
 
-                        <button type="button" class="btn btn-brand-red btn-block py-2 font-weight-bold shadow-sm" id="btnCheckEligibility">
-                            <i class="fas fa-check-circle mr-1"></i> Calculate Eligibility Verdict
+                        <button type="button" class="btn btn-blood btn-block mt-4" id="btnCheckEligibility">
+                            <i class="fas fa-check" aria-hidden="true"></i> Check eligibility
                         </button>
                     </form>
 
-                    <!-- Quiz Result Card (Hidden by default, shown on evaluate) -->
-                    <div id="quizResultBox" class="mt-4 p-3 rounded text-center" style="display: none;">
-                        <!-- Injected via JavaScript -->
-                    </div>
+                    <div id="quizResultBox" class="mt-4" style="display:none" aria-live="polite"></div>
+
+                    <p class="meta mt-4" style="margin-top:auto;padding-top:16px;text-transform:none;letter-spacing:0;font-family:var(--font-sans);font-size:.78rem;color:var(--muted)">
+                        This self-check is a guide, not a medical decision. Final eligibility is confirmed at the donation centre.
+                    </p>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Quick Reference Summary Table -->
-    <div class="card shadow-sm border-0 mt-4" style="border-radius: 16px;">
-        <div class="card-header bg-white border-bottom-0 pt-4 px-4">
-            <h4 class="font-weight-bold mb-1 text-dark">
-                <i class="fas fa-table text-danger mr-2"></i> Complete Blood Compatibility Reference Table
-            </h4>
-            <p class="text-muted small mb-0">Red blood cell compatibility at a glance</p>
-        </div>
-        <div class="card-body px-4 pb-4">
+        @* ── Reference table ── *@
+        <div class="panel mt-4" data-motion>
+            <div class="d-flex justify-content-between align-items-end gap-3 flex-wrap mb-3">
+                <div>
+                    <p class="eyebrow" style="margin-bottom:6px">Reference</p>
+                    <h2 class="section-title" style="font-size:1.45rem">Complete compatibility table</h2>
+                </div>
+                <span class="meta">Red blood cells</span>
+            </div>
             <div class="table-responsive">
-                <table class="table table-hover table-bordered mb-0 text-center">
-                    <thead class="thead-light">
+                <table class="table table-hover mb-0">
+                    <thead>
                         <tr>
-                            <th class="font-weight-bold text-left">Blood Type</th>
-                            <th class="font-weight-bold">Can Donate Red Cells To</th>
-                            <th class="font-weight-bold">Can Receive Red Cells From</th>
-                            <th class="font-weight-bold">Special Trait</th>
+                            <th>Blood type</th>
+                            <th>Can donate red cells to</th>
+                            <th>Can receive red cells from</th>
+                            <th>Special trait</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="font-weight-bold text-danger text-left">O-</td>
-                            <td>All Blood Types (O-, O+, A-, A+, B-, B+, AB-, AB+)</td>
-                            <td>O-</td>
-                            <td><span class="badge badge-success">Universal Red Cell Donor</span></td>
+                            <td><strong style="color:var(--blood);font-family:var(--font-mono)">O−</strong></td>
+                            <td>All blood types</td>
+                            <td>O−</td>
+                            <td><span class="tag tag-ok">Universal red cell donor</span></td>
                         </tr>
                         <tr>
-                            <td class="font-weight-bold text-danger text-left">O+</td>
+                            <td><strong style="color:var(--blood);font-family:var(--font-mono)">O+</strong></td>
                             <td>O+, A+, B+, AB+</td>
-                            <td>O+, O-</td>
-                            <td><span class="badge badge-primary">Most Common Blood Type</span></td>
+                            <td>O+, O−</td>
+                            <td><span class="tag tag-muted">Most common type</span></td>
                         </tr>
                         <tr>
-                            <td class="font-weight-bold text-danger text-left">A-</td>
-                            <td>A-, A+, AB-, AB+</td>
-                            <td>A-, O-</td>
-                            <td><span class="badge badge-secondary">Can support A & AB patients</span></td>
+                            <td><strong style="color:var(--blood);font-family:var(--font-mono)">A−</strong></td>
+                            <td>A−, A+, AB−, AB+</td>
+                            <td>A−, O−</td>
+                            <td><span class="tag tag-muted">Supports A &amp; AB patients</span></td>
                         </tr>
                         <tr>
-                            <td class="font-weight-bold text-danger text-left">A+</td>
+                            <td><strong style="color:var(--blood);font-family:var(--font-mono)">A+</strong></td>
                             <td>A+, AB+</td>
-                            <td>A+, A-, O+, O-</td>
-                            <td><span class="badge badge-secondary">High Patient Demand</span></td>
+                            <td>A+, A−, O+, O−</td>
+                            <td><span class="tag tag-muted">High patient demand</span></td>
                         </tr>
                         <tr>
-                            <td class="font-weight-bold text-danger text-left">B-</td>
-                            <td>B-, B+, AB-, AB+</td>
-                            <td>B-, O-</td>
-                            <td><span class="badge badge-warning text-dark">Rare & Critical</span></td>
+                            <td><strong style="color:var(--blood);font-family:var(--font-mono)">B−</strong></td>
+                            <td>B−, B+, AB−, AB+</td>
+                            <td>B−, O−</td>
+                            <td><span class="tag tag-warn">Rare &amp; critical</span></td>
                         </tr>
                         <tr>
-                            <td class="font-weight-bold text-danger text-left">B+</td>
+                            <td><strong style="color:var(--blood);font-family:var(--font-mono)">B+</strong></td>
                             <td>B+, AB+</td>
-                            <td>B+, B-, O+, O-</td>
-                            <td><span class="badge badge-secondary">Common in South Asia</span></td>
+                            <td>B+, B−, O+, O−</td>
+                            <td><span class="tag tag-muted">Common in South Asia</span></td>
                         </tr>
                         <tr>
-                            <td class="font-weight-bold text-danger text-left">AB-</td>
-                            <td>AB-, AB+</td>
-                            <td>AB-, A-, B-, O-</td>
-                            <td><span class="badge badge-warning text-dark">Rare Group</span></td>
+                            <td><strong style="color:var(--blood);font-family:var(--font-mono)">AB−</strong></td>
+                            <td>AB−, AB+</td>
+                            <td>AB−, A−, B−, O−</td>
+                            <td><span class="tag tag-warn">Rare group</span></td>
                         </tr>
                         <tr>
-                            <td class="font-weight-bold text-danger text-left">AB+</td>
+                            <td><strong style="color:var(--blood);font-family:var(--font-mono)">AB+</strong></td>
                             <td>AB+ only</td>
-                            <td>All Blood Types (Universal Recipient)</td>
-                            <td><span class="badge badge-info">Universal Red Cell Recipient</span></td>
+                            <td>All blood types</td>
+                            <td><span class="tag tag-ok">Universal recipient</span></td>
                         </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-</div>
+</section>
 
 @section Scripts {
-<script>
-    // Comprehensive Blood Compatibility Data
-    const bloodRules = {
-        'O-': {
-            name: 'O- (O Negative)',
-            subtitle: 'Universal Red Blood Cell Donor',
-            universal: 'Universal RBC Donor',
-            donateTo: ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'],
-            receiveFrom: ['O-']
-        },
-        'O+': {
-            name: 'O+ (O Positive)',
-            subtitle: 'Highest demand blood group in emergency wards',
-            universal: 'High Emergency Demand',
-            donateTo: ['O+', 'A+', 'B+', 'AB+'],
-            receiveFrom: ['O+', 'O-']
-        },
-        'A-': {
-            name: 'A- (A Negative)',
-            subtitle: 'Crucial for A and AB emergency transfusions',
-            universal: 'Targeted Donor',
-            donateTo: ['A-', 'A+', 'AB-', 'AB+'],
-            receiveFrom: ['A-', 'O-']
-        },
-        'A+': {
-            name: 'A+ (A Positive)',
-            subtitle: 'Second most common blood group worldwide',
-            universal: 'High Hospital Need',
-            donateTo: ['A+', 'AB+'],
-            receiveFrom: ['A+', 'A-', 'O+', 'O-']
-        },
-        'B-': {
-            name: 'B- (B Negative)',
-            subtitle: 'Rare blood group needing dedicated voluntary donors',
-            universal: 'Rare & Critical',
-            donateTo: ['B-', 'B+', 'AB-', 'AB+'],
-            receiveFrom: ['B-', 'O-']
-        },
-        'B+': {
-            name: 'B+ (B Positive)',
-            subtitle: 'Very common in Bangladesh and South Asia',
-            universal: 'Vital Community Need',
-            donateTo: ['B+', 'AB+'],
-            receiveFrom: ['B+', 'B-', 'O+', 'O-']
-        },
-        'AB-': {
-            name: 'AB- (AB Negative)',
-            subtitle: 'The rarest blood type, essential for AB- patients',
-            universal: 'Extremely Rare',
-            donateTo: ['AB-', 'AB+'],
-            receiveFrom: ['AB-', 'A-', 'B-', 'O-']
-        },
-        'AB+': {
-            name: 'AB+ (AB Positive)',
-            subtitle: 'Universal recipient of red blood cells & universal plasma donor',
-            universal: 'Universal Recipient',
-            donateTo: ['AB+'],
-            receiveFrom: ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+']
+    <script>
+        // ── Blood compatibility data ──
+        const bloodRules = {
+            'O-': { name: 'O− (O Negative)', subtitle: 'Universal red blood cell donor', universal: 'Universal donor',
+                    donateTo: ['O−', 'O+', 'A−', 'A+', 'B−', 'B+', 'AB−', 'AB+'], receiveFrom: ['O−'] },
+            'O+': { name: 'O+ (O Positive)', subtitle: 'Highest demand group in emergency wards', universal: 'High demand',
+                    donateTo: ['O+', 'A+', 'B+', 'AB+'], receiveFrom: ['O+', 'O−'] },
+            'A-': { name: 'A− (A Negative)', subtitle: 'Crucial for A and AB emergency transfusions', universal: 'Targeted donor',
+                    donateTo: ['A−', 'A+', 'AB−', 'AB+'], receiveFrom: ['A−', 'O−'] },
+            'A+': { name: 'A+ (A Positive)', subtitle: 'Second most common blood group worldwide', universal: 'High hospital need',
+                    donateTo: ['A+', 'AB+'], receiveFrom: ['A+', 'A−', 'O+', 'O−'] },
+            'B-': { name: 'B− (B Negative)', subtitle: 'Rare group needing dedicated voluntary donors', universal: 'Rare & critical',
+                    donateTo: ['B−', 'B+', 'AB−', 'AB+'], receiveFrom: ['B−', 'O−'] },
+            'B+': { name: 'B+ (B Positive)', subtitle: 'Common in Bangladesh and South Asia', universal: 'Vital community need',
+                    donateTo: ['B+', 'AB+'], receiveFrom: ['B+', 'B−', 'O+', 'O−'] },
+            'AB-': { name: 'AB− (AB Negative)', subtitle: 'The rarest type, essential for AB− patients', universal: 'Extremely rare',
+                    donateTo: ['AB−', 'AB+'], receiveFrom: ['AB−', 'A−', 'B−', 'O−'] },
+            'AB+': { name: 'AB+ (AB Positive)', subtitle: 'Universal recipient and universal plasma donor', universal: 'Universal recipient',
+                    donateTo: ['AB+'], receiveFrom: ['O−', 'O+', 'A−', 'A+', 'B−', 'B+', 'AB−', 'AB+'] }
+        };
+
+        function groupChips(list, tone) {
+            return list.map(g => `<span class="tag ${tone}">${g}</span>`).join('');
         }
-    };
 
-    function updateCompatibilityView(group) {
-        const data = bloodRules[group];
-        if (!data) return;
+        function updateCompatibilityView(group) {
+            const data = bloodRules[group];
+            if (!data) return;
 
-        document.getElementById('currentGroupTitle').textContent = data.name;
-        document.getElementById('currentGroupSubtitle').textContent = data.subtitle;
-        document.getElementById('universalBadge').textContent = data.universal;
-
-        // Render Donate To Badges
-        const donateContainer = document.getElementById('donateToList');
-        donateContainer.innerHTML = '';
-        data.donateTo.forEach(bg => {
-            const span = document.createElement('span');
-            span.className = 'badge badge-success px-2 py-1 font-weight-bold m-1';
-            span.style.fontSize = '0.95rem';
-            span.innerHTML = '<i class="fas fa-check-circle mr-1"></i> ' + bg;
-            donateContainer.appendChild(span);
-        });
-
-        // Render Receive From Badges
-        const receiveContainer = document.getElementById('receiveFromList');
-        receiveContainer.innerHTML = '';
-        data.receiveFrom.forEach(bg => {
-            const span = document.createElement('span');
-            span.className = 'badge badge-primary px-2 py-1 font-weight-bold m-1';
-            span.style.fontSize = '0.95rem';
-            span.innerHTML = '<i class="fas fa-tint mr-1"></i> ' + bg;
-            receiveContainer.appendChild(span);
-        });
-    }
-
-    // Bind Group Selector Buttons
-    document.querySelectorAll('.group-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            updateCompatibilityView(this.dataset.group);
-        });
-    });
-
-    // Initialize with default O+
-    updateCompatibilityView('O+');
-
-    // 60-Second Eligibility Quiz Evaluation
-    document.getElementById('btnCheckEligibility').addEventListener('click', function() {
-        const q1 = document.querySelector('input[name="q1"]:checked')?.value;
-        const q2 = document.querySelector('input[name="q2"]:checked')?.value;
-        const q3 = document.querySelector('input[name="q3"]:checked')?.value;
-        const q4 = document.querySelector('input[name="q4"]:checked')?.value;
-
-        const resultBox = document.getElementById('quizResultBox');
-        resultBox.style.display = 'block';
-
-        if (q1 === 'yes' && q2 === 'yes' && q3 === 'yes' && q4 === 'no') {
-            resultBox.className = 'mt-4 p-4 rounded text-center bg-light border border-success';
-            resultBox.innerHTML = `
-                <div class="text-success mb-2" style="font-size: 2.4rem;">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <h5 class="font-weight-bold text-success mb-2">You Are Likely Eligible to Donate!</h5>
-                <p class="small text-muted mb-3">
-                    Based on your answers, you meet all primary health requirements to donate whole blood today. Your single donation can save up to 3 lives.
-                </p>
-                <div class="d-flex justify-content-center gap-2">
-                    <a href="/Account/Register" class="btn btn-danger btn-sm font-weight-bold mr-2">
-                        <i class="fas fa-user-plus mr-1"></i> Register as a Donor
-                    </a>
-                    <a href="/Emergency/Hospitals" class="btn btn-outline-secondary btn-sm font-weight-bold">
-                        <i class="fas fa-hospital mr-1"></i> View Donation Centers
-                    </a>
-                </div>
-            `;
-        } else {
-            let reasons = [];
-            if (q1 !== 'yes') reasons.push('Donors must be aged 18-65 and weigh at least 50 kg for safety.');
-            if (q2 !== 'yes') reasons.push('At least 90 days must elapse between whole blood donations to replenish iron stores.');
-            if (q3 !== 'yes') reasons.push('You must feel completely well with no acute infection or fever.');
-            if (q4 === 'yes') reasons.push('A temporary 6-month deferral applies after major surgery, tattoos, or body piercings.');
-
-            resultBox.className = 'mt-4 p-4 rounded text-center bg-light border border-warning';
-            resultBox.innerHTML = `
-                <div class="text-warning mb-2" style="font-size: 2.4rem;">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <h5 class="font-weight-bold text-dark mb-2">Temporary Deferral Suggested</h5>
-                <p class="small text-muted mb-3">
-                    Thank you for your willingness to give! For donor safety and recipient care, the following requirement applies:
-                </p>
-                <ul class="small text-muted text-left mb-3 pl-4">
-                    ${reasons.map(r => `<li>${r}</li>`).join('')}
-                </ul>
-                <small class="text-muted d-block">
-                    Once this temporary deferral window passes, we would love to welcome you as a donor!
-                </small>
-            `;
+            document.getElementById('currentGroupTitle').textContent = data.name;
+            document.getElementById('currentGroupSubtitle').textContent = data.subtitle;
+            document.getElementById('universalBadge').textContent = data.universal;
+            document.getElementById('donateToList').innerHTML = groupChips(data.donateTo, 'tag-ok');
+            document.getElementById('receiveFromList').innerHTML = groupChips(data.receiveFrom, 'tag-blood');
         }
-    });
-</script>
+
+        document.querySelectorAll('.group-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.group-btn').forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-pressed', 'false');
+                });
+                this.classList.add('active');
+                this.setAttribute('aria-pressed', 'true');
+                updateCompatibilityView(this.dataset.group);
+            });
+        });
+
+        updateCompatibilityView('O+');
+
+        // ── Eligibility self-check ──
+        document.getElementById('btnCheckEligibility').addEventListener('click', function () {
+            const q1 = document.querySelector('input[name="q1"]:checked')?.value;
+            const q2 = document.querySelector('input[name="q2"]:checked')?.value;
+            const q3 = document.querySelector('input[name="q3"]:checked')?.value;
+            const q4 = document.querySelector('input[name="q4"]:checked')?.value;
+            const box = document.getElementById('quizResultBox');
+            box.style.display = 'block';
+
+            if (q1 === 'yes' && q2 === 'yes' && q3 === 'yes' && q4 === 'no') {
+                box.innerHTML = `
+                    <div class="alert alert-success mb-0" style="padding:18px">
+                        <div style="font-family:var(--font-display);font-size:1.35rem;letter-spacing:-.02em;color:var(--signal);margin-bottom:6px">
+                            You are likely eligible to donate
+                        </div>
+                        <p style="font-size:.86rem;margin-bottom:12px">Based on your answers you meet the primary criteria for whole-blood donation. A final check happens at the centre.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="/Account/Register" class="btn btn-blood btn-sm">Register as a donor</a>
+                            <a href="/Emergency/Hospitals" class="btn btn-ghost btn-sm">Find a centre</a>
+                        </div>
+                    </div>`;
+            } else {
+                const reasons = [];
+                if (q1 !== 'yes') reasons.push('Donors must be aged 18–65 and weigh at least 50 kg.');
+                if (q2 !== 'yes') reasons.push('At least 90 days must pass between whole-blood donations.');
+                if (q3 !== 'yes') reasons.push('You must be well, with no fever or active infection.');
+                if (q4 === 'yes') reasons.push('A temporary deferral applies after major surgery, tattoos or piercings.');
+
+                box.innerHTML = `
+                    <div class="alert alert-warning mb-0" style="padding:18px">
+                        <div style="font-family:var(--font-display);font-size:1.35rem;letter-spacing:-.02em;color:var(--amber);margin-bottom:6px">
+                            A temporary deferral may apply
+                        </div>
+                        <p style="font-size:.86rem;margin-bottom:8px">Thank you for being willing to give. For your safety and your recipient's:</p>
+                        <ul style="font-size:.84rem;padding-left:18px;margin:0 0 10px">
+                            ${reasons.map(r => `<li style="margin-bottom:4px">${r}</li>`).join('')}
+                        </ul>
+                        <p style="font-size:.8rem;margin:0;color:var(--muted)">Once that window passes, you are welcome back.</p>
+                    </div>`;
+            }
+        });
+    </script>
 }

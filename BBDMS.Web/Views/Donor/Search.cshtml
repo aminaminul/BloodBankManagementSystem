@@ -1,162 +1,219 @@
 @model BBDMS.Model.Models.ViewModels.PagedResult<BBDMS.Model.Models.ViewModels.DonorListItemViewModel>
+@using System.Linq
 @{
-    ViewData["Title"] = "Search Blood Donor";
+    ViewData["Title"] = "Find a blood donor";
     var bloodGroups = ViewBag.BloodGroups as IEnumerable<BBDMS.Model.Models.Entities.BloodGroup>;
+    var selectedGroup = ViewBag.BloodGroup as string;
+    var location = ViewBag.Location as string;
+    var groups = bloodGroups?.Select(g => g.GroupName).ToList() ?? new List<string>();
     ViewData["PagerAction"] = "Search";
-    ViewData["PagerBloodGroup"] = ViewBag.BloodGroup;
-    ViewData["PagerLocation"] = ViewBag.Location;
+    ViewData["PagerBloodGroup"] = selectedGroup;
+    ViewData["PagerLocation"] = location;
 }
 
-<section class="page-hero-sm" style="background:linear-gradient(135deg,#e63946 0%,#9b1a26 100%); color:#fff; padding:56px 0 40px;">
+<section class="page-head">
     <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2" style="background:transparent; padding:0;">
-                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white-50">Home</a></li>
-                <li class="breadcrumb-item active text-white" aria-current="page">Find a Donor</li>
+        <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Find donors</li>
             </ol>
         </nav>
-        <h1 class="fw-bold mb-1" style="font-size:2rem;">Find a Blood Donor</h1>
-        <p class="mb-0 text-white-50">Search by blood group and location to connect with eligible donors near you.</p>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Direct donor network</p>
+                <h1>Find a blood donor</h1>
+                <p>Search verified voluntary donors by blood group and city. Contact details are shared with signed-in donors only.</p>
+            </div>
+            <div class="page-head-actions">
+                <a class="btn btn-ghost" asp-controller="Home" asp-action="Compatibility">
+                    <i class="fas fa-droplet" aria-hidden="true"></i> Compatibility guide
+                </a>
+                <a class="btn btn-blood" asp-controller="Account" asp-action="Register">
+                    <i class="fas fa-heart" aria-hidden="true"></i> Become a donor
+                </a>
+            </div>
+        </div>
     </div>
 </section>
 
-<section class="py-5" style="background:#f8fafc;">
-    <div class="container py-2">
+<section class="section-tight">
+    <div class="container">
 
-        @* Search Filter Card *@
-        <div class="card-modern mb-5" style="max-width:700px; margin-left:auto; margin-right:auto;">
-            <h5 class="fw-bold mb-4"><i class="fas fa-search me-2 text-danger"></i>Search Criteria</h5>
-            <form asp-action="Search" method="get">
+        @* Group selector + location filter *@
+        <div class="filter-bar mb-5">
+            <form asp-action="Search" method="get" role="search">
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-5">
-                        <label class="form-label fw-semibold">Blood Group <span class="text-danger">*</span></label>
-                        <select name="bloodGroup" class="form-select form-control-modern" required>
-                            <option value="">Select Blood Group</option>
-                            @if (bloodGroups != null)
+                    <div class="col-12">
+                        <label>Blood group</label>
+                        <div class="chip-row">
+                            <a class="@(string.IsNullOrEmpty(selectedGroup) ? "is-active" : "")"
+                               asp-action="Search" asp-route-location="@location">All groups</a>
+                            @foreach (var g in groups)
                             {
-                                foreach (var bg in bloodGroups)
-                                {
-                                    <option value="@bg.GroupName">@bg.GroupName</option>
-                                }
+                                <a class="@(string.Equals(selectedGroup, g, StringComparison.OrdinalIgnoreCase) ? "is-active" : "")"
+                                   asp-action="Search" asp-route-bloodGroup="@g" asp-route-location="@location"
+                                   aria-label="Filter by @g">@g</a>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-md-5 mt-3">
+                        <label for="loc">City or area</label>
+                        <input id="loc" type="text" name="location" value="@location" class="form-control"
+                               placeholder="e.g. Dhaka, Chattogram, Sylhet" autocomplete="address-level2" />
+                    </div>
+                    <div class="col-md-4">
+                        <label for="grp">Or choose from the list</label>
+                        <select id="grp" name="bloodGroup" class="form-select">
+                            <option value="">All blood groups</option>
+                            @foreach (var g in groups)
+                            {
+                                <option value="@g" selected="@(string.Equals(selectedGroup, g, StringComparison.OrdinalIgnoreCase))">@g</option>
                             }
                         </select>
                     </div>
-                    <div class="col-md-5">
-                        <label class="form-label fw-semibold">Location <span class="text-muted small">(optional)</span></label>
-                        <input type="text" name="location" class="form-control form-control-modern" placeholder="e.g. Dhaka, Chittagong...">
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-brand-red w-100">
-                            <i class="fas fa-search"></i>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-ink w-100" style="height:46px">
+                            <i class="fas fa-magnifying-glass" aria-hidden="true"></i> Search donors
                         </button>
                     </div>
                 </div>
             </form>
         </div>
 
-        @* Results *@
-        @if (Model != null)
+        @if (Model != null && Model.TotalItems > 0)
         {
-            @if (Model.TotalItems > 0)
-            {
-                <div class="row g-4">
-                    @foreach (var donor in Model.Items)
-                    {
-                        <div class="col-md-6 col-lg-4">
-                            <div class="card-modern h-100 d-flex flex-column">
-                                <div class="d-flex align-items-center mb-3">
-                                    <div style="width:52px; height:52px; background:#fff5f5; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:1rem;">
-                                        <i class="fas fa-user-circle" style="font-size:1.8rem; color:#e63946;"></i>
+            <div class="section-head" style="margin-bottom:24px">
+                <div class="section-head-copy">
+                    <p class="eyebrow">Results</p>
+                    <h2 class="section-title" style="font-size:clamp(1.5rem,2.4vw,2rem)">
+                        <span class="num">@Model.TotalItems</span> donor@(Model.TotalItems == 1 ? "" : "s") found
+                    </h2>
+                    <p class="section-sub">
+                        @if (!string.IsNullOrEmpty(selectedGroup))
+                        {
+                            <span>Group <strong>@selectedGroup</strong></span>
+                        }
+                        @if (!string.IsNullOrEmpty(location))
+                        {
+                            <span> · near <strong>@location</strong></span>
+                        }
+                        @if (string.IsNullOrEmpty(selectedGroup) && string.IsNullOrEmpty(location))
+                        {
+                            <span>Every registered donor in the network</span>
+                        }
+                    </p>
+                </div>
+                <span class="tag tag-muted">Page @Model.PageIndex of @Math.Max(Model.TotalPages, 1)</span>
+            </div>
+
+            <div class="row g-4">
+                @foreach (var donor in Model.Items)
+                {
+                    <div class="col-md-6 col-xl-4">
+                        <article class="donor-card" data-motion>
+                            <div class="donor-card-head">
+                                <span class="bg-glyph is-lg">@donor.BloodGroup</span>
+                                <div class="who">
+                                    <h3>@donor.FullName</h3>
+                                    <p class="where">
+                                        <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                        @(string.IsNullOrEmpty(donor.Address) ? "Location on request" : donor.Address)
+                                    </p>
+                                </div>
+                                @if (donor.IsAvailable)
+                                {
+                                    <span class="tag tag-ok">Available</span>
+                                }
+                                else
+                                {
+                                    <span class="tag tag-muted">Registered</span>
+                                }
+                            </div>
+
+                            <dl class="fact-grid">
+                                <div>
+                                    <dt>Gender / age</dt>
+                                    <dd>@(donor.Gender ?? "—")@(donor.Age.HasValue ? " · " + donor.Age + " yrs" : "")</dd>
+                                </div>
+                                <div>
+                                    <dt>Eligibility</dt>
+                                    <dd>
+                                        @if (donor.IsEligibleToDonate)
+                                        {
+                                            <span style="color:var(--signal)">Eligible now</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color:var(--amber)">Ready in @donor.DaysUntilEligible day@(donor.DaysUntilEligible == 1 ? "" : "s")</span>
+                                        }
+                                    </dd>
+                                </div>
+                                @if (donor.ContactVisible)
+                                {
+                                    <div>
+                                        <dt>Phone</dt>
+                                        <dd><a href="tel:@donor.MobileNumber">@donor.MobileNumber</a></dd>
                                     </div>
                                     <div>
-                                        <div class="fw-bold" style="color:#1e293b;">@donor.FullName</div>
-                                        <span class="badge-soft-danger fw-bold">@donor.BloodGroup</span>
+                                        <dt>Email</dt>
+                                        <dd>@donor.EmailId</dd>
                                     </div>
-                                </div>
+                                }
+                                else
+                                {
+                                    <div style="grid-column:1 / -1">
+                                        <dt>Contact</dt>
+                                        <dd style="color:var(--muted)">
+                                            <i class="fas fa-lock" aria-hidden="true" style="font-size:.75rem;margin-right:4px"></i>
+                                            Phone and email are visible to signed-in donors
+                                        </dd>
+                                    </div>
+                                }
+                            </dl>
 
-                                <table class="table table-sm mb-3" style="font-size:.875rem;">
-                                    <tbody>
-                                        <tr>
-                                            <td class="text-muted fw-semibold border-0 py-1">Gender</td>
-                                            <td class="border-0 py-1">@donor.Gender</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted fw-semibold border-0 py-1">Age</td>
-                                            <td class="border-0 py-1">@(donor.Age.HasValue ? $"{donor.Age} yrs" : "—")</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted fw-semibold border-0 py-1">Phone</td>
-                                            <td class="border-0 py-1">
-                                                @if (donor.ContactVisible)
-                                                {
-                                                    <a href="tel:@donor.MobileNumber" class="text-dark">@donor.MobileNumber</a>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted small"><i class="fas fa-lock me-1"></i>Sign in to view</span>
-                                                }
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted fw-semibold border-0 py-1">Email</td>
-                                            <td class="border-0 py-1 small">
-                                                @if (donor.ContactVisible)
-                                                {
-                                                    @donor.EmailId
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted"><i class="fas fa-lock me-1"></i>Hidden</span>
-                                                }
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted fw-semibold border-0 py-1">Address</td>
-                                            <td class="border-0 py-1 small">@donor.Address</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted fw-semibold border-0 py-1">Eligibility</td>
-                                            <td class="border-0 py-1">
-                                                @if (donor.IsEligibleToDonate)
-                                                {
-                                                    <span class="badge-soft-success"><i class="fas fa-check-circle me-1"></i>Eligible</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="badge-soft-warning"><i class="fas fa-clock me-1"></i>@donor.DaysUntilEligible day(s)</span>
-                                                }
-                                            </td>
-                                        </tr>
-                                        @if (!string.IsNullOrEmpty(donor.Message))
-                                        {
-                                            <tr>
-                                                <td class="text-muted fw-semibold border-0 py-1">Note</td>
-                                                <td class="border-0 py-1 small fst-italic">@donor.Message</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
+                            @if (!string.IsNullOrEmpty(donor.Message))
+                            {
+                                <p style="font-size:.82rem;color:var(--muted);font-style:italic;margin:0">“@donor.Message”</p>
+                            }
 
-                                <div class="mt-auto">
-                                    <a class="btn btn-brand-red w-100" asp-action="Contact" asp-route-id="@donor.Id">
-                                        <i class="fas fa-hand-holding-heart me-2"></i>Request This Donor
-                                    </a>
-                                </div>
+                            <div class="donor-card-foot">
+                                <span class="meta">Donor #@donor.Id</span>
+                                <a class="btn btn-blood btn-sm" asp-action="Contact" asp-route-id="@donor.Id">
+                                    Request this donor <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                </a>
                             </div>
-                        </div>
+                        </article>
+                    </div>
+                }
+            </div>
+
+            <div class="mt-5">
+                @await Html.PartialAsync("_DonorPager", Model)
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                <h4>No donors match that search</h4>
+                <p>
+                    @if (!string.IsNullOrEmpty(selectedGroup) || !string.IsNullOrEmpty(location))
+                    {
+                        <span>Try a different blood group or a wider city, then search again.</span>
                     }
+                    else
+                    {
+                        <span>No donor profiles are registered yet. New donors appear here as soon as they join.</span>
+                    }
+                </p>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a class="btn btn-ghost" asp-action="Search">Clear filters</a>
+                    <a class="btn btn-blood" asp-controller="Emergency" asp-action="BloodRequests">
+                        Post an emergency request
+                    </a>
                 </div>
-            }
-            else
-            {
-                <div class="text-center py-5">
-                    <i class="fas fa-search fa-3x text-muted mb-3 d-block"></i>
-                    <h5 class="text-muted">No donors found matching your search criteria.</h5>
-                    <p class="text-muted small">Try a different blood group or location.</p>
-                </div>
-            }
+            </div>
         }
     </div>
 </section>
-
-@await Html.PartialAsync("_DonorPager", Model)

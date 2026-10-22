@@ -1,139 +1,129 @@
 @model BBDMS.Model.Models.ViewModels.DonorRegisterViewModel?
 @{
-    ViewData["Title"] = "Register as a Donor - Blood Bank";
+    ViewData["Title"] = "Register as a donor";
     var bloodGroups = ViewBag.BloodGroups as IEnumerable<BBDMS.Model.Models.Entities.BloodGroup>;
 }
 
 <div class="container auth-split-container">
-    <div class="w-100 auth-split-wrapper">
+    <div class="auth-split-wrapper w-100">
         <div class="row no-gutters">
-            <!-- Left Banner Side -->
             <div class="col-lg-5 d-none d-lg-block">
-                <div class="auth-banner-side" style="min-height: 650px;">
+                <div class="auth-banner-side">
                     <div>
-                        <div class="d-flex align-items-center mb-4">
-                            <img src="~/images/Logo.png" alt="Blood Bank Logo" style="height: 44px; filter: brightness(0) invert(1);" />
-                            <h4 class="text-white font-weight-bold ml-2 mb-0">Blood Bank</h4>
+                        <div class="d-flex align-items-center gap-2 mb-4">
+                            <img src="~/images/Logo.png" alt="" height="40" style="filter:brightness(0) invert(1);opacity:.95" />
+                            <span class="brand-word" style="color:#fbf6ef">BloodBank<em style="color:#ff9aa7">.</em></span>
                         </div>
-                        <h2 class="text-white font-weight-bold display-4 mb-3" style="font-size: 2.6rem; line-height: 1.2;">
-                            Be a Donor.<br />Be a Hero.
-                        </h2>
-                        <p class="text-white-50 lead" style="font-size: 1.1rem;">
-                            Your voluntary donation can save up to 3 precious lives. Join thousands of heroes making a lifesaving difference every day.
+                        <p class="eyebrow" style="color:rgba(255,246,238,.55)">Donor registration</p>
+                        <h2>Be a donor.<br />Be <em>someone's reason.</em></h2>
+                        <p style="margin-top:12px;max-width:34ch">
+                            Register once. We only contact you when a patient with a compatible group needs you.
                         </p>
+                        <ul class="auth-points">
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span>Verified donor profile and digital donor card</span></li>
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span>90-day eligibility tracking after each donation</span></li>
+                            <li><i class="fas fa-check" aria-hidden="true"></i><span>Your contact details stay hidden from the public</span></li>
+                        </ul>
                     </div>
-
-                    <div class="pt-4 border-top border-light" style="border-color: rgba(255,255,255,0.2) !important;">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-shield-alt fa-2x text-white mr-3"></i>
-                            <div>
-                                <strong class="text-white d-block">100% Secure & Verified</strong>
-                                <small class="text-white-50">Your contact info is used strictly for emergency blood matches.</small>
-                            </div>
-                        </div>
+                    <div style="border-top:1px solid rgba(255,246,238,.16);padding-top:16px" class="d-flex align-items-center gap-2">
+                        <i class="fas fa-shield-halved" aria-hidden="true" style="color:#ff9aa7"></i>
+                        <span style="font-size:.82rem;color:rgba(255,246,238,.66)">Contact information is used strictly for emergency blood matches.</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Form Side -->
             <div class="col-lg-7">
-                <div class="auth-form-side py-4">
-                    <div class="d-flex align-items-center mb-3">
-                        <img src="~/images/Logo.png" alt="Blood Bank Logo" style="height: 36px;" class="mr-2" />
-                        <h4 class="font-weight-bold mb-0">Blood <span class="text-danger">Bank</span></h4>
-                    </div>
+                <div class="auth-form-side">
+                    <a class="auth-brand-logo d-lg-none" asp-controller="Home" asp-action="Index">
+                        <img src="~/images/Logo.png" alt="" height="32" />
+                        <span>BloodBank<em class="text-danger" style="font-style:normal">.</em></span>
+                    </a>
 
-                    <h3 class="font-weight-bold mb-1">Create Your Account</h3>
-                    <p class="text-muted small mb-4">Fill out your donor profile to receive urgent match notifications.</p>
+                    <p class="eyebrow">Join the network</p>
+                    <h3>Create your donor account</h3>
+                    <p>Tell us your blood group and city so we can match you with nearby needs.</p>
 
                     @if (TempData["Error"] != null)
                     {
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <i class="fas fa-exclamation-circle mr-1"></i> @TempData["Error"]
-                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                        <div class="alert alert-danger mb-4" role="alert">
+                            <i class="fas fa-circle-exclamation" aria-hidden="true"></i>@TempData["Error"]
                         </div>
                     }
 
                     <form asp-action="Register" method="post">
                         @Html.AntiForgeryToken()
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="font-weight-bold small text-dark">Full Name</label>
-                                <input type="text" class="form-control form-control-modern" name="FullName" value="@Model?.FullName" required placeholder="John Doe" />
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="rName">Full name</label>
+                                <input id="rName" type="text" class="form-control" name="FullName" value="@Model?.FullName" required placeholder="Your full name" autocomplete="name" />
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="font-weight-bold small text-dark">Mobile Number</label>
-                                <input type="text" class="form-control form-control-modern" name="MobileNumber" value="@Model?.MobileNumber" required placeholder="017XXXXXXXX" maxlength="15" />
+                            <div class="col-md-6">
+                                <label for="rPhone">Mobile number</label>
+                                <input id="rPhone" type="tel" class="form-control" name="MobileNumber" value="@Model?.MobileNumber" required placeholder="01XXXXXXXXX" maxlength="15" autocomplete="tel" />
                             </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="font-weight-bold small text-dark">Email Address</label>
-                                <input type="email" class="form-control form-control-modern" name="EmailId" value="@Model?.EmailId" required placeholder="name@example.com" />
+                            <div class="col-md-6">
+                                <label for="rEmail">Email address</label>
+                                <input id="rEmail" type="email" class="form-control" name="EmailId" value="@Model?.EmailId" required placeholder="name@example.com" autocomplete="email" />
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="font-weight-bold small text-dark">Blood Group</label>
-                                <select name="BloodGroup" class="form-control form-control-modern" required>
-                                    <option value="">Select Blood Group</option>
-                                    @if (bloodGroups != null)
-                                    {
-                                        foreach (var bg in bloodGroups)
-                                        {                                            <option value="@bg.GroupName" selected="@(Model?.BloodGroup == bg.GroupName)">@bg.GroupName</option>
-                                    }
-                                }
-                                </select>
+                            <div class="col-md-3">
+                                <label for="rAge">Age</label>
+                                <input id="rAge" type="number" min="18" max="65" class="form-control" name="Age" value="@Model?.Age" required placeholder="25" />
                             </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="font-weight-bold small text-dark">Age</label>
-                                <input type="number" min="18" max="65" class="form-control form-control-modern" name="Age" value="@Model?.Age" required placeholder="e.g. 25" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="font-weight-bold small text-dark">Gender</label>
-                                <select name="Gender" class="form-control form-control-modern" required>
-                                    <option value="">Select Gender</option>
+                            <div class="col-md-3">
+                                <label for="rGender">Gender</label>
+                                <select id="rGender" name="Gender" class="form-select" required>
+                                    <option value="">Select</option>
                                     <option value="Male" selected="@(Model?.Gender == "Male")">Male</option>
                                     <option value="Female" selected="@(Model?.Gender == "Female")">Female</option>
                                     <option value="Other" selected="@(Model?.Gender == "Other")">Other</option>
                                 </select>
                             </div>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label class="font-weight-bold small text-dark">City / Address</label>
-                            <input type="text" class="form-control form-control-modern" name="Address" value="@Model?.Address" required placeholder="Area, City (e.g. Dhanmondi, Dhaka)" />
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label class="font-weight-bold small text-dark">Message / Motivation</label>
-                            <input type="text" class="form-control form-control-modern" name="Message" value="@Model?.Message" required placeholder="Ready to donate anytime for critical emergencies..." />
-                        </div>
-
-                        <div class="form-group mb-4">
-                            <label class="font-weight-bold small text-dark">Create Password</label>
-                            <input type="password" class="form-control form-control-modern" name="Password" required minlength="8" placeholder="At least 8 characters" />
-                            <small class="text-muted">Minimum 8 characters. Use a mix of letters, numbers and symbols.</small>
-                        </div>
-
-                        <div class="custom-control custom-checkbox mb-4">
-                            <input type="checkbox" class="custom-control-input" id="termsAgree" required checked>
-                            <label class="custom-control-label small text-muted" for="termsAgree">
-                                I agree to the <a href="#" class="text-danger">Terms & Conditions</a> and consent to be contacted for emergency blood donations.
-                            </label>
-                        </div>
-
-                        <button type="submit" class="btn btn-brand-red btn-block py-2 font-weight-bold mb-3 shadow">
-                            <i class="fas fa-heart mr-1"></i> Create Account
-                        </button>
-
-                        <div class="text-center pt-2">
-                            <span class="text-muted small">Already registered as a donor? </span>
-                            <a asp-action="Login" class="text-danger font-weight-bold small">Sign In</a>
+                            <div class="col-md-4">
+                                <label for="rGroup">Blood group</label>
+                                <select id="rGroup" name="BloodGroup" class="form-select" required>
+                                    <option value="">Select group</option>
+                                    @if (bloodGroups != null)
+                                    {
+                                        foreach (var bg in bloodGroups)
+                                        {
+                                            <option value="@bg.GroupName" selected="@(Model?.BloodGroup == bg.GroupName)">@bg.GroupName</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-8">
+                                <label for="rAddress">City / area</label>
+                                <input id="rAddress" type="text" class="form-control" name="Address" value="@Model?.Address" required placeholder="Area, city — e.g. Dhanmondi, Dhaka" autocomplete="address-level2" />
+                            </div>
+                            <div class="col-12">
+                                <label for="rMessage">Note for coordinators <span style="text-transform:none;letter-spacing:0;color:var(--soft)">(optional)</span></label>
+                                <input id="rMessage" type="text" class="form-control" name="Message" value="@Model?.Message" placeholder="e.g. available on weekends, can travel within the city" />
+                            </div>
+                            <div class="col-md-6">
+                                <label for="rPassword">Create password</label>
+                                <input id="rPassword" type="password" class="form-control" name="Password" required minlength="8" placeholder="At least 8 characters" autocomplete="new-password" />
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="checkbox" id="termsAgree" required checked />
+                                    <label class="form-check-label" for="termsAgree">
+                                        I agree to be contacted for emergency blood donations and accept the
+                                        <a asp-controller="Home" asp-action="Privacy" style="color:var(--blood);text-decoration:underline">privacy policy</a>.
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-blood btn-lg btn-block mt-2">
+                                    <i class="fas fa-heart" aria-hidden="true"></i> Create donor account
+                                </button>
+                            </div>
                         </div>
                     </form>
+
+                    <div class="auth-alt">
+                        <span>Already registered?</span>
+                        <a asp-action="Login">Sign in instead</a>
+                    </div>
                 </div>
             </div>
         </div>

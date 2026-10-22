@@ -238,28 +238,33 @@
 
             var HAD_STATUS_DATA = @(hasStatusData ? "true" : "false");
 
-            Chart.defaults.font.family = "'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif";
+            Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
             Chart.defaults.font.size = 12;
             Chart.defaults.plugins.tooltip.padding = 10;
-            Chart.defaults.plugins.tooltip.cornerRadius = 8;
+            Chart.defaults.plugins.tooltip.cornerRadius = 4;
 
             function palette() {
                 var css = getComputedStyle(document.documentElement);
                 var dark = document.documentElement.getAttribute('data-theme') === 'dark';
-                var read = function (name) { return css.getPropertyValue(name).trim(); };
+                // Aliases such as --brand resolve to "var(--blood)" as text, which is not a canvas
+                // colour, so read the literal design tokens and fall back only when one is missing.
+                var pick = function (name, fallback) {
+                    var value = css.getPropertyValue(name).trim();
+                    return value && value.indexOf('var(') !== 0 ? value : fallback;
+                };
 
                 return {
                     dark: dark,
-                    brand: read('--brand') || '#e63946',
-                    amber: read('--amber') || '#d97706',
-                    green: read('--green') || '#16a34a',
-                    blue: read('--blue') || '#2563eb',
-                    violet: read('--violet') || '#7c3aed',
-                    text: dark ? '#c3cfdf' : '#334155',
-                    tick: dark ? '#9aa9bf' : '#6b7280',
-                    grid: dark ? 'rgba(148,163,184,0.14)' : 'rgba(16,24,40,0.07)',
-                    surface: dark ? '#16203a' : '#ffffff',
-                    border: dark ? '#223047' : '#eaeef4'
+                    brand: pick('--blood', '#b3122b'),
+                    amber: pick('--amber', '#9a5c07'),
+                    green: pick('--signal', '#0e6b53'),
+                    blue: pick('--blue', '#1d4f7c'),
+                    violet: pick('--violet', '#4b3a6b'),
+                    text: pick('--text', '#423835'),
+                    tick: pick('--muted', '#736660'),
+                    grid: dark ? 'rgba(226,217,205,0.10)' : 'rgba(23,17,16,0.07)',
+                    surface: pick('--surface', '#fffdfa'),
+                    border: pick('--line', '#e2d9cd')
                 };
             }
 
@@ -402,7 +407,7 @@
                                 var ramp = [p.brand, p.brand, p.amber, p.amber, p.violet, p.violet, p.blue, p.blue];
                                 return ramp[index % ramp.length];
                             }),
-                            borderRadius: 8,
+                            borderRadius: 4,
                             maxBarThickness: 46,
                             borderSkipped: false
                         }]

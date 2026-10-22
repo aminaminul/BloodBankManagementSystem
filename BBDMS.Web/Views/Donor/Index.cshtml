@@ -1,110 +1,135 @@
 @model BBDMS.Model.Models.ViewModels.PagedResult<BBDMS.Model.Models.ViewModels.DonorListItemViewModel>
 @{
     ViewData["PagerAction"] = "Index";
-}
-@{
     ViewData["Title"] = "Blood Donor Directory";
 }
 
-<section class="page-hero-sm" style="background:linear-gradient(135deg,#e63946 0%,#9b1a26 100%); color:#fff; padding:56px 0 40px;">
+<section class="page-head">
     <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2" style="background:transparent; padding:0;">
-                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white-50">Home</a></li>
-                <li class="breadcrumb-item active text-white" aria-current="page">Donor Directory</li>
+        <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-action="Search">Find donors</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Directory</li>
             </ol>
         </nav>
-        <h1 class="fw-bold mb-1" style="font-size:2rem;">Blood Donor Directory</h1>
-        <p class="mb-0 text-white-50">Verified donors who are ready to help save lives.</p>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Verified network</p>
+                <h1>Blood donor directory.</h1>
+                <p>Every voluntary donor in the network, with eligibility and availability at a glance.</p>
+            </div>
+            <div class="page-head-actions">
+                <a class="btn btn-ghost" asp-action="Search">
+                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i> Filter by group &amp; city
+                </a>
+                <a class="btn btn-blood" asp-controller="Account" asp-action="Register">
+                    <i class="fas fa-heart" aria-hidden="true"></i> Become a donor
+                </a>
+            </div>
+        </div>
     </div>
 </section>
 
-<section class="py-5" style="background:#f8fafc;">
-    <div class="container py-2">
+<section class="section-tight">
+    <div class="container">
         @if (Model != null && Model.TotalItems > 0)
         {
+            <div class="section-head" style="margin-bottom:24px">
+                <div class="section-head-copy">
+                    <p class="eyebrow">Directory</p>
+                    <h2 class="section-title" style="font-size:clamp(1.5rem,2.4vw,2rem)">
+                        <span class="num">@Model.TotalItems</span> donor@(Model.TotalItems == 1 ? "" : "s") registered
+                    </h2>
+                </div>
+                <span class="tag tag-muted">Page @Model.PageIndex of @Math.Max(Model.TotalPages, 1)</span>
+            </div>
+
             <div class="row g-4">
                 @foreach (var donor in Model.Items)
                 {
-                    <div class="col-md-6 col-lg-4">
-                        <div class="card-modern h-100 d-flex flex-column">
-                            <div class="d-flex align-items-center mb-3">
-                                <div style="width:52px; height:52px; background:#fff5f5; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-right:1rem;">
-                                    <i class="fas fa-user-circle" style="font-size:1.8rem; color:#e63946;"></i>
-                                </div>
-                                <div>
-                                    <div class="fw-bold" style="color:#1e293b;">@donor.FullName</div>
-                                    <span class="badge-soft-danger fw-bold">@donor.BloodGroup</span>
+                    <div class="col-md-6 col-xl-4">
+                        <article class="donor-card" data-motion>
+                            <div class="donor-card-head">
+                                <span class="bg-glyph is-lg">@donor.BloodGroup</span>
+                                <div class="who">
+                                    <h3>@donor.FullName</h3>
+                                    <p class="where">
+                                        <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                        @(string.IsNullOrEmpty(donor.Address) ? "Location on request" : donor.Address)
+                                    </p>
                                 </div>
                             </div>
 
-                            <table class="table table-sm mb-3" style="font-size:.875rem;">
-                                <tbody>
-                                    <tr>
-                                        <td class="text-muted fw-semibold border-0 py-1">Gender</td>
-                                        <td class="border-0 py-1">@donor.Gender</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-muted fw-semibold border-0 py-1">Age</td>
-                                        <td class="border-0 py-1">@(donor.Age.HasValue ? $"{donor.Age} yrs" : "—")</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-muted fw-semibold border-0 py-1">Phone</td>
-                                        <td class="border-0 py-1">
-                                            @if (donor.ContactVisible)
-                                            {
-                                                <a href="tel:@donor.MobileNumber" class="text-dark">@donor.MobileNumber</a>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted small"><i class="fas fa-lock me-1"></i>Sign in</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-muted fw-semibold border-0 py-1">Address</td>
-                                        <td class="border-0 py-1 small">@donor.Address</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-muted fw-semibold border-0 py-1">Eligibility</td>
-                                        <td class="border-0 py-1">
-                                            @if (donor.IsEligibleToDonate)
-                                            {
-                                                <span class="badge-soft-success"><i class="fas fa-check-circle me-1"></i>Eligible</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge-soft-warning"><i class="fas fa-clock me-1"></i>@donor.DaysUntilEligible day(s)</span>
-                                            }
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <dl class="fact-grid">
+                                <div>
+                                    <dt>Gender / age</dt>
+                                    <dd>@(donor.Gender ?? "—")@(donor.Age.HasValue ? " · " + donor.Age + " yrs" : "")</dd>
+                                </div>
+                                <div>
+                                    <dt>Eligibility</dt>
+                                    <dd>
+                                        @if (donor.IsEligibleToDonate)
+                                        {
+                                            <span style="color:var(--signal)">Eligible now</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color:var(--amber)">Ready in @donor.DaysUntilEligible day@(donor.DaysUntilEligible == 1 ? "" : "s")</span>
+                                        }
+                                    </dd>
+                                </div>
+                                @if (donor.ContactVisible)
+                                {
+                                    <div>
+                                        <dt>Phone</dt>
+                                        <dd><a href="tel:@donor.MobileNumber">@donor.MobileNumber</a></dd>
+                                    </div>
+                                    <div>
+                                        <dt>Email</dt>
+                                        <dd>@donor.EmailId</dd>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div style="grid-column:1 / -1">
+                                        <dt>Contact</dt>
+                                        <dd style="color:var(--muted)">
+                                            <i class="fas fa-lock" aria-hidden="true" style="font-size:.75rem;margin-right:4px"></i>
+                                            Phone and email are visible to signed-in donors
+                                        </dd>
+                                    </div>
+                                }
+                            </dl>
 
                             @if (!string.IsNullOrEmpty(donor.Message))
                             {
-                                <p class="small text-muted fst-italic mb-3">&ldquo;@donor.Message&rdquo;</p>
+                                <p style="font-size:.82rem;color:var(--muted);font-style:italic;margin:0">“@donor.Message”</p>
                             }
 
-                            <div class="mt-auto">
-                                <a class="btn btn-brand-red w-100" asp-action="Contact" asp-route-id="@donor.Id">
-                                    <i class="fas fa-hand-holding-heart me-2"></i>Request This Donor
+                            <div class="donor-card-foot">
+                                <span class="meta">Donor #@donor.Id</span>
+                                <a class="btn btn-blood btn-sm" asp-action="Contact" asp-route-id="@donor.Id">
+                                    Request this donor <i class="fas fa-arrow-right" aria-hidden="true"></i>
                                 </a>
                             </div>
-                        </div>
+                        </article>
                     </div>
                 }
+            </div>
+
+            <div class="mt-5">
+                @await Html.PartialAsync("_DonorPager", Model)
             </div>
         }
         else
         {
-            <div class="text-center py-5">
-                <i class="fas fa-users fa-3x text-muted mb-3 d-block"></i>
-                <h5 class="text-muted">No donors found at the moment.</h5>
-                <a asp-controller="Account" asp-action="Register" class="btn btn-brand-red mt-3">Become a Donor</a>
+            <div class="empty-state">
+                <i class="fas fa-users" aria-hidden="true"></i>
+                <h4>No donors registered yet</h4>
+                <p>New donor profiles appear here as soon as they join the network. Be the first in your area.</p>
+                <a asp-controller="Account" asp-action="Register" class="btn btn-blood">Become a donor</a>
             </div>
         }
     </div>
 </section>
-
-@await Html.PartialAsync("_DonorPager", Model)

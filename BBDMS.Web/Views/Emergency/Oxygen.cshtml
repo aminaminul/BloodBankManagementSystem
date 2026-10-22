@@ -1,100 +1,110 @@
 @model IEnumerable<BBDMS.Model.Models.Entities.OxygenService>
 @{
     ViewData["Title"] = "Oxygen When You Need It - Blood Bank";
+    var providers = Model ?? Enumerable.Empty<BBDMS.Model.Models.Entities.OxygenService>();
 }
 
-<div class="container my-5">
-    <div class="mb-4">
-        <h2 class="font-weight-bold mb-1">Oxygen When You Need It.</h2>
-        <p class="text-muted">Find medical oxygen cylinder providers, concentrators, and 24/7 home refill delivery near you.</p>
+<section class="page-head">
+    <div class="container">
+        <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-action="Index">Emergency</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Medical oxygen</li>
+            </ol>
+        </nav>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Oxygen supply</p>
+                <h1>Medical oxygen, delivered when it counts.</h1>
+                <p>Cylinders, concentrators and 24/7 refills from verified suppliers, with home delivery where available.</p>
+            </div>
+            <div class="page-head-actions">
+                <a class="btn btn-ghost" asp-action="Hospitals">
+                    <i class="fas fa-hospital" aria-hidden="true"></i> Hospitals with ICU
+                </a>
+            </div>
+        </div>
     </div>
+</section>
 
-    <!-- Filter Card -->
-    <div class="card card-modern border-0 mb-4 p-3 bg-white">
-        <form method="get" asp-action="Oxygen">
-            <div class="row align-items-end">
-                <div class="col-md-5 mb-3 mb-md-0">
-                    <label class="font-weight-bold small text-dark"><i class="fas fa-map-marker-alt text-danger mr-1"></i> Search by City / Location</label>
-                    <input type="text" name="location" value="@ViewBag.Location" class="form-control form-control-modern" placeholder="e.g. Dhaka, Chittagong, Sylhet..." />
+<section class="section-tight">
+    <div class="container">
+
+        <form method="get" asp-action="Oxygen" class="filter-bar" role="search" data-reveal>
+            <div class="filter-bar-grid">
+                <div>
+                    <label for="oxyLocation">City or location</label>
+                    <input id="oxyLocation" type="text" name="location" value="@ViewBag.Location" class="form-control" placeholder="e.g. Dhaka, Chattogram, Sylhet" autocomplete="address-level2" />
                 </div>
-                <div class="col-md-4 mb-3 mb-md-0 d-flex align-items-center pt-md-3">
-                    <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="homeDeliveryOnly" name="homeDeliveryOnly" value="true" @(ViewBag.HomeDeliveryOnly == true ? "checked" : "") />
-                        <label class="custom-control-label font-weight-bold text-dark small" for="homeDeliveryOnly">Home Delivery Available Only</label>
-                    </div>
+                <div class="filter-checks">
+                    <label class="check">
+                        <input type="checkbox" name="homeDeliveryOnly" value="true" @(ViewBag.HomeDeliveryOnly == true ? "checked" : "") />
+                        <span>Home delivery only</span>
+                    </label>
                 </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-brand-red btn-block py-2 font-weight-bold">
-                        <i class="fas fa-search mr-1"></i> Search Oxygen
-                    </button>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-ink"><i class="fas fa-magnifying-glass" aria-hidden="true"></i> Search suppliers</button>
+                    <a class="btn btn-ghost" asp-action="Oxygen">Reset</a>
                 </div>
             </div>
         </form>
-    </div>
 
-    <!-- Oxygen Suppliers Grid -->
-    @if (Model != null && Model.Any())
-    {
-        <div class="row">
-            @foreach (var oxy in Model)
-            {
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card card-modern h-100 p-4">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="service-icon-box mr-3 mb-0" style="width: 50px; height: 50px; min-width: 50px; font-size: 1.3rem;">
-                                <i class="fas fa-lungs"></i>
+        @if (providers.Any())
+        {
+            <div class="provider-grid mt-5">
+                @foreach (var oxy in providers)
+                {
+                    var inStock = oxy.OxygenAvailability == "In Stock";
+                    <article class="provider-card" data-reveal>
+                        <header class="provider-head">
+                            <span class="provider-ico"><i class="fas fa-lungs" aria-hidden="true"></i></span>
+                            <div>
+                                <h3>@oxy.ProviderName</h3>
+                                <p class="meta"><i class="fas fa-location-dot" aria-hidden="true"></i>@oxy.Location</p>
                             </div>
-                            <div class="overflow-hidden">
-                                <h6 class="font-weight-bold text-dark mb-0 text-truncate">@oxy.ProviderName</h6>
-                                <small class="text-muted"><i class="fas fa-map-marker-alt text-danger mr-1"></i>@oxy.Location</small>
-                            </div>
-                        </div>
+                        </header>
 
-                        <div class="mb-3 d-flex flex-wrap gap-1">
-                            @if (oxy.OxygenAvailability == "In Stock")
-                            {
-                                <span class="badge badge-soft-success mr-1"><i class="fas fa-check-circle mr-1"></i>In Stock</span>
-                            }
-                            else
-                            {
-                                <span class="badge badge-soft-warning mr-1"><i class="fas fa-clock mr-1"></i>@oxy.OxygenAvailability</span>
-                            }
-
+                        <div class="provider-tags">
+                            <span class="@(inStock ? "is-ok" : "")">
+                                <i class="fas @(inStock ? "fa-circle-check" : "fa-clock")" aria-hidden="true"></i>@oxy.OxygenAvailability
+                            </span>
                             @if (oxy.HomeDeliveryAvailable)
                             {
-                                <span class="badge badge-soft-primary"><i class="fas fa-truck mr-1"></i>Home Delivery</span>
+                                <span class="is-blood"><i class="fas fa-truck" aria-hidden="true"></i>Home delivery</span>
                             }
                         </div>
 
-                        <div class="small text-muted mb-3">
-                            <div><strong>Cylinder Capacity:</strong> @oxy.CylinderCapacity</div>
-                            @if (!string.IsNullOrEmpty(oxy.ServiceDetails))
-                            {
-                                <div class="mt-1 text-truncate" title="@oxy.ServiceDetails">@oxy.ServiceDetails</div>
-                            }
-                        </div>
+                        <dl class="provider-facts">
+                            <div><dt>Cylinder capacity</dt><dd>@oxy.CylinderCapacity</dd></div>
+                        </dl>
 
-                        <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                        @if (!string.IsNullOrEmpty(oxy.ServiceDetails))
+                        {
+                            <p class="provider-note line-clamp-2">@oxy.ServiceDetails</p>
+                        }
+
+                        <footer>
                             <div>
-                                <small class="text-muted d-block">Contact:</small>
-                                <strong class="text-dark small"><i class="fas fa-phone mr-1 text-danger"></i>@oxy.ContactNumber</strong>
+                                <span class="meta-label">Order line</span>
+                                <a class="phone" href="tel:@oxy.ContactNumber">@oxy.ContactNumber</a>
                             </div>
-                            <a href="tel:@oxy.ContactNumber" class="btn btn-sm btn-brand-red font-weight-bold">
-                                Order / Refill
+                            <a href="tel:@oxy.ContactNumber" class="btn btn-blood btn-sm">
+                                <i class="fas fa-phone" aria-hidden="true"></i> Order / refill
                             </a>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="card card-modern p-5 text-center my-4">
-            <i class="fas fa-lungs fa-3x text-muted mb-3"></i>
-            <h5>No oxygen providers found matching your location</h5>
-            <p class="text-muted">Try clearing your filters or calling our central emergency helpline directly.</p>
-            <a asp-action="Oxygen" class="btn btn-outline-danger font-weight-bold mx-auto px-4">Clear Filter</a>
-        </div>
-    }
-</div>
+                        </footer>
+                    </article>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state mt-5">
+                <i class="fas fa-lungs" aria-hidden="true"></i>
+                <h4>No oxygen suppliers match that search</h4>
+                <p>Clear the filters, or call the central emergency helpline and we will source oxygen for you.</p>
+                <a asp-action="Oxygen" class="btn btn-ink">Clear filters</a>
+            </div>
+        }
+    </div>
+</section>

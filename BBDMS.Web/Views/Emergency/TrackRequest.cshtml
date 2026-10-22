@@ -4,16 +4,30 @@
     var contact = ViewBag.Contact as string;
 }
 
-<section class="page-hero-sm">
+<section class="page-head">
     <div class="container">
-        <nav aria-label="breadcrumb">
+        <nav aria-label="Breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Track Request</li>
+                <li class="breadcrumb-item"><a asp-action="BloodRequests">Blood requests</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Track request</li>
             </ol>
         </nav>
-        <h1 class="fw-bold mb-1">Track Your Emergency Request</h1>
-        <p class="mb-0">Enter your contact number to see the live status of a blood request.</p>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Live status</p>
+                <h1>Track your emergency request.</h1>
+                <p>Use your tracking token or the contact number you posted with to see live status.</p>
+            </div>
+            <div class="page-head-actions">
+                <a class="btn btn-ghost" asp-action="CreateBloodRequest">
+                    <i class="fas fa-plus" aria-hidden="true"></i> New request
+                </a>
+                <a class="btn btn-blood" asp-action="BloodRequests">
+                    <i class="fas fa-list" aria-hidden="true"></i> Request board
+                </a>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -23,21 +37,21 @@
             <div class="col-lg-8">
 
                 <!-- Lookup form -->
-                <div class="card-modern mb-4">
+                <div class="filter-bar mb-4">
                     <form method="get" asp-action="TrackRequest">
-                        <div class="row g-2">
-                            <div class="col-md-6">
-                                <label class="form-label"><i class="fas fa-key text-primary me-1"></i>Tracking Token</label>
-                                <input type="text" name="token" value="@ViewBag.Token" class="form-control form-control-modern" placeholder="e.g. 128-bit secure token" />
+                        <div class="row g-3 align-items-end">
+                            <div class="col-md-5">
+                                <label for="trackToken">Tracking token</label>
+                                <input id="trackToken" type="text" name="token" value="@ViewBag.Token" class="form-control" placeholder="Paste the token from your request" />
                             </div>
-                            <div class="col-md-6">
-                                <label class="form-label"><i class="fas fa-phone text-danger me-1"></i>Or Contact Number</label>
-                                <div class="input-group">
-                                    <input type="text" name="contact" value="@contact" class="form-control form-control-modern" placeholder="e.g. 01711223344" />
-                                    <div class="input-group-append">
-                                        <button type="submit" class="btn btn-brand-red"><i class="fas fa-search"></i> Track</button>
-                                    </div>
-                                </div>
+                            <div class="col-md-4">
+                                <label for="trackContact">Or contact number</label>
+                                <input id="trackContact" type="text" name="contact" value="@contact" class="form-control" placeholder="e.g. 01711223344" autocomplete="tel" />
+                            </div>
+                            <div class="col-md-3">
+                                <button type="submit" class="btn btn-blood w-100" style="height:46px">
+                                    <i class="fas fa-magnifying-glass" aria-hidden="true"></i> Track request
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -45,10 +59,11 @@
 
                 @if (Model == null)
                 {
-                    <div class="card-modern text-center py-5">
-                        <i class="fas fa-stream fa-2x text-muted mb-3 d-block"></i>
-                        <h5 class="fw-bold">No request found</h5>
-                        <p class="text-muted mb-0">We couldn't find a request for that contact number. Please check and try again.</p>
+                    <div class="empty-state is-compact">
+                        <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+                        <h4>No request found</h4>
+                        <p>We couldn't find a request for that token or contact number. Check the details and try again.</p>
+                        <a class="btn btn-ghost" asp-action="BloodRequests">Browse the request board</a>
                     </div>
                 }
                 else
@@ -68,22 +83,18 @@
                         var shareMsg = $"🚨 URGENT: {reqUnits} Unit(s) of {reqGroup} Blood needed at {reqHospital}. Track request and respond here: {shareUrl}";
                         var waUrl = "https://api.whatsapp.com/send?text=" + System.Net.WebUtility.UrlEncode(shareMsg);
 
-                        <div class="card bg-light border shadow-sm rounded-3 mb-4">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-                                    <div class="small">
-                                        <i class="fas fa-link text-primary me-1"></i> <strong>Private Tracking &amp; Share Link:</strong>
-                                        <span class="text-muted d-block">Share this secure link with hospital staff, family, or volunteer groups.</span>
-                                    </div>
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="navigator.clipboard.writeText('@shareUrl'); alert('Tracking link copied to clipboard!');">
-                                            <i class="fas fa-copy me-1"></i> Copy Link
-                                        </button>
-                                        <a href="@waUrl" target="_blank" rel="noopener noreferrer" class="btn btn-success btn-sm text-white">
-                                            <i class="fab fa-whatsapp me-1"></i> WhatsApp
-                                        </a>
-                                    </div>
-                                </div>
+                        <div class="share-bar mb-4">
+                            <div>
+                                <span class="meta-label">Private tracking link</span>
+                                <p class="panel-note" style="margin:0">Share this secure link with hospital staff, family, or volunteer groups.</p>
+                            </div>
+                            <div class="share-bar-actions">
+                                <button type="button" class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('@shareUrl'); alert('Tracking link copied to clipboard!');">
+                                    <i class="fas fa-copy" aria-hidden="true"></i> Copy link
+                                </button>
+                                <a href="@waUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm share-wa">
+                                    <i class="fab fa-whatsapp" aria-hidden="true"></i> WhatsApp
+                                </a>
                             </div>
                         </div>
                     }
@@ -97,20 +108,20 @@
                         ("Support Provided", "The necessary blood support has been provided.", provided, false, provided ? baseTime.AddHours(1).ToString("hh:mm tt") : "Pending")
                     };
 
-                    <div class="card-modern mb-4">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                            <h5 class="fw-bold mb-0">Request #@Model.ID</h5>
-                            <span class="badge-soft-danger">@(Model.BloodGroup ?? Model.BloodRequireFor) Blood</span>
+                    <div class="panel mb-4">
+                        <div class="panel-head">
+                            <h2>Request #@Model.ID</h2>
+                            <span class="badge-soft is-alert">@(Model.BloodGroup ?? Model.BloodRequireFor) blood</span>
                         </div>
-                        <div class="row g-3 small">
-                            <div class="col-sm-4"><span class="text-muted d-block">Hospital</span><span class="fw-semibold text-dark">@(Model.HospitalName ?? "Emergency Facility")</span></div>
-                            <div class="col-sm-4"><span class="text-muted d-block">Location</span><span class="fw-semibold text-dark">@(Model.Location ?? "—")</span></div>
-                            <div class="col-sm-4"><span class="text-muted d-block">Units</span><span class="fw-semibold text-dark">@Model.UnitsRequired</span></div>
-                        </div>
+                        <dl class="detail-list">
+                            <div><dt>Hospital</dt><dd>@(Model.HospitalName ?? "Emergency facility")</dd></div>
+                            <div><dt>Location</dt><dd>@(Model.Location ?? "—")</dd></div>
+                            <div><dt>Units required</dt><dd>@Model.UnitsRequired</dd></div>
+                        </dl>
                     </div>
 
-                    <div class="card-modern">
-                        <h5 class="fw-bold mb-4">Request Status</h5>
+                    <div class="panel">
+                        <h2>Request status</h2>
                         <ul class="track-timeline">
                             @foreach (var step in steps)
                             {

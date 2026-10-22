@@ -7,16 +7,7 @@
         aria-label="@(isDark ? "Switch to light mode" : "Switch to dark mode")"
         title="@(isDark ? "Light mode" : "Dark mode")">
     <span class="theme-toggle-track" aria-hidden="true">
-        <i class="fas fa-sun"></i>
         <i class="fas fa-moon"></i>
-        <span class="theme-toggle-thumb"></span>
+        <i class="fas fa-sun"></i>
     </span>
 </button>
-
-@* Non-JavaScript fallback: the button posts through this form, and signed-in donors/admins
-   get the choice stored on their account record by /Theme/Set. *@
-<form id="themeForm" method="post" asp-controller="Theme" asp-action="Set" class="d-none" aria-hidden="true">
-    @Html.AntiForgeryToken()
-    <input type="hidden" name="theme" value="@theme" />
-    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
-</form>

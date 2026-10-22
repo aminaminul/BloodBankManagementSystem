@@ -1,249 +1,326 @@
-// Motion UI Controller
+/* =============================================================================
+   BBDMS Motion — "Vital Signs"
+   -----------------------------------------------------------------------------
+   Rules we hold ourselves to:
+   • Nothing is hidden unless html.bbdms-motion is present (set in <head> only when
+     the visitor has not asked for reduced motion), so content is never blocked.
+   • Only transform/opacity are animated — no layout thrash, no scroll handlers
+     doing work per element (one rAF-throttled passive listener).
+   • Elements already in view on load animate in immediately with a small
+     stagger; everything else waits for an IntersectionObserver.
+   • Desktop-only affordances (magnetic buttons) check pointer capability.
+   ============================================================================= */
 (function () {
     'use strict';
 
-    var root = document.documentElement;
-    var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var enabled = root.classList.contains('bbdms-motion') && !prefersReduced;
+    var doc = document;
+    var root = doc.documentElement;
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var enabled = root.classList.contains('bbdms-motion') && !reduceMotion;
+    var hasIO = 'IntersectionObserver' in window;
 
+    /* Elements that get a reveal even on pages that do not opt in explicitly.
+       Kept to containers/labels rather than every card to stay cheap. */
     var AUTO_SELECTOR = [
+        '.page-head > .container > *',
+        '.section-head',
         '.card-modern',
         '.stat-card',
-        '.service-cat-card',
-        '.svc-card',
-        '.donor-row',
-        '.filter-bar',
-        '.stat-item',
-        '.section-title',
-        '.section-sub',
-        '.eyebrow',
         '.hotline-item',
-        '.page-hero-sm .container > *',
-        '.hero-modern .container > .row > *'
+        '.empty-state',
+        '.track-timeline',
+        '.chart-frame'
     ].join(', ');
 
-    var delays = new WeakMap();
+    var STAGGER_TARGETS = [
+        '.stat-strip',
+        '.service-index',
+        '.group-grid',
+        '.capacity-grid',
+        '.steps',
+        '.ledger',
+        '.row'
+    ].join(', ');
 
-    function markRise(element, delay) {
-        if (!element || element.__moRisen) return;
-        element.__moRisen = true;
+    var delayMap = new WeakMap();
+    var seen = new WeakSet();
 
-        if (!enabled) {
-            element.classList.remove('mo-reveal');
-            return;
-        }
-
-        if (delay) element.style.setProperty('--mo-delay', delay + 'ms');
-        element.classList.remove('mo-reveal');
-        element.classList.add('mo-rise');
-        element.addEventListener('animationend', function (event) {
-            if (event.target !== element) return;
-            element.classList.remove('mo-rise');
-            element.style.removeProperty('--mo-delay');
-            element.style.removeProperty('opacity');
-        }, { once: true });
-    }
-
-    // Element Reveal
-    function reveal(element, delay) {
-        if (typeof element === 'string') element = document.querySelector(element);
-        if (element) markRise(element, delay || 0);
-    }
-
-    function assignStaggerDelay(container, step, maxSteps) {
-        var children = Array.prototype.slice.call(container.children);
+    /* ── Stagger assignment ─────────────────────────────────────────────── */
+    function assignStagger(group, step, max) {
+        var children = Array.prototype.slice.call(group.children);
         children.forEach(function (child, index) {
-            var target = child.matches && child.matches(AUTO_SELECTOR) ? child : child.querySelector ? child.querySelector(AUTO_SELECTOR) : null;
-            if (!target || delays.has(target)) return;
-            delays.set(target, Math.min(index, maxSteps) * step);
+            if (!child || child.nodeType !== 1) return;
+            if (delayMap.has(child)) return;
+            delayMap.set(child, Math.min(index, max) * step);
         });
     }
 
+    function collectGroups() {
+        doc.querySelectorAll('[data-motion-stagger]').forEach(function (group) {
+            assignStagger(group, 70, 9);
+        });
+        doc.querySelectorAll(STAGGER_TARGETS).forEach(function (group) {
+            if (group.hasAttribute('data-motion-stagger')) return;
+            if (group.matches('.row') && group.closest('.ledger')) return;
+            assignStagger(group, 65, 8);
+        });
+    }
+
+    /* ── Targets ─────────────────────────────────────────────────────────── */
     function collectTargets() {
         var targets = [];
-        var add = function (el) {
-            if (el.tagName === 'LI') return;
+        var push = function (el) {
+            if (!el || seen.has(el) || el.hasAttribute('data-motion') && el.getAttribute('data-motion') === 'none') return;
+            if (el.closest('tbody')) return;
             targets.push(el);
         };
 
-        document.querySelectorAll(AUTO_SELECTOR).forEach(add);
-        document.querySelectorAll('[data-motion]').forEach(function (el) {
-            if (el.getAttribute('data-motion') === 'none') return;
-            add(el);
-        });
-        document.querySelectorAll('[data-motion-stagger] > *').forEach(add);
-
-        document.querySelectorAll('.row').forEach(function (row) { assignStaggerDelay(row, 70, 8); });
-        document.querySelectorAll('[data-motion-stagger]').forEach(function (group) { assignStaggerDelay(group, 90, 10); });
-
-        var mobileSafe = [];
-        document.querySelectorAll('[data-motion-delay]').forEach(function (el) {
-            delays.set(el, parseInt(el.getAttribute('data-motion-delay'), 10) || 0);
+        doc.querySelectorAll('[data-motion]').forEach(push);
+        doc.querySelectorAll('[data-motion-stagger] > *').forEach(push);
+        doc.querySelectorAll(AUTO_SELECTOR).forEach(function (el) {
+            // Cards inside a staggered group are handled by the group itself.
+            if (el.parentElement && el.parentElement.hasAttribute('data-motion-stagger')) return;
+            push(el);
         });
 
-        targets.forEach(function (el) {
-            if (el.__moRisen || el.getAttribute('data-motion') === 'none') return;
-            if (el.closest('tbody')) return;
-            mobileSafe.push(el);
-        });
-
-        return mobileSafe;
+        return targets;
     }
 
-    // Scroll Observer
-    function observeReveals() {
-        var targets = collectTargets();
-        if (!targets.length) return;
+    function reveal(el, delay) {
+        if (!el || seen.has(el)) return;
+        seen.add(el);
+        el.classList.remove('mo-reveal');
+        if (!enabled) return;
+        el.style.setProperty('--mo-delay', (delay || 0) + 'ms');
+        el.classList.add('mo-rise');
+        el.addEventListener('animationend', function (event) {
+            if (event.target !== el) return;
+            el.classList.remove('mo-rise');
+            el.style.removeProperty('--mo-delay');
+        }, { once: true });
+    }
 
-        if (!('IntersectionObserver' in window)) {
-            targets.forEach(function (el) { markRise(el, delays.get(el) || 0); });
-            return;
+    /* ── Counters ────────────────────────────────────────────────────────── */
+    function animateCounter(el) {
+        if (el.dataset.counted === '1') return;
+        el.dataset.counted = '1';
+
+        var declared = el.getAttribute('data-count-to');
+        var raw = declared !== null ? declared : (el.textContent || '').trim();
+        if (!/^\d[\d,]*$/.test(raw)) { el.textContent = raw; return; }
+
+        var target = parseInt(raw.replace(/,/g, ''), 10);
+        if (!isFinite(target)) { el.textContent = raw; return; }
+        if (!enabled || target < 5 || doc.hidden) { el.textContent = target.toLocaleString('en-US'); return; }
+
+        var duration = 700;
+        var start = null;
+        var finished = false;
+        var settle = function () {
+            if (finished) return;
+            finished = true;
+            el.textContent = target.toLocaleString('en-US');
+        };
+
+        el.textContent = '0';
+
+        function frame(now) {
+            if (finished) return;
+            if (start === null) start = now;
+            var progress = Math.min((now - start) / duration, 1);
+            var eased = 1 - Math.pow(1 - progress, 3);
+            el.textContent = Math.round(target * eased).toLocaleString('en-US');
+            if (progress < 1) window.requestAnimationFrame(frame);
+            else finished = true;
         }
+        window.requestAnimationFrame(frame);
+        // If frames are throttled (hidden tab, backgrounded browser) the value
+        // must still end up correct rather than stuck at zero.
+        window.setTimeout(settle, duration + 450);
+    }
 
-        var observer = new IntersectionObserver(function (entries) {
+    function initCounters() {
+        var counters = doc.querySelectorAll('[data-count-to], .stat-val, .stat-number, .svc-count');
+        if (!counters.length) return;
+        if (!hasIO) { counters.forEach(animateCounter); return; }
+
+        var io = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
                 if (!entry.isIntersecting) return;
-                markRise(entry.target, delays.get(entry.target) || 0);
-                observer.unobserve(entry.target);
+                io.unobserve(entry.target);
+                animateCounter(entry.target);
             });
-        }, { threshold: 0, rootMargin: '0px 0px -40px 0px' });
+        }, { threshold: 0.4 });
 
-        targets.forEach(function (el) {
-            el.classList.add('mo-reveal');
-            observer.observe(el);
-        });
-
-        window.addEventListener('beforeprint', function () {
-            targets.forEach(function (el) { observer.unobserve(el); markRise(el, 0); });
-        });
-    }
-
-    // Counter Animations
-    function animateCounters() {
-        var counters = document.querySelectorAll('.stat-val, .stat-number, .svc-count, [data-count-to]');
-        counters.forEach(function (el) {
-            if (el.children.length > 0 || el.__moCounted) return;
-
-            var raw = (el.textContent || '').trim();
-            if (!/^[\d,]+(\.\d+)?$/.test(raw)) return;
-
-            var decimals = raw.indexOf('.') > -1 ? raw.split('.')[1].length : 0;
-            var target = parseFloat(raw.replace(/,/g, ''));
-            if (!isFinite(target)) return;
-            el.__moCounted = true;
-            if (!enabled || target < 10) return;
-
-            var duration = 1100;
-            var start = null;
-
-            function frame(timestamp) {
-                if (start === null) start = timestamp;
-                var progress = Math.min((timestamp - start) / duration, 1);
-                var eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
-                var value = target * eased;
-                el.textContent = value.toLocaleString('en-US', {
-                    minimumFractionDigits: decimals,
-                    maximumFractionDigits: decimals
-                });
-                if (progress < 1) window.requestAnimationFrame(frame);
-                else el.textContent = raw;
-            }
-
-            el.textContent = '0';
-            window.requestAnimationFrame(frame);
+        counters.forEach(function (counter) {
+            // Only numeric leaves are animated.
+            if (counter.querySelector('i') || counter.querySelector('span')) return;
+            var text = (counter.textContent || '').trim();
+            if (!/^\d[\d,]*$/.test(text)) return;
+            io.observe(counter);
         });
     }
 
-    // Progress Bar Animations
-    function animateProgressBars() {
-        document.querySelectorAll('.progress-bar[style*="width"]').forEach(function (bar) {
-            if (bar.__moBar) return;
-            bar.__moBar = true;
-
-            var target = bar.style.width;
-            if (!enabled) return;
-
-            bar.style.width = '0%';
-            window.setTimeout(function () {
-                bar.style.transition = 'width .9s cubic-bezier(.16,1,.3,1)';
-                bar.style.width = target;
-                window.setTimeout(function () { bar.style.removeProperty('transition'); }, 1000);
-            }, 180);
+    /* ── Meters: draw on enter ───────────────────────────────────────────── */
+    function initMeters() {
+        var fills = doc.querySelectorAll('.meter-fill');
+        if (!fills.length) return;
+        fills.forEach(function (fill) {
+            var width = fill.style.width;
+            fill.dataset.targetWidth = width;
+            if (enabled) fill.style.width = '0%';
         });
+        var draw = function (fill) {
+            fill.style.width = fill.dataset.targetWidth || fill.style.width;
+        };
+        if (!enabled || !hasIO) { fills.forEach(draw); return; }
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                io.unobserve(entry.target);
+                window.setTimeout(function () { draw(entry.target); }, 120);
+            });
+        }, { threshold: 0.3 });
+        fills.forEach(function (fill) { io.observe(fill); });
     }
 
-    // Timeline Animations
-    function animateTimelines() {
-        document.querySelectorAll('.track-timeline').forEach(function (timeline) {
-            function draw() {
-                if (timeline.__moDrawn) return;
-                timeline.__moDrawn = true;
+    /* ── Timelines (live tracking pages) ─────────────────────────────────── */
+    function initTimelines() {
+        doc.querySelectorAll('.track-timeline').forEach(function (timeline) {
+            var draw = function () {
+                if (timeline.dataset.drawn === '1') return;
+                timeline.dataset.drawn = '1';
                 timeline.classList.add('is-drawn');
-                if (!enabled) return;
                 Array.prototype.forEach.call(timeline.children, function (item, index) {
                     item.style.setProperty('--i', index);
                 });
-            }
-
-            if (!('IntersectionObserver' in window)) { draw(); return; }
-
+            };
+            if (!hasIO) { draw(); return; }
             var io = new IntersectionObserver(function (entries) {
                 entries.forEach(function (entry) {
                     if (!entry.isIntersecting) return;
-                    draw();
                     io.disconnect();
+                    draw();
                 });
             }, { threshold: 0 });
             io.observe(timeline);
         });
     }
 
-    // Scroll State Tracking
-    function initScrollState() {
-        var lastState = false;
-        var apply = function () {
-            var scrolled = window.scrollY > 12;
-            if (scrolled === lastState) return;
-            lastState = scrolled;
-            document.body.classList.toggle('mo-scrolled', scrolled);
+    /* ── Scroll progress ─────────────────────────────────────────────────── */
+    function initScrollProgress() {
+        var bar = doc.querySelector('[data-scroll-progress]');
+        if (!bar) return;
+        var raf = null;
+        var update = function () {
+            raf = null;
+            var height = doc.documentElement.scrollHeight - window.innerHeight;
+            var progress = height > 0 ? Math.min(Math.max(window.scrollY / height, 0), 1) : 0;
+            bar.style.transform = 'scaleX(' + progress.toFixed(4) + ')';
         };
-
-        window.addEventListener('scroll', function () { window.requestAnimationFrame(apply); }, { passive: true });
-        apply();
+        window.addEventListener('scroll', function () {
+            if (raf !== null) return;
+            raf = window.requestAnimationFrame(update);
+        }, { passive: true });
+        window.addEventListener('resize', update, { passive: true });
+        update();
     }
 
-    // Tilt Hover Effect
-    function initTiltHover() {
-        if (!enabled || window.matchMedia('(hover: none)').matches) return;
+    /* ── Magnetic CTAs (pointer devices only) ────────────────────────────── */
+    function initMagnetic() {
+        if (!enabled || !window.matchMedia || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
 
-        document.querySelectorAll('.stat-card').forEach(function (card) {
-            card.addEventListener('pointermove', function (event) {
-                var rect = card.getBoundingClientRect();
-                card.style.setProperty('--mo-x', ((event.clientX - rect.left) / rect.width * 100).toFixed(1) + '%');
-                card.style.setProperty('--mo-y', ((event.clientY - rect.top) / rect.height * 100).toFixed(1) + '%');
+        doc.querySelectorAll('[data-magnetic]').forEach(function (el) {
+            var strength = 6;
+            el.addEventListener('pointermove', function (event) {
+                var rect = el.getBoundingClientRect();
+                var dx = (event.clientX - rect.left - rect.width / 2) / rect.width;
+                var dy = (event.clientY - rect.top - rect.height / 2) / rect.height;
+                el.style.transform = 'translate3d(' + (dx * strength).toFixed(2) + 'px,' + (dy * strength).toFixed(2) + 'px,0)';
+            });
+            el.addEventListener('pointerleave', function () {
+                el.style.transform = '';
             });
         });
     }
 
-    // Initialization
-    function init() {
-        observeReveals();
-        animateCounters();
-        animateProgressBars();
-        animateTimelines();
-        initScrollState();
-        initTiltHover();
+    /* ── Reveal orchestration ────────────────────────────────────────────── */
+    function initReveals() {
+        collectGroups();
+        var targets = collectTargets();
+        if (!targets.length) return;
+
+        if (!enabled) {
+            targets.forEach(function (el) { seen.add(el); });
+            return;
+        }
+
+        // Above the fold: play on load with a short cascade.
+        var viewportHeight = window.innerHeight || 800;
+        var aboveFold = [];
+        var belowFold = [];
+
+        targets.forEach(function (el) {
+            var rect = el.getBoundingClientRect();
+            if (rect.top < viewportHeight * 0.92) aboveFold.push(el);
+            else belowFold.push(el);
+        });
+
+        aboveFold.slice(0, 8).forEach(function (el, index) {
+            window.setTimeout(function () { reveal(el, delayMap.get(el) || index * 60); }, 30);
+        });
+
+        if (!hasIO) {
+            belowFold.forEach(function (el) { reveal(el, 0); });
+            return;
+        }
+
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                io.unobserve(entry.target);
+                reveal(entry.target, delayMap.get(entry.target) || 0);
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+        belowFold.forEach(function (el) {
+            el.classList.add('mo-reveal');
+            io.observe(el);
+        });
+
+        // Printing must never show blank sections.
+        window.addEventListener('beforeprint', function () {
+            belowFold.forEach(function (el) {
+                io.unobserve(el);
+                el.classList.remove('mo-reveal');
+                el.classList.add('mo-rise');
+            });
+        });
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
+    /* ── Init ────────────────────────────────────────────────────────────── */
+    var initialized = false;
+    function init() {
+        if (initialized) return;
+        initialized = true;
+        initReveals();
+        initCounters();
+        initMeters();
+        initTimelines();
+        initScrollProgress();
+        initMagnetic();
+    }
+
+    if (doc.readyState === 'loading') {
+        doc.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
 
+    // Public hooks for pages that inject content later.
     window.bbdmsMotion = {
         reveal: reveal,
-        revealAll: function () { collectTargets().forEach(function (el) { markRise(el, 0); }); },
+        revealAll: function () { collectTargets().forEach(function (el) { reveal(el, 0); }); },
         enabled: enabled
     };
 })();

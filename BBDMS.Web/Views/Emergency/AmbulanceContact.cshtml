@@ -16,17 +16,30 @@
     };
 }
 
-<section class="page-hero-sm">
+<section class="page-head">
     <div class="container">
-        <nav aria-label="breadcrumb">
+        <nav aria-label="Breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-                <li class="breadcrumb-item"><a asp-controller="Emergency" asp-action="Ambulances">Ambulances</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Emergency Contacts</li>
+                <li class="breadcrumb-item"><a asp-action="Ambulances">Ambulances</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Emergency contacts</li>
             </ol>
         </nav>
-        <h1 class="fw-bold mb-1">Emergency Contact Desk</h1>
-        <p class="mb-0">One tap to reach the dispatch control room, national hotlines and nearby ambulance fleets.</p>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Contact desk</p>
+                <h1>Emergency contact desk.</h1>
+                <p>One tap to reach the dispatch control room, national hotlines and nearby ambulance fleets.</p>
+            </div>
+            <div class="page-head-actions">
+                <a class="btn btn-ghost" asp-action="TrackAmbulance">
+                    <i class="fas fa-location-crosshairs" aria-hidden="true"></i> Track a dispatch
+                </a>
+                <a class="btn btn-blood" asp-action="RequestAmbulance">
+                    <i class="fas fa-bell" aria-hidden="true"></i> Book a dispatch
+                </a>
+            </div>
+        </div>
     </div>
 </section>
 

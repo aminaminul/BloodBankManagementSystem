@@ -1,104 +1,169 @@
 @model BBDMS.Model.Models.Entities.PageContent
+@using System.Linq
 @{
-    ViewData["Title"] = "About Us - Blood Bank";
+    ViewData["Title"] = "About the network";
     var allPages = ViewBag.AllPages as IEnumerable<BBDMS.Model.Models.Entities.PageContent>;
+    var cmsPages = allPages?
+        .Where(p => !string.IsNullOrWhiteSpace(p.Detail))
+        .Where(p => Model == null || p.Id != Model.Id)
+        .ToList() ?? new List<BBDMS.Model.Models.Entities.PageContent>();
 }
 
-<section class="page-hero-sm" style="background:linear-gradient(135deg,#e63946 0%,#9b1a26 100%); color:#fff; padding:56px 0 40px;">
+<section class="page-head">
     <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2" style="background:transparent; padding:0;">
-                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white-50">Home</a></li>
-                <li class="breadcrumb-item active text-white" aria-current="page">About Us</li>
+        <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">About</li>
             </ol>
         </nav>
-        <h1 class="fw-bold mb-1" style="font-size:2rem;">@(Model?.PageName ?? "About Us")</h1>
-        <p class="mb-0 text-white-50">Connecting voluntary blood donors, emergency hospitals, and healthcare facilities across the nation.</p>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Who we are</p>
+                <h1>@(Model?.PageName ?? "About the network")</h1>
+                <p>Connecting voluntary blood donors, emergency hospitals, ambulance fleets and oxygen suppliers across the country.</p>
+            </div>
+            <div class="page-head-actions">
+                <a class="btn btn-ghost" asp-controller="Home" asp-action="Contact">Talk to our team</a>
+                <a class="btn btn-blood" asp-controller="Account" asp-action="Register">
+                    <i class="fas fa-droplet" aria-hidden="true"></i> Register as a donor
+                </a>
+            </div>
+        </div>
     </div>
 </section>
 
-<section class="py-5" style="background:#f8fafc;">
-    <div class="container py-2">
-
-        <!-- 3 Core Pillars -->
-        <div class="row g-4 mb-5">
-            <div class="col-md-4">
-                <div class="card-modern h-100 p-4 text-center">
-                    <div class="service-icon-box mx-auto mb-3">
-                        <i class="fas fa-bullseye"></i>
-                    </div>
-                    <h5 class="fw-bold mb-2">Our Mission</h5>
-                    <p class="text-muted small mb-0">
-                        To save lives by making voluntary blood donation, hospital ICU bed discovery, ambulance fleets, and medical oxygen accessible for everyone in seconds.
-                    </p>
-                </div>
+<section class="section">
+    <div class="container">
+        <div class="row g-5 align-items-start">
+            <div class="col-lg-7">
+                <p class="lead-display">
+                    A patient should never wait for blood because the right person could not be found
+                    <em>in time.</em>
+                </p>
+                <p style="font-size:1.02rem;color:var(--text);max-width:62ch">
+                    BloodBank is an emergency healthcare network. It brings the pieces that usually sit in
+                    separate systems — donor registries, hospital bed counts, blood bank stock, ambulances and
+                    oxygen suppliers — into one searchable place, so families and clinicians can act quickly.
+                </p>
+                <p style="font-size:1.02rem;color:var(--text);max-width:62ch">
+                    Voluntary donors stay in control: contact details are only visible to signed-in donors,
+                    and requests are shared without exposing patient identity in public listings.
+                </p>
             </div>
-
-            <div class="col-md-4">
-                <div class="card-modern h-100 p-4 text-center">
-                    <div class="service-icon-box mx-auto mb-3">
-                        <i class="fas fa-eye"></i>
+            <div class="col-lg-5">
+                <div class="panel" style="padding:0">
+                    <div style="padding:22px 24px;border-bottom:1px solid var(--line)">
+                        <p class="eyebrow" style="margin:0 0 6px">What we operate</p>
+                        <p style="margin:0;font-size:.9rem;color:var(--muted)">Five connected directories, one emergency workflow.</p>
                     </div>
-                    <h5 class="fw-bold mb-2">Our Vision</h5>
-                    <p class="text-muted small mb-0">
-                        A nation where no patient suffers or loses precious life due to a shortage of compatible blood, critical care beds, or emergency medical transport.
-                    </p>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card-modern h-100 p-4 text-center">
-                    <div class="service-icon-box mx-auto mb-3">
-                        <i class="fas fa-hand-holding-heart"></i>
+                    <div class="quick-grid" style="border:0">
+                        <a class="quick-cell" asp-controller="Donor" asp-action="Search">
+                            <span class="ico"><i class="fas fa-droplet" aria-hidden="true"></i></span>
+                            <span><span class="t">Donors</span><span class="s">Verified, voluntary</span></span>
+                        </a>
+                        <a class="quick-cell" asp-controller="Emergency" asp-action="Hospitals">
+                            <span class="ico"><i class="fas fa-hospital" aria-hidden="true"></i></span>
+                            <span><span class="t">Hospitals</span><span class="s">ICU capacity</span></span>
+                        </a>
+                        <a class="quick-cell" asp-controller="Emergency" asp-action="BloodBanks">
+                            <span class="ico"><i class="fas fa-building" aria-hidden="true"></i></span>
+                            <span><span class="t">Blood banks</span><span class="s">Stock by group</span></span>
+                        </a>
+                        <a class="quick-cell" asp-controller="Emergency" asp-action="Ambulances">
+                            <span class="ico"><i class="fas fa-ambulance" aria-hidden="true"></i></span>
+                            <span><span class="t">Ambulances</span><span class="s">Dispatch + tracking</span></span>
+                        </a>
                     </div>
-                    <h5 class="fw-bold mb-2">Our Values</h5>
-                    <p class="text-muted small mb-0">
-                        Humanity, reliability, data integrity, transparency, and rapid community cooperation to deliver healthcare when every second counts.
-                    </p>
+                    <div style="padding:20px 24px;border-top:1px solid var(--line)">
+                        <a class="link-arrow" asp-controller="Emergency" asp-action="Index">Open the emergency hub <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+</section>
 
-        <!-- Database CMS Content Sections -->
-        @if (allPages != null && allPages.Any())
-        {
-            foreach (var pageItem in allPages)
-            {
-                <div class="card-modern p-4 p-md-5 mb-4">
-                    <h4 class="fw-bold text-dark mb-3">
-                        <i class="fas @(pageItem.Type == "aboutus" ? "fa-info-circle text-danger" : "fa-tint text-danger") me-2"></i>@pageItem.PageName
-                    </h4>
-                    <div class="text-muted" style="line-height: 1.8;">
-                        @Html.Raw(BBDMS.Web.Common.HtmlSanitizerHelper.Sanitize(pageItem.Detail))
-                    </div>
-                </div>
-            }
-        }
-        else if (Model != null)
-        {
-            <div class="card-modern p-4 p-md-5 mb-4">
-                <h4 class="fw-bold text-dark mb-3"><i class="fas fa-info-circle text-danger me-2"></i>@Model.PageName</h4>
-                <div class="text-muted" style="line-height: 1.8;">
-                    @Html.Raw(BBDMS.Web.Common.HtmlSanitizerHelper.Sanitize(Model.Detail))
-                </div>
-            </div>
-        }
-
-        <!-- Call to action -->
-        <div class="card border-0 text-white p-4 p-md-5 text-center mt-4" style="background: linear-gradient(135deg, #b91c1c, #e63946); border-radius: 20px;">
-            <h3 class="fw-bold text-white mb-2">Want to Join Our Lifesaver Mission?</h3>
-            <p class="text-white-50 mb-4 mx-auto" style="max-width: 600px;">
-                Whether you want to donate blood, list an emergency service, or partner with us, your involvement saves lives.
-            </p>
-            <div class="d-flex justify-content-center flex-wrap gap-2">
-                <a asp-controller="Account" asp-action="Register" class="btn btn-light rounded-pill fw-bold text-danger px-4 shadow">
-                    Register as a Donor
-                </a>
-                <a asp-controller="Home" asp-action="Contact" class="btn btn-outline-light rounded-pill px-4">
-                    Contact Our Team
-                </a>
+<section class="section band-sand rule-top rule-bottom">
+    <div class="container">
+        <div class="section-head">
+            <div class="section-head-copy">
+                <p class="eyebrow">What guides us</p>
+                <h2 class="section-title">Mission, vision and values</h2>
             </div>
         </div>
+        <div class="steps" data-motion-stagger>
+            <div class="step">
+                <span class="step-num">01 <i class="fas fa-bullseye ico ms-auto" aria-hidden="true"></i></span>
+                <h3>Our mission</h3>
+                <p>Make voluntary blood donation, ICU bed discovery, ambulance fleets and medical oxygen accessible to everyone in seconds.</p>
+            </div>
+            <div class="step">
+                <span class="step-num">02 <i class="fas fa-eye ico ms-auto" aria-hidden="true"></i></span>
+                <h3>Our vision</h3>
+                <p>A country where no patient suffers or loses a life because compatible blood, critical care or transport could not be found.</p>
+            </div>
+            <div class="step">
+                <span class="step-num">03 <i class="fas fa-hand-holding-heart ico ms-auto" aria-hidden="true"></i></span>
+                <h3>Our values</h3>
+                <p>Humanity, reliability, data integrity, transparency and rapid community cooperation when every second counts.</p>
+            </div>
+        </div>
+    </div>
+</section>
 
+@if (Model != null && !string.IsNullOrWhiteSpace(Model.Detail))
+{
+    <section class="section">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-4">
+                    <p class="eyebrow">In detail</p>
+                    <h2 class="section-title" style="font-size:clamp(1.6rem,2.6vw,2.1rem)">@Model.PageName</h2>
+                    <p class="section-sub">Published by the network team and updated from the admin console.</p>
+                </div>
+                <div class="col-lg-8">
+                    <div class="prose">
+                        @Html.Raw(BBDMS.Web.Common.HtmlSanitizerHelper.Sanitize(Model.Detail))
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+@if (cmsPages.Any())
+{
+    <section class="section band-surface rule-top">
+        <div class="container">
+            <div class="row g-4">
+                @foreach (var pageItem in cmsPages)
+                {
+                    <div class="col-lg-6">
+                        <article class="panel h-100" data-motion>
+                            <p class="eyebrow">@(pageItem.Type == "aboutus" ? "Background" : "Policy")</p>
+                            <h3 class="section-title" style="font-size:1.45rem">@pageItem.PageName</h3>
+                            <div class="prose" style="font-size:.94rem">
+                                @Html.Raw(BBDMS.Web.Common.HtmlSanitizerHelper.Sanitize(pageItem.Detail))
+                            </div>
+                        </article>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+
+<section class="cta-band">
+    <div class="container">
+        <p class="eyebrow">Get involved</p>
+        <h2>Join a network built on <em>people.</em></h2>
+        <p>Donate blood, list an emergency service, or partner with us. Every registration makes the next search faster.</p>
+        <div class="cta-row">
+            <a class="btn btn-blood btn-lg" asp-controller="Account" asp-action="Register">
+                <i class="fas fa-droplet" aria-hidden="true"></i> Register as a donor
+            </a>
+            <a class="btn btn-on-ink btn-lg" asp-controller="Home" asp-action="Contact">Contact our team</a>
+        </div>
     </div>
 </section>

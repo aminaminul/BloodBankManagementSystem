@@ -5,110 +5,123 @@
     ViewData["PagerAction"] = "Nearby";
     ViewData["PagerBloodGroup"] = ViewBag.BloodGroup;
     ViewData["PagerLocation"] = ViewBag.Location;
+    var donors = Model.Items;
 }
 
 @section Styles {
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 }
 
-<section class="page-hero-sm">
+<section class="page-head">
     <div class="container">
-        <nav aria-label="breadcrumb">
+        <nav aria-label="Breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Nearby Donors</li>
+                <li class="breadcrumb-item"><a asp-action="Search">Find donors</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Nearby</li>
             </ol>
         </nav>
-        <h1 class="fw-bold mb-1">Nearby Donors</h1>
-        <p class="mb-0">Find available donors near your location and reach out instantly.</p>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Donor map</p>
+                <h1>Donors near you.</h1>
+                <p>Filter by blood group and city, then see where local donors are concentrated before you reach out.</p>
+            </div>
+            <div class="page-head-actions">
+                <a class="btn btn-ghost" asp-action="Search">
+                    <i class="fas fa-list" aria-hidden="true"></i> Full directory
+                </a>
+                <a class="btn btn-blood" asp-controller="Emergency" asp-action="CreateBloodRequest">
+                    <i class="fas fa-plus" aria-hidden="true"></i> Post a request
+                </a>
+            </div>
+        </div>
     </div>
 </section>
 
-<section class="py-5">
+<section class="section-tight">
     <div class="container">
 
-        <!-- Filter bar -->
-        <div class="filter-bar mb-4">
-            <form method="get" asp-action="Nearby">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-4">
-                        <label class="form-label"><i class="fas fa-tint text-danger me-1"></i>Blood Group</label>
-                        <select name="bloodGroup" class="form-select form-control-modern">
-                            <option value="">All Blood Groups</option>
-                            @if (bloodGroups != null)
+        <form method="get" asp-action="Nearby" class="filter-bar" role="search" data-reveal>
+            <div class="filter-bar-grid">
+                <div>
+                    <label for="nearbyGroup">Blood group</label>
+                    <select id="nearbyGroup" name="bloodGroup" class="form-select">
+                        <option value="">All blood groups</option>
+                        @if (bloodGroups != null)
+                        {
+                            foreach (var bg in bloodGroups)
                             {
-                                foreach (var bg in bloodGroups)
-                                {
-                                    <option value="@bg.GroupName" selected="@(ViewBag.BloodGroup == bg.GroupName)">@bg.GroupName</option>
-                                }
+                                <option value="@bg.GroupName" selected="@(ViewBag.BloodGroup == bg.GroupName)">@bg.GroupName</option>
                             }
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label"><i class="fas fa-map-marker-alt text-danger me-1"></i>Location</label>
-                        <input type="text" name="location" value="@ViewBag.Location" class="form-control form-control-modern" placeholder="e.g. Dhaka, Mirpur..." />
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Radius</label>
-                        <select class="form-select form-control-modern">
-                            <option>10 KM</option>
-                            <option>25 KM</option>
-                            <option>50 KM</option>
-                        </select>
-                    </div>
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-brand-red w-100"><i class="fas fa-search"></i> Search</button>
-                    </div>
+                        }
+                    </select>
                 </div>
-            </form>
-        </div>
+                <div>
+                    <label for="nearbyLocation">City or area</label>
+                    <input id="nearbyLocation" type="text" name="location" value="@ViewBag.Location" class="form-control" placeholder="e.g. Dhaka, Mirpur" autocomplete="address-level2" />
+                </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-ink"><i class="fas fa-location-crosshairs" aria-hidden="true"></i> Search nearby</button>
+                    <a class="btn btn-ghost" asp-action="Nearby">Reset</a>
+                </div>
+            </div>
+        </form>
 
-        <div class="row g-4">
-            <!-- Donor list -->
+        <div class="row g-4 mt-2">
             <div class="col-lg-6">
-                <div class="text-muted small mb-2 fw-semibold">@Model.TotalItems donor(s) found</div>
-                @if (Model.TotalItems > 0)
-                {
-                    foreach (var donor in Model.Items)
+                <p class="result-count mb-3">
+                    <span class="num">@Model.TotalItems</span> donor@(Model.TotalItems == 1 ? "" : "s") matching
+                    @if (!string.IsNullOrEmpty(ViewBag.Location as string))
                     {
-                        var initials = string.Concat((donor.FullName ?? "D").Split(' ').Take(2).Select(s => s.Length > 0 ? s[0] : ' ')).ToUpper();
-                        <div class="donor-row mb-2">
-                            <div class="avatar-circle">@initials</div>
-                            <div class="flex-grow-1">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="fw-bold text-dark">@donor.FullName</div>
-                                    <span class="badge-soft-danger">@donor.BloodGroup</span>
-                                </div>
-                                <div class="small text-muted">
-                                    <i class="fas fa-map-marker-alt me-1"></i>@donor.Address
-                                    <span class="mx-1">•</span>@(donor.Age.HasValue ? donor.Age + " yrs" : "—")
-                                    @if (donor.IsAvailable)
-                                    {
-                                        <span class="badge-soft-success ms-1"><i class="fas fa-check-circle"></i>Available</span>
-                                    }
-                                </div>
-                            </div>
-                            <a asp-action="Contact" asp-route-id="@donor.Id" class="btn btn-sm btn-brand-outline flex-shrink-0">Contact</a>
-                        </div>
+                        <span> near @ViewBag.Location</span>
                     }
+                </p>
+
+                @if (donors != null && donors.Any())
+                {
+                    <div class="nearby-list">
+                        @foreach (var donor in donors)
+                        {
+                            <article class="nearby-card" data-motion>
+                                <span class="bg-glyph">@donor.BloodGroup</span>
+                                <div class="nearby-body">
+                                    <h3>@donor.FullName</h3>
+                                    <p class="meta">
+                                        <i class="fas fa-location-dot" aria-hidden="true"></i>@donor.Address
+                                        <span aria-hidden="true">·</span>@(donor.Age.HasValue ? donor.Age + " yrs" : "Age on request")
+                                    </p>
+                                    <span class="tag @(donor.IsAvailable ? "tag-ok" : "tag-muted")">
+                                        @(donor.IsAvailable ? "Available" : "Registered")
+                                    </span>
+                                </div>
+                                <a asp-action="Contact" asp-route-id="@donor.Id" class="btn btn-ghost btn-sm">Contact</a>
+                            </article>
+                        }
+                    </div>
+
+                    <div class="mt-4">
+                        @await Html.PartialAsync("_DonorPager", Model)
+                    </div>
                 }
                 else
                 {
-                    <div class="card-modern text-center py-5">
-                        <i class="fas fa-users fa-2x text-muted mb-2 d-block"></i>
-                        <p class="text-muted mb-0">No donors found. Try a different blood group or location.</p>
+                    <div class="empty-state">
+                        <i class="fas fa-users" aria-hidden="true"></i>
+                        <h4>No donors found here</h4>
+                        <p>Try a different blood group or a wider city, or browse the full directory.</p>
+                        <a asp-action="Nearby" class="btn btn-ink">Clear filters</a>
                     </div>
                 }
             </div>
 
-            <!-- Map -->
             <div class="col-lg-6">
-                <div class="card-modern p-0 overflow-hidden" style="position:sticky; top:80px;">
-                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-                        <span class="fw-bold"><i class="fas fa-map-marked-alt text-danger me-2"></i>Donor Distribution</span>
-                        <span class="badge-soft-success"><i class="fas fa-satellite-dish"></i> Live Map</span>
+                <div class="map-frame" style="position:sticky; top:calc(var(--header-h) + 20px);">
+                    <div class="map-frame-head">
+                        <h2>Donor distribution</h2>
+                        <span class="pill pill-live"><span class="pulse-dot" aria-hidden="true"></span> Live map</span>
                     </div>
-                    <div id="donorsMap" style="height: 460px; width: 100%;"></div>
+                    <div id="donorsMap"></div>
                 </div>
             </div>
         </div>
@@ -134,7 +147,7 @@
             };
 
             var donors = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
-                Model.Items.Select(d => new { name = d.FullName, group = d.BloodGroup, address = d.Address })
+                donors.Select(d => new { name = d.FullName, group = d.BloodGroup, address = d.Address })
             ));
 
             var markers = [];
@@ -144,7 +157,7 @@
                 Object.keys(cityCoords).forEach(function (c) { if (key.indexOf(c) !== -1) coord = cityCoords[c]; });
                 var lat = coord[0] + ((i % 5) - 2) * 0.02;
                 var lng = coord[1] + (Math.floor(i / 5) - 2) * 0.02;
-                var m = L.marker([lat, lng]).bindPopup('<strong>' + d.name + '</strong><br/>Blood: ' + d.group + '<br/>' + d.address);
+                var m = L.marker([lat, lng]).bindPopup('<div class="map-popup"><h6>' + d.name + '</h6><p class="meta">' + (d.address || '') + '</p><div class="map-popup-stats"><span>' + d.group + '</span></div></div>');
                 m.addTo(map);
                 markers.push(m);
             });
@@ -152,5 +165,3 @@
         });
     </script>
 }
-
-@await Html.PartialAsync("_DonorPager", Model)

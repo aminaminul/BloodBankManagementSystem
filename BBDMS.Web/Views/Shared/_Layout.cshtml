@@ -3,9 +3,12 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Blood Bank Management System</title>
+    <meta name="description" content="Find blood donors, hospitals and ICU beds, blood banks, ambulances and medical oxygen in one national emergency healthcare network." />
+    <meta name="theme-color" content="#f7f3ed" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e0b0b" media="(prefers-color-scheme: dark)" />
+    <title>@ViewData["Title"] — BloodBank</title>
 
-    @* Applies the stored light/dark choice (and motion opt-in) before the first paint. *@
+    @* Applies the stored light/dark choice (and the motion opt-in) before first paint. *@
     <script>
         (function () {
             try {
@@ -13,31 +16,37 @@
                 var t = m ? decodeURIComponent(m[1]) : localStorage.getItem('bbdms-theme');
                 if (!t && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) t = 'dark';
                 t = t === 'dark' ? 'dark' : 'light';
+                // Explicit link override: ?theme=light|dark (useful for shared links and screenshots)
+                var q = new URLSearchParams(location.search).get('theme');
+                if (q === 'light' || q === 'dark') t = q;
                 document.documentElement.setAttribute('data-theme', t);
                 document.documentElement.style.colorScheme = t;
-                if (!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+                var motionOff = new URLSearchParams(location.search).get('motion') === 'off';
+                if (!motionOff && !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
                     document.documentElement.classList.add('bbdms-motion');
+                } else {
+                    document.documentElement.classList.add('bbdms-static');
                 }
             } catch (e) { /* keep the server rendered theme */ }
         })();
     </script>
 
-    <!-- Inter: Universal modern font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="~/css/bootstrap.css" asp-append-version="true">
-    <link rel="stylesheet" href="~/css/style.css" type="text/css" media="all" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="~/css/modern-theme.css" type="text/css" media="all" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/bbdms.css" asp-append-version="true" />
 
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
+<body class="page-@(ViewContext.RouteData.Values["controller"]?.ToString()?.ToLowerInvariant() ?? "home")">
+    <div class="scroll-progress" aria-hidden="true"><span data-scroll-progress></span></div>
+
     @await Component.InvokeAsync("Header")
 
-    <main role="main">
+    <main id="main" role="main">
         @await Html.PartialAsync("_ValidationSummary")
         @RenderBody()
     </main>
@@ -46,18 +55,24 @@
 
     <div id="publicAlertContainer" style="position: fixed; bottom: 20px; right: 20px; z-index: 99999; max-width: 360px;"></div>
 
+    @* Non-JavaScript fallback: posts the theme choice so signed-in donors/admins keep it on their account. *@
+    <form id="themeForm" method="post" asp-controller="Theme" asp-action="Set" class="d-none" aria-hidden="true">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="theme" value="@ThemePreference.Read(Context)" />
+        <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+    </form>
+
     <script src="~/js/jquery-2.2.3.min.js" asp-append-version="true"></script>
     <script src="~/js/bootstrap.js" asp-append-version="true"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <script>
-        // Real-Time Community Blood Request Alerts
-        (function() {
+        // Real-time community blood request alerts
+        (function () {
             const hubConnection = new signalR.HubConnectionBuilder()
                 .withUrl("/emergencyHub")
                 .withAutomaticReconnect()
                 .build();
 
-            // Escape untrusted request data before it is inserted as HTML
             function escapeHtml(value) {
                 return String(value == null ? "" : value)
                     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
@@ -65,27 +80,28 @@
             }
 
             hubConnection.on("ReceiveBloodRequestAlert", function (data) {
-                if (typeof playEmergencyChime === 'function') { playEmergencyChime(); }
                 const container = document.getElementById("publicAlertContainer");
                 if (!container) return;
                 const toast = document.createElement("div");
-                toast.className = "alert alert-danger shadow-lg alert-dismissible fade show border border-danger";
-                toast.style.borderRadius = "8px";
-                // Community alerts are intentionally anonymous: no patient name or phone number
+                toast.className = "alert alert-dismissible fade show";
+                toast.setAttribute("role", "alert");
+                // Community alerts stay anonymous: no patient name or phone number.
                 toast.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <strong class="font-weight-bold"><i class="fas fa-heartbeat mr-1"></i> URGENT BLOOD NEEDED!</strong>
-                        <button type="button" class="close p-1" data-dismiss="alert">&times;</button>
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <strong class="font-weight-bold" style="font-size:.82rem;letter-spacing:.04em">
+                            <i class="fas fa-droplet"></i> BLOOD NEEDED
+                        </strong>
+                        <button type="button" class="btn-close" data-dismiss="alert" aria-label="Dismiss"></button>
                     </div>
                     <div class="small">
-                        <strong>${escapeHtml(data.bloodGroup)}</strong> needed${data.units ? " &bull; " + escapeHtml(data.units) + " unit(s)" : ""}<br/>
-                        <i class="fas fa-hospital mr-1"></i> ${escapeHtml(data.hospital)}<br/>
+                        <strong>${escapeHtml(data.bloodGroup)}</strong> needed${data.units ? " &middot; " + escapeHtml(data.units) + " unit(s)" : ""}<br/>
+                        <i class="fas fa-hospital"></i> ${escapeHtml(data.hospital)}<br/>
                         <span class="text-white-50">${escapeHtml(data.urgency || "Urgent")}</span><br/>
-                        <a href="/Emergency/BloodRequests" class="btn btn-sm btn-outline-danger mt-2 font-weight-bold">View Details</a>
+                        <a href="/Emergency/BloodRequests" class="btn btn-sm btn-outline-danger mt-2">View request</a>
                     </div>
                 `;
                 container.appendChild(toast);
-                setTimeout(() => { $(toast).alert('close'); }, 15000);
+                setTimeout(() => { if (toast.parentNode) toast.remove(); }, 15000);
             });
 
             hubConnection.start().catch(err => console.debug("Community alert SignalR:", err));

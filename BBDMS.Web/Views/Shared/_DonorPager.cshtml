@@ -6,24 +6,31 @@
 }
 @if (Model.TotalPages > 1)
 {
-    <nav aria-label="Donor result pages" class="mt-4">
+    <nav aria-label="Donor result pages">
         <ul class="pagination justify-content-center flex-wrap">
             <li class="page-item @(Model.HasPreviousPage ? "" : "disabled")">
                 <a class="page-link" asp-action="@pagerAction"
                    asp-route-bloodGroup="@bloodGroup" asp-route-location="@location"
-                   asp-route-page="@(Model.PageIndex - 1)">Previous</a>
+                   asp-route-page="@(Model.PageIndex - 1)" aria-label="Previous page">
+                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                </a>
             </li>
-            <li class="page-item disabled">
-                <span class="page-link">
-                    Page @Model.PageIndex of @Model.TotalPages
-                    <span class="text-muted">(@Model.TotalItems donors)</span>
-                </span>
-            </li>
+            @for (var p = 1; p <= Model.TotalPages; p++)
+            {
+                <li class="page-item @(p == Model.PageIndex ? "active" : "")">
+                    <a class="page-link" asp-action="@pagerAction"
+                       asp-route-bloodGroup="@bloodGroup" asp-route-location="@location"
+                       asp-route-page="@p" aria-label="Page @p" aria-current="@(p == Model.PageIndex ? "page" : null)">@p</a>
+                </li>
+            }
             <li class="page-item @(Model.HasNextPage ? "" : "disabled")">
                 <a class="page-link" asp-action="@pagerAction"
                    asp-route-bloodGroup="@bloodGroup" asp-route-location="@location"
-                   asp-route-page="@(Model.PageIndex + 1)">Next</a>
+                   asp-route-page="@(Model.PageIndex + 1)" aria-label="Next page">
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </a>
             </li>
         </ul>
+        <p class="meta text-center mt-3" style="margin-bottom:0">@Model.TotalItems donors · page @Model.PageIndex of @Model.TotalPages</p>
     </nav>
 }

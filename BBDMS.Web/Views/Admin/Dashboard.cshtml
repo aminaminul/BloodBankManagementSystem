@@ -4,145 +4,107 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="dash-topbar">
     <div>
-        <h3 class="fw-bold text-dark mb-0">Emergency System Overview</h3>
-        <p class="text-muted mb-0">Real-time statistics across blood donation and healthcare support facilities</p>
+        <h4>Emergency System Overview</h4>
+        <small>Real-time statistics across blood donation and healthcare support facilities</small>
     </div>
-    <div class="text-muted small">
-        <i class="fas fa-sync-alt me-1"></i> Live via SignalR
-    </div>
+    <span class="live-pill"><span class="live-dot" aria-hidden="true"></span> Live via SignalR</span>
 </div>
 
-@* Row 1: Key Metrics *@
+@* Row 1: Key metrics *@
 <div class="row g-3 mb-3">
     <div class="col-6 col-lg-3">
-        <div class="card-modern" style="border-left:4px solid #3b82f6; padding:1.25rem 1.5rem;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-muted small text-uppercase fw-bold mb-1">Total Donors</div>
-                    <div class="fw-bold" style="font-size:2rem; line-height:1; color:#1e293b;">@Model.TotalDonors</div>
-                </div>
-                <div style="background:#eff6ff; border-radius:12px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; color:#3b82f6; font-size:1.4rem;">
-                    <i class="fas fa-user-friends"></i>
-                </div>
-            </div>
-            <div class="mt-2 pt-2" style="border-top:1px solid #f1f5f9;">
-                <a asp-action="DonorList" class="text-primary small fw-semibold" style="text-decoration:none;">View all donors &rarr;</a>
-            </div>
-        </div>
+        <a class="stat-card" asp-action="DonorList">
+            <span class="stat-ico blue"><i class="fas fa-users" aria-hidden="true"></i></span>
+            <span class="stat-body">
+                <span class="stat-val">@Model.TotalDonors</span>
+                <span class="stat-cap">Total donors</span>
+                <span class="stat-link">View all donors <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </span>
+        </a>
     </div>
 
     <div class="col-6 col-lg-3">
-        <div class="card-modern" style="border-left:4px solid #e63946; padding:1.25rem 1.5rem;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-muted small text-uppercase fw-bold mb-1">Blood Requests</div>
-                    <div class="fw-bold" style="font-size:2rem; line-height:1; color:#1e293b;">@Model.TotalRequests</div>
-                </div>
-                <div style="background:#fff5f5; border-radius:12px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; color:#e63946; font-size:1.4rem;">
-                    <i class="fas fa-tint"></i>
-                </div>
-            </div>
-            <div class="mt-2 pt-2" style="border-top:1px solid #f1f5f9;">
-                <a asp-action="BloodRequests" class="small fw-semibold" style="text-decoration:none; color:#e63946;">Manage requests &rarr;</a>
-            </div>
-        </div>
+        <a class="stat-card" asp-action="BloodRequests">
+            <span class="stat-ico red"><i class="fas fa-tint" aria-hidden="true"></i></span>
+            <span class="stat-body">
+                <span class="stat-val">@Model.TotalRequests</span>
+                <span class="stat-cap">Blood requests</span>
+                <span class="stat-link">Manage requests <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </span>
+        </a>
     </div>
 
     <div class="col-6 col-lg-3">
-        <div class="card-modern" style="border-left:4px solid #0ea5e9; padding:1.25rem 1.5rem;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-muted small text-uppercase fw-bold mb-1">Hospitals</div>
-                    <div class="fw-bold" style="font-size:2rem; line-height:1; color:#1e293b;">@Model.TotalHospitals</div>
-                </div>
-                <div style="background:#f0f9ff; border-radius:12px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; color:#0ea5e9; font-size:1.4rem;">
-                    <i class="fas fa-hospital"></i>
-                </div>
-            </div>
-            <div class="mt-2 pt-2" style="border-top:1px solid #f1f5f9;">
-                <a asp-action="Hospitals" class="small fw-semibold" style="text-decoration:none; color:#0ea5e9;">ICU: @Model.TotalAvailableIcuBeds beds free &rarr;</a>
-            </div>
-        </div>
+        <a class="stat-card" asp-action="Hospitals">
+            <span class="stat-ico green"><i class="fas fa-hospital" aria-hidden="true"></i></span>
+            <span class="stat-body">
+                <span class="stat-val">@Model.TotalHospitals</span>
+                <span class="stat-cap">Hospitals</span>
+                <span class="stat-link">@Model.TotalAvailableIcuBeds ICU beds free <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </span>
+        </a>
     </div>
 
     <div class="col-6 col-lg-3">
-        <div class="card-modern" style="border-left:4px solid #f59e0b; padding:1.25rem 1.5rem;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-muted small text-uppercase fw-bold mb-1">Ambulances</div>
-                    <div class="fw-bold" style="font-size:2rem; line-height:1; color:#1e293b;">@Model.TotalAmbulances</div>
-                </div>
-                <div style="background:#fffbeb; border-radius:12px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; color:#f59e0b; font-size:1.4rem;">
-                    <i class="fas fa-ambulance"></i>
-                </div>
-            </div>
-            <div class="mt-2 pt-2" style="border-top:1px solid #f1f5f9;">
-                <a asp-action="Ambulances" class="small fw-semibold" style="text-decoration:none; color:#f59e0b;">Manage fleets &rarr;</a>
-            </div>
-        </div>
+        <a class="stat-card" asp-action="Ambulances">
+            <span class="stat-ico amber"><i class="fas fa-ambulance" aria-hidden="true"></i></span>
+            <span class="stat-body">
+                <span class="stat-val">@Model.TotalAmbulances</span>
+                <span class="stat-cap">Ambulances</span>
+                <span class="stat-link">Manage fleets <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </span>
+        </a>
     </div>
 </div>
 
-@* Row 2: Secondary Metrics + Quick Actions *@
-<div class="row g-3 mb-4">
+@* Row 2: Secondary metrics + quick actions *@
+<div class="row g-3 mb-4 align-items-start">
     <div class="col-6 col-lg-3">
-        <div class="card-modern" style="border-left:4px solid #10b981; padding:1.25rem 1.5rem;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-muted small text-uppercase fw-bold mb-1">Oxygen Suppliers</div>
-                    <div class="fw-bold" style="font-size:2rem; line-height:1; color:#1e293b;">@Model.TotalOxygenSuppliers</div>
-                </div>
-                <div style="background:#f0fdf4; border-radius:12px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; color:#10b981; font-size:1.4rem;">
-                    <i class="fas fa-lungs"></i>
-                </div>
-            </div>
-            <div class="mt-2 pt-2" style="border-top:1px solid #f1f5f9;">
-                <a asp-action="Oxygen" class="small fw-semibold" style="text-decoration:none; color:#10b981;">Manage suppliers &rarr;</a>
-            </div>
-        </div>
+        <a class="stat-card" asp-action="Oxygen">
+            <span class="stat-ico teal"><i class="fas fa-lungs" aria-hidden="true"></i></span>
+            <span class="stat-body">
+                <span class="stat-val">@Model.TotalOxygenSuppliers</span>
+                <span class="stat-cap">Oxygen suppliers</span>
+                <span class="stat-link">Manage suppliers <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </span>
+        </a>
     </div>
 
     <div class="col-6 col-lg-3">
-        <div class="card-modern" style="border-left:4px solid #8b5cf6; padding:1.25rem 1.5rem;">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="text-muted small text-uppercase fw-bold mb-1">Blood Banks</div>
-                    <div class="fw-bold" style="font-size:2rem; line-height:1; color:#1e293b;">@Model.TotalBloodBanks</div>
-                </div>
-                <div style="background:#f5f3ff; border-radius:12px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; color:#8b5cf6; font-size:1.4rem;">
-                    <i class="fas fa-landmark"></i>
-                </div>
-            </div>
-            <div class="mt-2 pt-2" style="border-top:1px solid #f1f5f9;">
-                <a asp-action="BloodBanks" class="small fw-semibold" style="text-decoration:none; color:#8b5cf6;">Manage blood banks &rarr;</a>
-            </div>
-        </div>
+        <a class="stat-card" asp-action="BloodBanks">
+            <span class="stat-ico violet"><i class="fas fa-landmark" aria-hidden="true"></i></span>
+            <span class="stat-body">
+                <span class="stat-val">@Model.TotalBloodBanks</span>
+                <span class="stat-cap">Blood banks</span>
+                <span class="stat-link">Manage blood banks <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+            </span>
+        </a>
     </div>
 
     <div class="col-lg-6">
         <div class="card-modern h-100">
-            <h6 class="fw-bold mb-3"><i class="fas fa-bolt text-warning me-2"></i>Quick Resource Actions</h6>
+            <h5 class="fw-bold mb-3">Quick resource actions</h5>
             <div class="row g-2">
-                <div class="col-6">
-                    <a asp-action="HospitalCreate" class="btn btn-sm w-100 text-start" style="border:1.5px solid #0ea5e9; color:#0ea5e9; border-radius:10px; padding:.5rem .75rem;">
-                        <i class="fas fa-plus me-1"></i>Add Hospital
+                <div class="col-12 col-sm-6">
+                    <a asp-action="HospitalCreate" class="btn btn-brand-outline w-100 justify-content-start">
+                        <i class="fas fa-plus" aria-hidden="true"></i> Add hospital
                     </a>
                 </div>
-                <div class="col-6">
-                    <a asp-action="BloodBankCreate" class="btn btn-sm w-100 text-start" style="border:1.5px solid #e63946; color:#e63946; border-radius:10px; padding:.5rem .75rem;">
-                        <i class="fas fa-plus me-1"></i>Add Blood Bank
+                <div class="col-12 col-sm-6">
+                    <a asp-action="BloodBankCreate" class="btn btn-brand-outline w-100 justify-content-start">
+                        <i class="fas fa-plus" aria-hidden="true"></i> Add blood bank
                     </a>
                 </div>
-                <div class="col-6">
-                    <a asp-action="AmbulanceCreate" class="btn btn-sm w-100 text-start" style="border:1.5px solid #f59e0b; color:#f59e0b; border-radius:10px; padding:.5rem .75rem;">
-                        <i class="fas fa-plus me-1"></i>Add Ambulance
+                <div class="col-12 col-sm-6">
+                    <a asp-action="AmbulanceCreate" class="btn btn-brand-outline w-100 justify-content-start">
+                        <i class="fas fa-plus" aria-hidden="true"></i> Add ambulance
                     </a>
                 </div>
-                <div class="col-6">
-                    <a asp-action="OxygenCreate" class="btn btn-sm w-100 text-start" style="border:1.5px solid #10b981; color:#10b981; border-radius:10px; padding:.5rem .75rem;">
-                        <i class="fas fa-plus me-1"></i>Add Oxygen Supplier
+                <div class="col-12 col-sm-6">
+                    <a asp-action="OxygenCreate" class="btn btn-brand-outline w-100 justify-content-start">
+                        <i class="fas fa-plus" aria-hidden="true"></i> Add oxygen supplier
                     </a>
                 </div>
             </div>

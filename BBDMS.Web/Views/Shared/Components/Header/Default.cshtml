@@ -1,116 +1,312 @@
 @model BBDMS.Model.Models.ViewModels.HeaderViewModel
+@using System.Linq
+@{
+    var route = ViewContext.RouteData.Values;
+    var ctrl = (route["controller"]?.ToString() ?? "Home").ToLowerInvariant();
+    var act = (route["action"]?.ToString() ?? "Index").ToLowerInvariant();
 
-<header class="navbar-modern">
-    <div class="header-fluid-container">
-        <nav class="navbar navbar-expand-lg navbar-light p-0">
-            <!-- Brand Logo & Name -->
-            <a class="navbar-brand navbar-brand-logo py-1 mr-2" asp-controller="Home" asp-action="Index">
-                <img src="~/images/Logo.png" alt="Blood Bank Logo" />
-                <span class="brand-title">Blood<span>Bank</span></span>
+    Func<string, string> isOn = (path) => string.Equals(ctrl + "/" + act, path, StringComparison.OrdinalIgnoreCase) ? "is-active" : "";
+    var servicesActive = ctrl == "emergency" || (ctrl == "home" && act == "compatibility");
+
+    var helpline = Model.ContactInfo != null && !string.IsNullOrEmpty(Model.ContactInfo.ContactNo)
+        ? Model.ContactInfo.ContactNo
+        : "999";
+
+    var services = new (string Controller, string Action, string Icon, string Title, string Desc)[]
+    {
+        ("Emergency", "Index",        "fa-compass",        "Emergency hub",       "Every service in one place"),
+        ("Emergency", "Hospitals",    "fa-hospital",       "Hospitals & ICU",     "Live emergency bed counts"),
+        ("Emergency", "BloodBanks",   "fa-building",       "Blood banks",         "Stock across registered banks"),
+        ("Emergency", "Ambulances",   "fa-ambulance",      "Ambulance fleet",     "Rapid transport providers"),
+        ("Emergency", "Oxygen",       "fa-lungs",          "Medical oxygen",      "Cylinder supply & refills"),
+        ("Emergency", "BloodRequests","fa-heart-pulse",    "Blood requests",      "Patients awaiting donors"),
+        ("Emergency", "Map",          "fa-map-location-dot","Live map",           "Facilities near you"),
+        ("Home",      "Compatibility","fa-droplet",        "Compatibility guide", "Match groups & eligibility")
+    };
+}
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="util-bar">
+    <div class="container util-inner">
+        <div class="util-group">
+            <span class="util-item util-live">
+                <span class="dot" aria-hidden="true"></span>
+                <span class="util-text-long">24/7 emergency network</span>
+                <span class="util-text-short">24/7</span>
+            </span>
+            <a class="util-item util-hide-sm" asp-controller="Emergency" asp-action="TrackAmbulance">
+                <i class="fas fa-satellite-dish" aria-hidden="true"></i> Track a request
             </a>
+        </div>
+        <div class="util-group">
+            <a class="util-item" href="tel:@helpline" aria-label="Call the emergency helpline on @helpline">
+                <i class="fas fa-phone" aria-hidden="true"></i>
+                <span class="util-phone-label">Helpline</span>
+                <strong>@helpline</strong>
+            </a>
+        </div>
+    </div>
+</div>
 
-            <!-- Mobile Toggler -->
-            <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#mainNavbar"
-                    aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+<header class="site-header" data-site-header>
+    <div class="container header-inner">
+        <a class="brand" asp-controller="Home" asp-action="Index" aria-label="BloodBank — home">
+            <img class="brand-mark" src="~/images/Logo.png" alt="" width="34" height="34" />
+            <span class="brand-word">BloodBank<em>.</em></span>
+            <span class="brand-sub">Emergency<br />network</span>
+        </a>
+
+        <nav class="primary-nav" aria-label="Primary">
+            <ul>
+                <li>
+                    <a class="nav-item @isOn("home/index")" asp-controller="Home" asp-action="Index">Home</a>
+                </li>
+                <li>
+                    <a class="nav-item @isOn("home/about")" asp-controller="Home" asp-action="About">About</a>
+                </li>
+                <li class="has-menu" data-nav-menu>
+                    <button type="button" class="nav-item @(servicesActive ? "is-active" : "")"
+                            aria-expanded="false" aria-controls="servicesMenu" data-nav-trigger>
+                        Services
+                        <i class="fas fa-chevron-down chev" aria-hidden="true" style="font-size:9px"></i>
+                    </button>
+                    <div class="nav-menu" id="servicesMenu" data-nav-panel>
+                        @foreach (var s in services)
+                        {
+                            <a asp-controller="@s.Controller" asp-action="@s.Action">
+                                <i class="fas @s.Icon" aria-hidden="true"></i>
+                                <span>
+                                    <span class="nm-title">@s.Title</span>
+                                    <span class="nm-desc">@s.Desc</span>
+                                </span>
+                            </a>
+                        }
+                        <div class="nav-menu-foot">
+                            <a class="link-arrow" asp-controller="Emergency" asp-action="Index">All emergency services <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                            <a class="link-arrow" asp-controller="Home" asp-action="Compatibility">Check eligibility <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <a class="nav-item @isOn("donor/search")" asp-controller="Donor" asp-action="Search">Find donors</a>
+                </li>
+                <li>
+                    <a class="nav-item @isOn("home/contact")" asp-controller="Home" asp-action="Contact">Contact</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="header-tools">
+            <button type="button" class="icon-btn is-bare d-none d-sm-inline-flex" data-theme-toggle
+                    aria-pressed="false" aria-label="Switch theme">
+                <span class="theme-toggle-track" aria-hidden="true">
+                    <i class="fas fa-moon"></i>
+                    <i class="fas fa-sun"></i>
+                </span>
             </button>
 
-            <!-- Navigation Links -->
-            <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav mx-auto align-items-center">
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-modern" asp-controller="Home" asp-action="Index">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-modern" asp-controller="Home" asp-action="About">About</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link nav-link-modern dropdown-toggle" href="#" id="servicesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            Services
-                        </a>
-                        <div class="dropdown-menu border-0" aria-labelledby="servicesDropdown">
-                            <a class="dropdown-item" asp-controller="Emergency" asp-action="Index">
-                                <i class="fas fa-search-location mr-2 text-danger"></i>Emergency Hub
-                            </a>
-                            <a class="dropdown-item" asp-controller="Emergency" asp-action="Map">
-                                <i class="fas fa-map-marked-alt mr-2 text-success"></i>Live Healthcare Map
-                            </a>
-                            <a class="dropdown-item" asp-controller="Home" asp-action="Compatibility">
-                                <i class="fas fa-heartbeat mr-2 text-danger"></i>Compatibility &amp; Quiz
-                            </a>
-                            <a class="dropdown-item" asp-controller="Emergency" asp-action="Hospitals">
-                                <i class="fas fa-hospital mr-2 text-primary"></i>Hospitals &amp; ICU Beds
-                            </a>
-                            <a class="dropdown-item" asp-controller="Emergency" asp-action="BloodBanks">
-                                <i class="fas fa-landmark mr-2 text-danger"></i>Blood Banks
-                            </a>
-                            <a class="dropdown-item" asp-controller="Emergency" asp-action="Ambulances">
-                                <i class="fas fa-ambulance mr-2 text-warning"></i>Ambulance Fleets
-                            </a>
-                            <a class="dropdown-item" asp-controller="Emergency" asp-action="Oxygen">
-                                <i class="fas fa-lungs mr-2 text-info"></i>Oxygen Supplies
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" asp-controller="Emergency" asp-action="BloodRequests">
-                                <i class="fas fa-heartbeat mr-2 text-danger"></i>Emergency Blood Requests
-                            </a>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-modern" asp-controller="Donor" asp-action="Search">Find Donors</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link nav-link-modern" asp-controller="Home" asp-action="Contact">Contact</a>
-                    </li>
-                </ul>
+            @if (Model.IsDonorLoggedIn || Model.IsAdminLoggedIn)
+            {
+                <div class="d-none d-md-inline-flex">@await Html.PartialAsync("_NotificationBell")</div>
+            }
 
-                <!-- Right Action Buttons -->
-                <div class="d-flex align-items-center mt-3 mt-lg-0">
-                    <div class="mr-3 d-flex align-items-center">
-                        @await Html.PartialAsync("_ThemeToggle")
+            @if (Model.IsDonorLoggedIn)
+            {
+                <div class="dropdown d-none d-md-block">
+                    <button class="btn btn-ghost btn-sm dropdown-toggle" type="button" id="donorMenu"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-user" aria-hidden="true"></i> My account
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="donorMenu">
+                        <a class="dropdown-item" asp-controller="Donor" asp-action="Dashboard"><i class="fas fa-gauge-high me-2" aria-hidden="true"></i>Dashboard</a>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fas fa-id-card me-2" aria-hidden="true"></i>Profile</a>
+                        <a class="dropdown-item" asp-controller="Donor" asp-action="DonorCard"><i class="fas fa-address-card me-2" aria-hidden="true"></i>Donor card</a>
+                        <a class="dropdown-item" asp-controller="Donor" asp-action="MyRequests"><i class="fas fa-heart-pulse me-2" aria-hidden="true"></i>My requests</a>
+                        <a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword"><i class="fas fa-key me-2" aria-hidden="true"></i>Security</a>
+                        <div class="dropdown-divider"></div>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                            <button type="submit" class="dropdown-item text-danger"><i class="fas fa-arrow-right-from-bracket me-2" aria-hidden="true"></i>Sign out</button>
+                        </form>
                     </div>
-                    <div class="mr-3 d-flex align-items-center">
-                        @await Html.PartialAsync("_NotificationBell")
-                    </div>
-                    <a asp-controller="Donor" asp-action="Search" class="nav-link nav-link-modern mr-2 d-none d-lg-inline-flex" title="Search donors">
-                        <i class="fas fa-search"></i>
-                    </a>
-
-                    @if (Model.IsDonorLoggedIn)
-                    {
-                        <div class="dropdown">
-                            <button class="btn btn-brand-red btn-sm dropdown-toggle font-weight-bold d-flex align-items-center" type="button" id="donorMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-user-circle mr-1 fa-lg"></i> My Account
-                            </button>
-                            <div class="dropdown-menu dropdown-menu-right border-0" aria-labelledby="donorMenu">
-                                <a class="dropdown-item py-2" asp-controller="Donor" asp-action="Dashboard"><i class="fas fa-columns mr-2 text-primary"></i>My Dashboard</a>
-                                <a class="dropdown-item py-2" asp-controller="Account" asp-action="Profile"><i class="fas fa-id-card mr-2 text-primary"></i>Profile</a>
-                                <a class="dropdown-item py-2" asp-controller="Donor" asp-action="MyRequests"><i class="fas fa-heartbeat mr-2 text-danger"></i>My Requests</a>
-                                <a class="dropdown-item py-2" asp-controller="Account" asp-action="ChangePassword"><i class="fas fa-key mr-2 text-warning"></i>Change Password</a>
-                                <div class="dropdown-divider"></div>
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
-                                    <button type="submit" class="dropdown-item py-2 text-danger font-weight-bold border-0 bg-transparent w-100 text-start"><i class="fas fa-sign-out-alt mr-2"></i>Logout</button>
-                                </form>
-                            </div>
-                        </div>
-                    }
-                    else if (Model.IsAdminLoggedIn)
-                    {
-                        <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-dark btn-sm font-weight-bold px-3">
-                            <i class="fas fa-shield-alt mr-1 text-warning"></i> Admin Panel
-                        </a>
-                    }
-                    else
-                    {
-                        <a asp-controller="Account" asp-action="Login" class="nav-link nav-link-modern font-weight-bold mr-2">
-                            Login
-                        </a>
-                        <a asp-controller="Account" asp-action="Register" class="btn btn-brand-red btn-sm font-weight-bold px-3">
-                            Register
-                        </a>
-                    }
                 </div>
-            </div>
-        </nav>
+            }
+            else if (Model.IsAdminLoggedIn)
+            {
+                <a asp-controller="Admin" asp-action="Dashboard" class="btn btn-ink btn-sm d-none d-md-inline-flex">
+                    <i class="fas fa-shield-halved" aria-hidden="true"></i> Admin
+                </a>
+            }
+            else
+            {
+                <a class="nav-login" asp-controller="Account" asp-action="Login">Sign in</a>
+                <a class="btn btn-blood btn-sm d-none d-sm-inline-flex" asp-controller="Account" asp-action="Register">
+                    Register <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </a>
+            }
+
+            <button type="button" class="menu-btn" data-mobile-trigger aria-expanded="false" aria-controls="mobileNav">
+                <span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>
+                Menu
+            </button>
+        </div>
     </div>
 </header>
+
+@* Mobile drawer *@
+<div class="mobile-nav" id="mobileNav" data-mobile-nav role="dialog" aria-modal="true" aria-label="Site menu">
+    <div class="mobile-nav-head">
+        <span class="meta">Menu</span>
+        <button type="button" class="icon-btn" data-mobile-close aria-label="Close menu">
+            <i class="fas fa-xmark" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div class="mobile-nav-body">
+        <ul class="mobile-nav-links">
+            <li><a asp-controller="Home" asp-action="Index">Home <i class="fas fa-arrow-right" aria-hidden="true"></i></a></li>
+            <li><a asp-controller="Donor" asp-action="Search">Find donors <i class="fas fa-arrow-right" aria-hidden="true"></i></a></li>
+            <li><a asp-controller="Emergency" asp-action="Index">Emergency hub <i class="fas fa-arrow-right" aria-hidden="true"></i></a></li>
+            <li><a asp-controller="Home" asp-action="About">About <i class="fas fa-arrow-right" aria-hidden="true"></i></a></li>
+            <li><a asp-controller="Home" asp-action="Contact">Contact <i class="fas fa-arrow-right" aria-hidden="true"></i></a></li>
+        </ul>
+
+        <div class="mobile-nav-sub">
+            <h6>Services</h6>
+            <ul>
+                <li><a asp-controller="Emergency" asp-action="Hospitals"><i class="fas fa-hospital" aria-hidden="true"></i>Hospitals</a></li>
+                <li><a asp-controller="Emergency" asp-action="BloodBanks"><i class="fas fa-building" aria-hidden="true"></i>Blood banks</a></li>
+                <li><a asp-controller="Emergency" asp-action="Ambulances"><i class="fas fa-ambulance" aria-hidden="true"></i>Ambulances</a></li>
+                <li><a asp-controller="Emergency" asp-action="Oxygen"><i class="fas fa-lungs" aria-hidden="true"></i>Oxygen</a></li>
+                <li><a asp-controller="Emergency" asp-action="BloodRequests"><i class="fas fa-heart-pulse" aria-hidden="true"></i>Requests</a></li>
+                <li><a asp-controller="Emergency" asp-action="Map"><i class="fas fa-map-location-dot" aria-hidden="true"></i>Live map</a></li>
+                <li><a asp-controller="Home" asp-action="Compatibility"><i class="fas fa-droplet" aria-hidden="true"></i>Compatibility</a></li>
+                <li><a asp-controller="Emergency" asp-action="TrackAmbulance"><i class="fas fa-satellite-dish" aria-hidden="true"></i>Tracking</a></li>
+            </ul>
+        </div>
+
+        <div class="mobile-nav-actions">
+            @if (Model.IsDonorLoggedIn)
+            {
+                <a class="btn btn-blood" asp-controller="Donor" asp-action="Dashboard"><i class="fas fa-gauge-high" aria-hidden="true"></i> My dashboard</a>
+                <a class="btn btn-ghost" asp-controller="Account" asp-action="Profile"><i class="fas fa-id-card" aria-hidden="true"></i> My profile</a>
+                <form asp-controller="Account" asp-action="Logout" method="post" class="m-0">
+                    <button type="submit" class="btn btn-ghost btn-block"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i> Sign out</button>
+                </form>
+            }
+            else if (Model.IsAdminLoggedIn)
+            {
+                <a class="btn btn-ink" asp-controller="Admin" asp-action="Dashboard"><i class="fas fa-shield-halved" aria-hidden="true"></i> Admin panel</a>
+                <a class="btn btn-ghost" asp-controller="Account" asp-action="Profile"><i class="fas fa-id-card" aria-hidden="true"></i> Profile</a>
+            }
+            else
+            {
+                <a class="btn btn-blood" asp-controller="Account" asp-action="Register"><i class="fas fa-droplet" aria-hidden="true"></i> Register as a donor</a>
+                <a class="btn btn-ghost" asp-controller="Account" asp-action="Login"><i class="fas fa-arrow-right-to-bracket" aria-hidden="true"></i> Sign in</a>
+            }
+        </div>
+
+        <div class="mobile-nav-helpline">
+            <div>
+                <div class="lbl">Emergency helpline</div>
+                <a class="tel" href="tel:@helpline">@helpline</a>
+            </div>
+            <a class="icon-btn" href="tel:@helpline" aria-label="Call @helpline"><i class="fas fa-phone" aria-hidden="true"></i></a>
+        </div>
+
+        <div class="mt-4 d-sm-none">
+            <button type="button" class="btn btn-ghost btn-block" data-theme-toggle aria-pressed="false">
+                <i class="fas fa-circle-half-stroke" aria-hidden="true"></i> Switch light / dark
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Header behaviour: sticky condense, services menu, mobile drawer with focus trap.
+    (function () {
+        'use strict';
+
+        var header = document.querySelector('[data-site-header]');
+        var lastStuck = false;
+        function onScroll() {
+            var stuck = window.scrollY > 8;
+            if (stuck === lastStuck) return;
+            lastStuck = stuck;
+            if (header) header.classList.toggle('is-stuck', stuck);
+        }
+        window.addEventListener('scroll', function () { window.requestAnimationFrame(onScroll); }, { passive: true });
+        onScroll();
+
+        // Services menu (click + keyboard; hover on pointer devices)
+        var menuWrap = document.querySelector('[data-nav-menu]');
+        if (menuWrap) {
+            var trigger = menuWrap.querySelector('[data-nav-trigger]');
+            var setOpen = function (open) {
+                menuWrap.classList.toggle('is-open', open);
+                trigger.setAttribute('aria-expanded', open ? 'true' : 'false');
+            };
+            trigger.addEventListener('click', function (event) {
+                event.preventDefault();
+                setOpen(!menuWrap.classList.contains('is-open'));
+            });
+            menuWrap.addEventListener('mouseenter', function () {
+                if (window.matchMedia('(hover: hover)').matches) setOpen(true);
+            });
+            menuWrap.addEventListener('mouseleave', function () {
+                if (window.matchMedia('(hover: hover)').matches) setOpen(false);
+            });
+            document.addEventListener('click', function (event) {
+                if (!menuWrap.contains(event.target)) setOpen(false);
+            });
+            document.addEventListener('keydown', function (event) {
+                if (event.key === 'Escape' && menuWrap.classList.contains('is-open')) {
+                    setOpen(false);
+                    trigger.focus();
+                }
+            });
+        }
+
+        // Mobile drawer
+        var drawer = document.querySelector('[data-mobile-nav]');
+        var openBtn = document.querySelector('[data-mobile-trigger]');
+        var closeBtn = drawer ? drawer.querySelector('[data-mobile-close]') : null;
+        var lastFocused = null;
+
+        function openDrawer() {
+            if (!drawer || !openBtn) return;
+            lastFocused = document.activeElement;
+            drawer.classList.add('is-open');
+            openBtn.setAttribute('aria-expanded', 'true');
+            document.body.classList.add('nav-open');
+            var first = drawer.querySelector('a, button');
+            if (first) window.setTimeout(function () { first.focus(); }, 120);
+        }
+        function closeDrawer() {
+            if (!drawer || !openBtn) return;
+            drawer.classList.remove('is-open');
+            openBtn.setAttribute('aria-expanded', 'false');
+            document.body.classList.remove('nav-open');
+            if (lastFocused && lastFocused.focus) lastFocused.focus();
+        }
+        if (openBtn) openBtn.addEventListener('click', openDrawer);
+        if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+        if (drawer) {
+            drawer.addEventListener('click', function (event) {
+                if (event.target === drawer) closeDrawer();
+            });
+            document.addEventListener('keydown', function (event) {
+                if (!drawer.classList.contains('is-open')) return;
+                if (event.key === 'Escape') { closeDrawer(); return; }
+                if (event.key !== 'Tab') return;
+                var focusables = drawer.querySelectorAll('a[href], button:not([disabled]), input, select, textarea');
+                if (!focusables.length) return;
+                var firstEl = focusables[0], lastEl = focusables[focusables.length - 1];
+                if (event.shiftKey && document.activeElement === firstEl) { event.preventDefault(); lastEl.focus(); }
+                else if (!event.shiftKey && document.activeElement === lastEl) { event.preventDefault(); firstEl.focus(); }
+            });
+        }
+        window.addEventListener('resize', function () {
+            if (window.innerWidth >= 992 && drawer && drawer.classList.contains('is-open')) closeDrawer();
+        });
+    })();
+</script>

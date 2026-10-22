@@ -1,32 +1,41 @@
 @{
-    ViewData["Title"] = "Something went wrong";
+    ViewData["Title"] = "Page status";
     var code = ViewBag.Code is int c ? c : 404;
     var message = ViewBag.Message as string ?? "Something went wrong while handling that request.";
+    var label = code switch
+    {
+        400 => "Bad request",
+        403 => "Access denied",
+        404 => "Page not found",
+        429 => "Too many requests",
+        200 => "All systems operational",
+        _ => "Unexpected error"
+    };
 }
 
-<section class="py-5" style="background:#f8fafc;">
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-7">
-                <div class="card-modern text-center py-5 px-4">
-                    <div class="display-3 fw-bold text-danger mb-2">@code</div>
-                    <h4 class="fw-bold text-dark mb-2">@message</h4>
-                    <p class="text-muted mb-4">
-                        If you followed a link from another page, it may have moved.
-                        Try the emergency hub or head back to the home page.
-                    </p>
-                    <div class="d-flex flex-wrap justify-content-center gap-2">
-                        <a asp-controller="Home" asp-action="Index" class="btn btn-brand-red">
-                            <i class="fas fa-home me-1"></i>Home
-                        </a>
-                        <a asp-controller="Emergency" asp-action="Index" class="btn btn-brand-outline">
-                            <i class="fas fa-search-location me-1"></i>Emergency Hub
-                        </a>
-                        <a asp-controller="Donor" asp-action="Search" class="btn btn-brand-outline">
-                            <i class="fas fa-tint me-1"></i>Find Donors
-                        </a>
-                    </div>
-                </div>
+<section class="section">
+    <div class="container container-narrow">
+        <div class="panel" style="text-align:center;padding:clamp(32px,6vw,64px)">
+            <p class="eyebrow" style="justify-content:center">Status @code</p>
+            <div style="font-family:var(--font-display);font-size:clamp(5rem,14vw,9rem);line-height:.86;letter-spacing:-.05em;color:var(--blood);margin:0 0 12px">
+                @code
+            </div>
+            <h1 style="font-family:var(--font-display);font-weight:400;font-size:clamp(1.6rem,3vw,2.2rem);letter-spacing:-.02em;margin:0 0 10px">@label</h1>
+            <p style="color:var(--muted);max-width:46ch;margin:0 auto 28px">@message</p>
+
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <a class="btn btn-ink" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-house" aria-hidden="true"></i> Back to home
+                </a>
+                <a class="btn btn-ghost" asp-controller="Emergency" asp-action="Index">Emergency hub</a>
+                <a class="btn btn-ghost" asp-controller="Donor" asp-action="Search">Find donors</a>
+            </div>
+
+            <div style="margin-top:32px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:center;gap:18px;flex-wrap:wrap">
+                <span class="meta">Need urgent help?</span>
+                <a class="link-arrow" asp-controller="Emergency" asp-action="AmbulanceContact" style="font-size:.82rem">
+                    Emergency contacts <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </a>
             </div>
         </div>
     </div>

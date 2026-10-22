@@ -5,125 +5,160 @@
     var donor = ViewBag.Donor as BBDMS.Model.Models.Entities.BloodDonor;
 }
 
-<div class="container my-5">
-    <div class="card card-modern border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
-        <div class="row no-gutters">
-            <!-- Left Form Column -->
-            <div class="col-lg-7 p-4 p-md-5">
-                <div class="mb-4">
-                    <span class="badge badge-soft-danger mb-2 font-weight-bold">
-                        <i class="fas fa-heartbeat mr-1"></i> Rapid Emergency Dispatch
-                    </span>
-                    <h3 class="font-weight-bold text-dark mb-1">Submit Emergency Request</h3>
-                    <p class="text-muted small">Broadcast your blood need to available voluntary donors and local blood banks instantly.</p>
-                </div>
-
-                @if (donor != null)
-                {
-                    <div class="alert alert-danger py-2 small" role="alert">
-                        <i class="fas fa-user-check mr-1"></i> Direct request targeting donor <strong>@donor.FullName</strong> (@donor.BloodGroup).
-                    </div>
-                }
-
-                <form method="post" asp-action="CreateBloodRequest">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="BloodDonorID" />
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="font-weight-bold small text-dark">Required Blood Group <span class="text-danger">*</span></label>
-                            <select asp-for="BloodGroup" class="form-control form-control-modern" required>
-                                <option value="">Select Blood Group</option>
-                                @if (bloodGroups != null)
-                                {
-                                    foreach (var bg in bloodGroups)
-                                    {
-                                        <option value="@bg.GroupName" selected="@(donor != null && donor.BloodGroup == bg.GroupName)">@bg.GroupName</option>
-                                    }
-                                }
-                            </select>
-                            <span asp-validation-for="BloodGroup" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="font-weight-bold small text-dark">Units Needed (Bags) <span class="text-danger">*</span></label>
-                            <input asp-for="UnitsRequired" type="number" min="1" max="20" class="form-control form-control-modern" required placeholder="e.g. 2" />
-                            <span asp-validation-for="UnitsRequired" class="text-danger small"></span>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="font-weight-bold small text-dark">Hospital Name & Ward <span class="text-danger">*</span></label>
-                            <input asp-for="HospitalName" class="form-control form-control-modern" placeholder="e.g. Dhaka Medical College Hospital" required />
-                            <span asp-validation-for="HospitalName" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="font-weight-bold small text-dark">City / Location <span class="text-danger">*</span></label>
-                            <input asp-for="Location" class="form-control form-control-modern" placeholder="e.g. Dhaka, Dhanmondi" required />
-                            <span asp-validation-for="Location" class="text-danger small"></span>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="font-weight-bold small text-dark">Reason / Requirement <span class="text-danger">*</span></label>
-                            <input asp-for="BloodRequireFor" class="form-control form-control-modern" placeholder="e.g. Emergency Accident Surgery, Delivery" required />
-                            <span asp-validation-for="BloodRequireFor" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="font-weight-bold small text-dark">Emergency Status <span class="text-danger">*</span></label>
-                            <select asp-for="Urgency" class="form-control form-control-modern" required>
-                                <option value="Critical (Within 2-4 Hours)">Critical (Immediate / Within 2-4 Hours)</option>
-                                <option value="Urgent (Within 12-24 Hours)">Urgent (Within 12-24 Hours)</option>
-                                <option value="Standard (Within 2-3 Days)">Standard (Within 2-3 Days)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="font-weight-bold small text-dark">Contact Person Name <span class="text-danger">*</span></label>
-                            <input asp-for="Name" class="form-control form-control-modern" placeholder="Contact Person" required />
-                            <span asp-validation-for="Name" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="font-weight-bold small text-dark">Contact Phone Number <span class="text-danger">*</span></label>
-                            <input asp-for="ContactNumber" type="number" class="form-control form-control-modern" placeholder="017XXXXXXXX" required />
-                            <span asp-validation-for="ContactNumber" class="text-danger small"></span>
-                        </div>
-                    </div>
-
-                    <div class="form-group mb-4">
-                        <label class="font-weight-bold small text-dark">Additional Instructions</label>
-                        <textarea asp-for="Message" class="form-control form-control-modern" rows="2" style="height: auto;" placeholder="Provide any details like cross-matching details, patient ward number..."></textarea>
-                    </div>
-
-                    <button type="submit" class="btn btn-brand-red btn-block py-2 font-weight-bold shadow">
-                        <i class="fas fa-paper-plane mr-2"></i> Submit Emergency Request
-                    </button>
-                </form>
+<section class="page-head">
+    <div class="container">
+        <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item"><a asp-action="Index">Emergency</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Request blood</li>
+            </ol>
+        </nav>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Rapid emergency dispatch</p>
+                <h1>Request blood for a patient.</h1>
+                <p>One form alerts matching voluntary donors and blood bank counters in the area. Post it only when you need blood — donors respond fast.</p>
             </div>
-
-            <!-- Right Visual Column -->
-            <div class="col-lg-5 d-none d-lg-flex" style="background: linear-gradient(145deg, #0f172a, #1e293b); color: white; flex-direction: column; justify-content: space-between; padding: 3.5rem;">
-                <div>
-                    <span class="badge badge-danger p-2 mb-3 font-weight-bold">
-                        <i class="fas fa-ambulance mr-1"></i> Emergency Response
-                    </span>
-                    <h3 class="font-weight-bold text-white mb-3">Emergency Help Now.</h3>
-                    <p class="text-white-50">
-                        When every second counts, our system broadcasts your urgent blood request to local registered donors and alerts emergency hospital coordinators in real-time.
-                    </p>
-                    <div class="my-4">
-                        <img src="~/images/banner1.jpg" alt="Ambulance" class="img-fluid rounded shadow" style="border: 2px solid rgba(255,255,255,0.15);" />
-                    </div>
-                </div>
-
-                <div class="pt-3 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
-                    <small class="text-white-50 d-block">Direct Hotline</small>
-                    <h5 class="font-weight-bold text-white mb-0"><i class="fas fa-phone-volume text-danger mr-2"></i>Call 999 or 01700000000</h5>
-                </div>
+            <div class="page-head-actions">
+                <a class="btn btn-ghost" asp-action="BloodRequests">
+                    <i class="fas fa-list" aria-hidden="true"></i> Request board
+                </a>
             </div>
         </div>
     </div>
-</div>
+</section>
+
+<section class="section-tight">
+    <div class="container">
+        <div class="form-layout">
+            <div class="form-main">
+                <form method="post" asp-action="CreateBloodRequest" class="panel">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="BloodDonorID" />
+
+                    @if (donor != null)
+                    {
+                        <div class="alert alert-info" role="status">
+                            <i class="fas fa-user-check" aria-hidden="true"></i>
+                            Direct request targeting donor <strong>@donor.FullName</strong> (@donor.BloodGroup).
+                        </div>
+                    }
+
+                    <div class="form-section is-first">
+                        <h3 class="form-section-title">What is needed</h3>
+                        <div class="field-grid">
+                            <div>
+                                <label asp-for="BloodGroup">Required blood group <span class="req">*</span></label>
+                                <select asp-for="BloodGroup" class="form-select" required>
+                                    <option value="">Select blood group</option>
+                                    @if (bloodGroups != null)
+                                    {
+                                        foreach (var bg in bloodGroups)
+                                        {
+                                            <option value="@bg.GroupName" selected="@(donor != null && donor.BloodGroup == bg.GroupName)">@bg.GroupName</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="BloodGroup" class="field-validation-error"></span>
+                            </div>
+                            <div>
+                                <label asp-for="UnitsRequired">Units needed (bags) <span class="req">*</span></label>
+                                <input asp-for="UnitsRequired" type="number" min="1" max="20" class="form-control" required placeholder="e.g. 2" />
+                                <span asp-validation-for="UnitsRequired" class="field-validation-error"></span>
+                            </div>
+                            <div>
+                                <label asp-for="BloodRequireFor">Reason <span class="req">*</span></label>
+                                <input asp-for="BloodRequireFor" class="form-control" placeholder="e.g. emergency surgery, delivery" required />
+                                <span asp-validation-for="BloodRequireFor" class="field-validation-error"></span>
+                            </div>
+                            <div>
+                                <label asp-for="Urgency">Emergency status <span class="req">*</span></label>
+                                <select asp-for="Urgency" class="form-select" required>
+                                    <option value="Critical (Within 2-4 Hours)">Critical — within 2–4 hours</option>
+                                    <option value="Urgent (Within 12-24 Hours)">Urgent — within 12–24 hours</option>
+                                    <option value="Standard (Within 2-3 Days)">Standard — within 2–3 days</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">Where the patient is</h3>
+                        <div class="field-grid">
+                            <div>
+                                <label asp-for="HospitalName">Hospital &amp; ward <span class="req">*</span></label>
+                                <input asp-for="HospitalName" class="form-control" placeholder="e.g. Dhaka Medical College" required />
+                                <span asp-validation-for="HospitalName" class="field-validation-error"></span>
+                            </div>
+                            <div>
+                                <label asp-for="Location">City / area <span class="req">*</span></label>
+                                <input asp-for="Location" class="form-control" placeholder="e.g. Dhaka, Dhanmondi" required />
+                                <span asp-validation-for="Location" class="field-validation-error"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">Who donors should call</h3>
+                        <div class="field-grid">
+                            <div>
+                                <label asp-for="Name">Contact person <span class="req">*</span></label>
+                                <input asp-for="Name" class="form-control" placeholder="Full name" required autocomplete="name" />
+                                <span asp-validation-for="Name" class="field-validation-error"></span>
+                            </div>
+                            <div>
+                                <label asp-for="ContactNumber">Phone number <span class="req">*</span></label>
+                                <input asp-for="ContactNumber" type="tel" class="form-control" placeholder="017XXXXXXXX" required autocomplete="tel" />
+                                <span asp-validation-for="ContactNumber" class="field-validation-error"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3 class="form-section-title">Notes for donors <span class="optional">optional</span></h3>
+                        <label asp-for="Message" class="sr-only">Additional instructions</label>
+                        <textarea asp-for="Message" class="form-control" rows="3" placeholder="Cross-matching details, ward number, best time to visit…"></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-blood">
+                            <i class="fas fa-paper-plane" aria-hidden="true"></i> Publish request
+                        </button>
+                        <p class="form-note">Published requests are visible to signed-in donors and the emergency coordinator team.</p>
+                    </div>
+                </form>
+            </div>
+
+            <aside class="form-aside">
+                <div class="panel panel-ink">
+                    <p class="eyebrow" style="color:rgba(255,246,238,.55)">Emergency line</p>
+                    <h2 class="hotline">
+                        <i class="fas fa-phone-volume" aria-hidden="true"></i>
+                        <a href="tel:999">999</a>
+                    </h2>
+                    <p class="panel-note">For an active emergency, call 999 first. Publish here as well so donors near the hospital see it.</p>
+
+                    <div style="margin-top: var(--s5);">
+                        <span class="meta-label">After you publish</span>
+                        <ol class="rail-list">
+                            <li><strong>Nearby donors are alerted</strong> by blood group and city.</li>
+                            <li><strong>You get a tracking link</strong> to follow responses and share with family.</li>
+                            <li><strong>Call the responder directly</strong> — contact numbers appear on your tracking page.</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="panel panel-quiet">
+                    <span class="meta-label">Already posted?</span>
+                    <p class="panel-note" style="margin-bottom:14px">Track responses with your token or contact number.</p>
+                    <a asp-action="TrackRequest" class="link-arrow">Track a request <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

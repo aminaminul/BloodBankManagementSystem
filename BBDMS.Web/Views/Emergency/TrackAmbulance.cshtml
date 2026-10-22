@@ -10,122 +10,116 @@
     var progress = AmbulanceTracking.ProgressPercent(status);
 }
 
-<section class="page-hero-sm">
+<section class="page-head">
     <div class="container">
-        <nav aria-label="breadcrumb">
+        <nav aria-label="Breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
-                <li class="breadcrumb-item"><a asp-controller="Emergency" asp-action="Ambulances">Ambulances</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Track Dispatch</li>
+                <li class="breadcrumb-item"><a asp-action="Ambulances">Ambulances</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Track dispatch</li>
             </ol>
         </nav>
-        <h1 class="fw-bold mb-1">Track Your Ambulance Dispatch</h1>
-        <p class="mb-0">Live status of your emergency ambulance request, updating automatically.</p>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Live dispatch</p>
+                <h1>Track your ambulance dispatch.</h1>
+                <p>Status updates automatically while the vehicle is on the way. Keep this page open during the transfer.</p>
+            </div>
+            <div class="page-head-actions">
+                <a asp-action="AmbulanceContact" class="btn btn-ghost">
+                    <i class="fas fa-address-book" aria-hidden="true"></i> Emergency contacts
+                </a>
+                <a asp-action="RequestAmbulance" class="btn btn-blood">
+                    <i class="fas fa-bell" aria-hidden="true"></i> Book a dispatch
+                </a>
+            </div>
+        </div>
     </div>
 </section>
 
-<section class="py-5">
+<section class="section-tight">
     <div class="container">
-        <div class="row justify-content-center g-4">
-            <div class="col-lg-9">
 
-                <!-- Lookup form -->
-                <div class="card-modern mb-4" data-motion>
-                    <form method="get" asp-action="TrackAmbulance">
-                        <label class="form-label"><i class="fas fa-phone text-danger me-1"></i>Contact Number used for the booking</label>
-                        <div class="input-group">
-                            <input type="text" name="contact" value="@contact" class="form-control form-control-modern" placeholder="e.g. 01712345678" />
-                            <div class="input-group-append">
-                                <button type="submit" class="btn btn-brand-red"><i class="fas fa-satellite-dish"></i> Track Dispatch</button>
-                            </div>
-                        </div>
-                    </form>
+        <form method="get" asp-action="TrackAmbulance" class="filter-bar" data-reveal>
+            <div class="filter-bar-grid is-inline">
+                <div>
+                    <label for="trackContact">Contact number used for the booking</label>
+                    <input id="trackContact" type="tel" name="contact" value="@contact" class="form-control" placeholder="e.g. 01712345678" autocomplete="tel" />
                 </div>
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-ink"><i class="fas fa-location-crosshairs" aria-hidden="true"></i> Track dispatch</button>
+                </div>
+            </div>
+        </form>
 
-                @if (request == null)
-                {
-                    <div class="card-modern text-center py-5" data-motion>
-                        <i class="fas fa-ambulance fa-2x text-muted mb-3 d-block"></i>
-                        <h5 class="fw-bold">No dispatch request found</h5>
-                        <p class="text-muted mb-4">We couldn't find an ambulance booking for that contact number. Check the number or book a new dispatch now.</p>
-                        <div class="d-flex flex-wrap justify-content-center gap-2">
-                            <a asp-action="RequestAmbulance" class="btn btn-brand-red"><i class="fas fa-bell me-1"></i>Request Ambulance</a>
-                            <a asp-action="AmbulanceContact" class="btn btn-brand-outline"><i class="fas fa-phone-volume me-1"></i>Emergency Contacts</a>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <div class="card-modern mb-4" data-motion>
-                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+        @if (request == null)
+        {
+            <div class="empty-state mt-5">
+                <i class="fas fa-truck-medical" aria-hidden="true"></i>
+                <h4>No dispatch found for that number</h4>
+                <p>Check the contact number used when booking, or start a new dispatch request — the team calls back immediately.</p>
+                <div class="d-flex flex-wrap justify-content-center gap-2">
+                    <a asp-action="RequestAmbulance" class="btn btn-blood">Book a dispatch</a>
+                    <a asp-action="AmbulanceContact" class="btn btn-ghost">Emergency contacts</a>
+                </div>
+            </div>
+        }
+        else
+        {
+            var ambShareUrl = Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path + Context.Request.QueryString;
+            var ambShareMsg = $"🚨 Ambulance dispatched for {request.PatientName}. Live Status: {AmbulanceTracking.StatusLabel(status)}. Track live here: {ambShareUrl}";
+            var ambWaUrl = "https://api.whatsapp.com/send?text=" + System.Net.WebUtility.UrlEncode(ambShareMsg);
+
+            <div class="detail-layout mt-5">
+                <div class="detail-main">
+                    <article class="panel" data-motion>
+                        <div class="panel-head">
                             <div>
-                                <h5 class="fw-bold mb-1">Dispatch #@request.Id</h5>
-                                <div class="small text-muted">
-                                    <i class="fas fa-user-injured me-1"></i>@request.PatientName
-                                    <span class="mx-1">•</span>
-                                    <i class="fas fa-clock me-1"></i>@request.RequestDate.ToString("dd MMM yyyy, hh:mm tt")
-                                </div>
+                                <span class="meta-label">Dispatch #@request.Id</span>
+                                <h2>@request.PatientName</h2>
                             </div>
-                            <div class="d-flex align-items-center gap-2">
-                                @{
-                                    var ambShareUrl = Context.Request.Scheme + "://" + Context.Request.Host + Context.Request.Path + Context.Request.QueryString;
-                                    var ambShareMsg = $"🚨 Ambulance dispatched for {request.PatientName}. Live Status: {AmbulanceTracking.StatusLabel(status)}. Track live here: {ambShareUrl}";
-                                    var ambWaUrl = "https://api.whatsapp.com/send?text=" + System.Net.WebUtility.UrlEncode(ambShareMsg);
-                                }
-                                <a href="@ambWaUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-success text-white">
-                                    <i class="fab fa-whatsapp me-1"></i> Share with Family
-                                </a>
-                                <span class="live-pill" id="ambLivePill"><span class="live-dot"></span> LIVE</span>
-                                <span id="ambStatusBadge" class="badge-soft-danger @AmbulanceTracking.StatusBadge(status)">
-                                    <i class="fas @AmbulanceTracking.StatusIcon(status) me-1"></i><span id="ambStatusLabel">@AmbulanceTracking.StatusLabel(status)</span>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="live-pill" id="ambLivePill"><span class="live-dot" aria-hidden="true"></span> Live</span>
+                                <span id="ambStatusBadge" class="@AmbulanceTracking.StatusBadge(status)">
+                                    <i class="fas @AmbulanceTracking.StatusIcon(status)" aria-hidden="true"></i>
+                                    <span id="ambStatusLabel">@AmbulanceTracking.StatusLabel(status)</span>
                                 </span>
                             </div>
                         </div>
 
-                        <div class="row g-3 small">
-                            <div class="col-sm-6 col-lg-3">
-                                <span class="text-muted d-block">Pickup</span>
-                                <span class="fw-semibold text-dark">@request.PickupAddress</span>
-                            </div>
-                            <div class="col-sm-6 col-lg-3">
-                                <span class="text-muted d-block">Destination</span>
-                                <span class="fw-semibold text-dark">@(string.IsNullOrEmpty(request.DestinationHospital) ? "Not decided yet" : request.DestinationHospital)</span>
-                            </div>
-                            <div class="col-sm-6 col-lg-3">
-                                <span class="text-muted d-block">Ambulance Type</span>
-                                <span class="fw-semibold text-dark">@request.AmbulanceType</span>
-                            </div>
-                            <div class="col-sm-6 col-lg-3">
-                                <span class="text-muted d-block">Urgency</span>
-                                <span class="fw-semibold text-dark">@request.Urgency</span>
-                            </div>
-                        </div>
+                        <dl class="detail-list">
+                            <div><dt>Pickup</dt><dd>@request.PickupAddress</dd></div>
+                            <div><dt>Destination</dt><dd>@(string.IsNullOrEmpty(request.DestinationHospital) ? "Not decided yet" : request.DestinationHospital)</dd></div>
+                            <div><dt>Ambulance type</dt><dd>@request.AmbulanceType</dd></div>
+                            <div><dt>Urgency</dt><dd>@request.Urgency</dd></div>
+                            <div><dt>Booked</dt><dd>@request.RequestDate.ToString("dd MMM yyyy, hh:mm tt")</dd></div>
+                            <div><dt>Contact</dt><dd><a class="phone" href="tel:@request.ContactNumber">@request.ContactNumber</a></dd></div>
+                        </dl>
 
                         @if (provider != null)
                         {
-                            <div class="alert alert-light border mt-3 mb-0 d-flex justify-content-between align-items-center flex-wrap gap-2" role="alert">
+                            <div class="hospital-row">
                                 <div>
-                                    <i class="fas fa-ambulance text-danger me-2"></i>
-                                    <strong>@provider.ProviderName</strong>
-                                    <span class="text-muted small ms-2">@provider.Location</span>
+                                    <span class="meta-label">Assigned fleet</span>
+                                    <p class="hospital-name">@provider.ProviderName</p>
+                                    <p class="meta"><i class="fas fa-location-dot" aria-hidden="true"></i>@provider.Location</p>
                                 </div>
-                                <a href="tel:@provider.ContactNumber" class="btn btn-sm btn-brand-red">
-                                    <i class="fas fa-phone me-1"></i>@provider.ContactNumber
+                                <a href="tel:@provider.ContactNumber" class="btn btn-blood btn-sm">
+                                    <i class="fas fa-phone" aria-hidden="true"></i> @provider.ContactNumber
                                 </a>
                             </div>
                         }
-                    </div>
+                    </article>
 
-                    <!-- Live timeline -->
-                    <div class="card-modern mb-4" data-motion>
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-                            <h5 class="fw-bold mb-0">Live Dispatch Status</h5>
-                            <span class="small text-muted">Updated <span id="ambUpdated">@DateTime.Now.ToString("hh:mm:ss tt")</span></span>
+                    <article class="panel" data-motion>
+                        <div class="panel-head">
+                            <h2>Dispatch timeline</h2>
+                            <span class="meta">Updated <span id="ambUpdated">@DateTime.Now.ToString("hh:mm:ss tt")</span></span>
                         </div>
-                        <p class="small text-muted mb-3" id="ambEta">@AmbulanceTracking.EtaText(status)</p>
+                        <p class="panel-note" id="ambEta" style="margin-top:8px">@AmbulanceTracking.EtaText(status)</p>
 
-                        <div class="progress mb-4" style="height:8px;">
-                            <div class="progress-bar" id="ambProgress" role="progressbar" style="width:@progress%;" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="progress" style="height:6px;margin-bottom:var(--s5)">
+                            <div class="progress-bar" id="ambProgress" role="progressbar" style="width:@progress%" aria-valuenow="@progress" aria-valuemin="0" aria-valuemax="100"></div>
                         </div>
 
                         <ul class="track-timeline track-timeline-live" id="ambTimeline" data-motion-stagger>
@@ -134,7 +128,7 @@
                                 var cls = step.Done ? "done" : step.Current ? "current" : "";
                                 if (step.Cancelled) { cls = "current cancelled"; }
                                 <li class="@cls">
-                                    <span class="dot"><i class="fas @step.Icon"></i></span>
+                                    <span class="dot"><i class="fas @step.Icon" aria-hidden="true"></i></span>
                                     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
                                         <div>
                                             <div class="t-title">@step.Title</div>
@@ -145,43 +139,46 @@
                                 </li>
                             }
                         </ul>
-                    </div>
+                    </article>
+                </div>
 
-                    <div class="row g-3" data-motion>
-                        <div class="col-md-6">
-                            <div class="card-modern h-100">
-                                <h6 class="fw-bold mb-2"><i class="fas fa-phone-volume text-danger me-1"></i>Need to reach the dispatcher?</h6>
-                                <p class="small text-muted">Call the fleet directly or open the emergency contact desk for hotlines and nearby providers.</p>
-                                <div class="d-flex flex-wrap gap-2">
-                                    @if (provider != null)
-                                    {
-                                        <a href="tel:@provider.ContactNumber" class="btn btn-sm btn-brand-red"><i class="fas fa-phone me-1"></i>Call Fleet</a>
-                                    }
-                                    <a asp-action="AmbulanceContact" asp-route-id="@request.Id" class="btn btn-sm btn-brand-outline">
-                                        <i class="fas fa-address-book me-1"></i>Emergency Contacts
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card-modern h-100">
-                                <h6 class="fw-bold mb-2"><i class="fas fa-notes-medical text-danger me-1"></i>Request details</h6>
-                                <ul class="list-unstyled small text-muted mb-3">
-                                    <li><strong class="text-dark">Contact:</strong> @request.ContactNumber</li>
-                                    <li><strong class="text-dark">Type:</strong> @request.AmbulanceType</li>
-                                    @if (!string.IsNullOrEmpty(request.Notes))
-                                    {
-                                        <li><strong class="text-dark">Notes:</strong> @request.Notes</li>
-                                    }
-                                </ul>
-                                <a asp-action="RequestAmbulance" class="btn btn-sm btn-brand-outline"><i class="fas fa-plus me-1"></i>Book another ambulance</a>
-                            </div>
-                        </div>
-                    </div>
-                }
+                <aside class="detail-aside">
+                    <div class="panel panel-sticky" data-motion>
+                        <h2>Need the dispatcher?</h2>
+                        <p class="panel-note">Call the fleet directly, or open the contact desk for national hotlines.</p>
+                        @if (provider != null)
+                        {
+                            <a href="tel:@provider.ContactNumber" class="btn btn-blood btn-block">
+                                <i class="fas fa-phone" aria-hidden="true"></i> Call fleet
+                            </a>
+                        }
+                        <a asp-action="AmbulanceContact" asp-route-id="@request.Id" class="btn btn-ghost btn-block mt-2">
+                            <i class="fas fa-address-book" aria-hidden="true"></i> Emergency contacts
+                        </a>
 
+                        <div class="aside-divider">
+                            <h3>Share live status</h3>
+                            <p class="panel-note">Send the tracking link to family so they can follow the transfer.</p>
+                            <a href="@ambWaUrl" target="_blank" rel="noopener noreferrer" class="btn share-wa btn-block btn-sm">
+                                <i class="fab fa-whatsapp" aria-hidden="true"></i> Share on WhatsApp
+                            </a>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(request.Notes))
+                        {
+                            <div class="aside-divider">
+                                <span class="meta-label">Medical notes</span>
+                                <p class="panel-note" style="margin:0">@request.Notes</p>
+                            </div>
+                        }
+
+                        <a asp-action="RequestAmbulance" class="link-arrow mt-4">
+                            Book another ambulance <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </aside>
             </div>
-        </div>
+        }
     </div>
 </section>
 
@@ -264,7 +261,7 @@
                     if (label) label.textContent = payload.statusLabel;
                     if (badge) {
                         badge.className = payload.badge;
-                        badge.innerHTML = '<i class="fas ' + esc(payload.icon) + ' me-1"></i><span id="ambStatusLabel">' + esc(payload.statusLabel) + '</span>';
+                        badge.innerHTML = '<i class="fas ' + esc(payload.icon) + '"></i><span id="ambStatusLabel">' + esc(payload.statusLabel) + '</span>';
                     }
                     if (eta) eta.textContent = payload.eta;
                     if (updated) updated.textContent = payload.updatedAt;

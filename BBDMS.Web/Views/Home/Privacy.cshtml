@@ -2,45 +2,75 @@
     ViewData["Title"] = "Privacy Policy";
 }
 
-<section class="page-hero-sm" style="background:linear-gradient(135deg,#e63946 0%,#9b1a26 100%); color:#fff; padding:56px 0 40px;">
+<section class="page-head">
     <div class="container">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2" style="background:transparent; padding:0;">
-                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" class="text-white-50">Home</a></li>
-                <li class="breadcrumb-item active text-white" aria-current="page">Privacy Policy</li>
+        <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Privacy policy</li>
             </ol>
         </nav>
-        <h1 class="fw-bold mb-1" style="font-size:2rem;">Privacy &amp; Data Security</h1>
-        <p class="mb-0 text-white-50">How we protect donor confidentiality and healthcare patient information.</p>
+        <div class="page-head-row">
+            <div>
+                <p class="eyebrow">Trust &amp; safety</p>
+                <h1>Privacy &amp; data security.</h1>
+                <p>How donor confidentiality and patient information are protected across the emergency network.</p>
+            </div>
+            <div class="page-head-actions">
+                <a class="btn btn-ghost" asp-action="Contact">
+                    <i class="fas fa-envelope" aria-hidden="true"></i> Contact the team
+                </a>
+            </div>
+        </div>
     </div>
 </section>
 
-<section class="py-5" style="background:#f8fafc;">
-    <div class="container py-2">
-        <div class="row justify-content-center">
-            <div class="col-lg-9">
-                <div class="card-modern p-4 p-md-5">
-                    <h4 class="fw-bold text-dark mb-3">1. Donor Information Protection</h4>
-                    <p class="text-muted mb-4">
-                        We value donor trust and safeguard personal information including names, contact numbers, email addresses, and medical eligibility records. Your contact details are only visible to authorized requesters during active emergency blood matching.
-                    </p>
+<section class="section-tight">
+    <div class="container">
+        <div class="detail-layout">
+            <article class="detail-main">
+                <div class="panel">
+                    <span class="meta-label">Policy · last updated September 2026</span>
+                    <div class="policy">
+                        <section>
+                            <h2><span class="num">01</span> Donor information protection</h2>
+                            <p>We value donor trust and safeguard personal information including names, contact numbers, email addresses and medical eligibility records. Contact details are only visible to authorised requesters during an active emergency match.</p>
+                        </section>
 
-                    <h4 class="fw-bold text-dark mb-3">2. Emergency Requests &amp; Dispatch Transparency</h4>
-                    <p class="text-muted mb-4">
-                        Patient emergency requests (blood, ambulance, oxygen) are broadcast across our verified network to ensure timely delivery of life-saving medical resources.
-                    </p>
+                        <section>
+                            <h2><span class="num">02</span> Emergency requests &amp; dispatch transparency</h2>
+                            <p>Patient emergency requests for blood, ambulance and oxygen are broadcast across the verified network so the nearest capable response reaches the patient in time. Each request keeps a tracking trail visible to the person who posted it.</p>
+                        </section>
 
-                    <h4 class="fw-bold text-dark mb-3">3. Medical Safety &amp; Non-Commercial Guarantee</h4>
-                    <p class="text-muted mb-4">
-                        Blood donation through our platform is completely voluntary, humane, and free of commercial exploitation. We adhere strictly to standard World Health Organization (WHO) and local healthcare eligibility protocols.
-                    </p>
+                        <section>
+                            <h2><span class="num">03</span> Medical safety &amp; non-commercial guarantee</h2>
+                            <p>Blood donation through this platform is voluntary and free of commercial exploitation. We follow standard World Health Organization guidance and local healthcare eligibility protocols for every donor interval.</p>
+                        </section>
 
-                    <div class="pt-3 border-top d-flex justify-content-between align-items-center">
-                        <small class="text-muted">Last updated: September 2026</small>
-                        <a asp-controller="Home" asp-action="Contact" class="btn btn-sm btn-brand-outline">Have Questions? Contact Us</a>
+                        <section>
+                            <h2><span class="num">04</span> Your controls</h2>
+                            <p>Donors can update or withdraw their profile at any time from the donor dashboard. Removing a profile stops it appearing in searches immediately; emergency requests you have posted remain visible until they are closed.</p>
+                        </section>
                     </div>
                 </div>
-            </div>
+            </article>
+
+            <aside class="detail-aside">
+                <div class="panel panel-sticky">
+                    <h2>Questions about your data?</h2>
+                    <p class="panel-note">The support desk answers privacy questions during network hours and escalates anything urgent to the coordinator team.</p>
+                    <a class="btn btn-blood btn-block" asp-action="Contact">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> Contact support
+                    </a>
+                    <div class="aside-divider">
+                        <span class="meta-label">Emergency line · 24/7</span>
+                        <a class="phone" href="tel:01700000000">01700000000</a>
+                    </div>
+                    <a asp-action="Status" class="link-arrow mt-4">
+                        Network status <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </aside>
         </div>
     </div>
 </section>
